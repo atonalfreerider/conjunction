@@ -1,0 +1,27 @@
+# secrets
+*.key
+*key*.txt
+.env
+.env.*
+keystore.properties
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+service-account*.json
+# build
+build/
+.gradle/
+local.properties
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+node_modules/
+backend/functions/lib/
+.firebase/
+*.log
+__pycache__/
+.venv/
+.idea/
+.DS_Store
