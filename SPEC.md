@@ -56,6 +56,40 @@ placeholder until the owner picks one from `docs/NAMES.md`; keep it in one place
      name.
    - Safety: block, report, "pause nearby for 1 h / until tomorrow", snooze per person, rate limits,
      18+ age gate, no messaging before mutual connect, intro messages are moderated server-side.
+5b. **Dating & friends layer (added by the owner — overrides item 5 where they differ).**
+   - Profile fields (asked in onboarding, editable in Profile): **I am** male / female; **Seeking**
+     male / female / both; **Relationship status** single / in a relationship (shown on the match
+     card); **Looking for** dating / friends / both. Users in a relationship default to "friends"
+     (they may change it).
+   - Matching filter (server-side, before any notification): a pair qualifies for a **dating** match
+     only if both look for dating (or both), each one's gender is in the other's "seeking", and
+     neither is "in a relationship"; otherwise it qualifies as a **friends** match if both include
+     friends. No qualifying intent → no encounter, no notification. Match kind (`dating` |
+     `friends`) is carried on the encounter and shown on the card. Birthday-twin pairs still need a
+     qualifying intent.
+   - **Match animation** (both phones, foreground: full-screen overlay; background: the push
+     notification opens it): the screen flashes; the first user's zodiac sun-sign art flies in from
+     the **upper-left** corner and the other user's from the **lower-right**, each framed in a gold
+     medallion with that person's **profile photo** inset; they spiral toward the centre and merge into
+     a combined conjunction emblem with a gold burst, and the compatibility % counts up with the
+     western / chinese / blood sub-scores and a one-line on-device blurb. Birthday twins get the
+     extra-lavish variant (twin starburst, confetti of stars). ~2.5 s, skippable, reduced-motion
+     friendly (cross-fade instead).
+   - Below the animation the match is a **swipe card**: swipe **right = accept**, **left = reject**
+     (buttons too, for accessibility). Card shows the other's photo, first name, age, sun/moon/rising,
+     Chinese animal, relationship status, looking-for, compatibility.
+     Therefore profile photos + first name ARE shown on the match card before mutual acceptance
+     (photos must be approved by moderation first; unmoderated → zodiac art instead).
+   - When **both swipe right** they are matched: both get a "It's a Conjunction!" notification and
+     the **chat opens automatically** (full message chat, not just one intro: text messages,
+     timestamps, read state, typing optional; each message moderated by TypeSafe before delivery;
+     unmatch / block / report from the chat). Left swipe is silent; the pair is not shown again for
+     30 days. Pending (unanswered) matches stay in a Matches inbox for 24 h.
+   - Backend: `encounters` gain `kind`, `swipeA/swipeB` (`right|left|null`); callable `swipe(encounterId,
+     direction)` replaces `connect`; `chats/{pairId}/messages` with `sendMessage` callable;
+     `unmatch`. `users/{uid}` gains gender, seeking, relationshipStatus, lookingFor, birthYear (age
+     shown; 18+ enforced).
+
 6. **Profile.** Display name, profile photo (moderated, stored in backend storage, only served to
    mutual friends), short bio, birth data (birth data stays on device; only derived chart summary —
    signs/degrees needed for compatibility, birth date for twins check — is uploaded when Nearby is on).
