@@ -90,6 +90,63 @@ placeholder until the owner picks one from `docs/NAMES.md`; keep it in one place
      `unmatch`. `users/{uid}` gains gender, seeking, relationshipStatus, lookingFor, birthYear (age
      shown; 18+ enforced).
 
+5c. **Serverless peer-to-peer (owner decision 2026-11-03 — overrides every server/backend part of
+   5, 5b, 6 and "Backend" below).** There is no server. Phones find and talk to each other directly
+   over **Bluetooth Low Energy**, the one radio both Android and iOS let apps use to discover and
+   talk to the other platform, in the background, without pairing. Exact wire format:
+   `docs/P2P_PROTOCOL.md` (single source of truth, with test vectors in `testdata/p2p_wire.json`).
+   - **Transport.** Every phone in Nearby mode is both a GATT peripheral (advertising one 128-bit
+     service UUID, `7C0A1E5F-6A3B-4E2D-9F11-C0471C710001`) and a central (scanning for that UUID).
+     GATT service with two characteristics: `…0002 INBOX` (write-with-response; the central sends
+     frames) and `…0003 OUTBOX` (notify; the peripheral sends frames). Request the largest MTU
+     (517). Messages are framed (message id, sequence, total) so any size works; JSON payloads,
+     UTF-8. One link per peer pair: if both connect to each other, keep the link where the side with
+     the smaller ephemeral id is the central and close the other.
+   - **Proximity.** "Close by" = RSSI ≥ −80 dBm (tunable) seen in ≥ 2 scans within 30 s. The UI
+     says "nearby", never a distance.
+   - **Privacy.** Advertisements carry only the service UUID: no name, no id. After connecting, peers
+     exchange a `hello` with a random **ephemeral id** (rotates every 15 min and on every Nearby
+     toggle) and the compatibility profile + match-card fields (first name, age, sun/moon/rising
+     signs, Chinese animal, relationship status, looking-for, gender, seeking, the planet longitudes
+     that `Compatibility.score` needs, birth date for the twins check, photo hash). Birth place and
+     exact birth time are never sent. Disclose this in the consent copy.
+   - **Matching** runs on **both** phones with the shared engines (`MatchFilter.kind`,
+     `Compatibility.score`, twins); both get the same number because the engines have golden
+     parity. A qualifying peer triggers the match animation (foreground) or a **local
+     notification** (background). No match → nothing is shown, nothing kept.
+   - **Swipe.** Each side sends `swipe {right|left}`. Mutual right → both exchange a long-term
+     **identity public key** (P-256, generated on first use, kept in Android Keystore / iOS
+     Keychain) and become friends; the friend record (key, name, photo, card) is stored locally.
+     Left = silent; that peer's identity is hidden for 30 days. Unanswered matches expire after 24 h.
+   - **Photo.** Profile photo (max 640 px, JPEG ≤ 60 KB) is sent over the link with the card.
+     The **receiving** phone screens it on device before showing it (iOS: SensitiveContentAnalysis
+     when enabled; Android: Gemini Nano image prompt when available; otherwise blurred until the user
+     taps "show").
+   - **Chat** after mutual match: end-to-end encrypted (ECDH P-256 → HKDF-SHA256 → AES-256-GCM),
+     sent over the Bluetooth link. Messages to a friend who is out of range are **queued and
+     delivered the next time the two phones are near each other** (store-and-forward); the UI says
+     so plainly. History is stored only on the two phones.
+   - **Recognising friends later.** Friends find each other again by answering a challenge: the
+     `hello` carries `HMAC(identityKey-derived friend secret, ephemeralId)` tags only a friend can
+     match, so strangers can't track anyone.
+   - **Safety without a server.** Block (local, by identity and ephemeral link), snooze, pause
+     Nearby, 18+ gate, on-device screening of incoming chat text with the on-device model (hide
+     and warn on harassment, sexual content, scams, contact-info lures), and **Report** = block +
+     prefilled email to the publisher's support address with the reported card/messages (the only
+     channel to the developer). No messaging before mutual match. Rate-limit inbound frames.
+   - **Background.** Android: foreground service type `connectedDevice` with a persistent
+     notification; permissions `BLUETOOTH_SCAN` (with `neverForLocation`), `BLUETOOTH_ADVERTISE`,
+     `BLUETOOTH_CONNECT`, `POST_NOTIFICATIONS` — **no location permission at all**. iOS:
+     `bluetooth-central` + `bluetooth-peripheral` background modes with state restoration,
+     `NSBluetoothAlwaysUsageDescription`; no location. iOS limitation to document: a backgrounded
+     iPhone advertises only in Apple's "overflow area", which Android cannot see, so two phones
+     find each other when either one is Android or in the foreground, or both are iPhones.
+   - **Firebase, push and the TypeSafe server moderation are removed from the apps.** `backend/`
+     stays in the repo marked "not used (serverless build)".
+   - **Test peer:** `tools/p2p-sim/` — a Python (bleak + bless on BlueZ) implementation of the
+     protocol that runs on this laptop's Bluetooth and acts as a configurable nearby user (e.g.
+     "Aurora"), used to test the phones and as the protocol's reference implementation.
+
 6. **Profile.** Display name, profile photo (moderated, stored in backend storage, only served to
    mutual friends), short bio, birth data (birth data stays on device; only derived chart summary —
    signs/degrees needed for compatibility, birth date for twins check — is uploaded when Nearby is on).
