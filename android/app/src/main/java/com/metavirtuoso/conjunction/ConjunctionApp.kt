@@ -13,6 +13,7 @@ import com.metavirtuoso.conjunction.nearby.NearbyRepository
 import com.metavirtuoso.conjunction.nearby.Notifications
 import com.metavirtuoso.conjunction.palm.PalmScanner
 import com.metavirtuoso.conjunction.tz.TimeZoneGrid
+import com.metavirtuoso.conjunction.tz.ZoneTable
 
 /** Hand-wired dependencies (small app; no DI framework). */
 class AppContainer(context: Context, model: TextModel = GeminiNanoModel()) {
@@ -30,6 +31,14 @@ class AppContainer(context: Context, model: TextModel = GeminiNanoModel()) {
 
     /** Offline lat/lon -> IANA zone grid (about 1 MB; loaded on first use, off the main thread). */
     val timeZones: TimeZoneGrid by lazy { app.assets.open(TimeZoneGrid.ASSET_PATH).use(TimeZoneGrid::read) }
+
+    /** [timeZones], or null when the grid asset is missing or unreadable ([zoneTable] is used then). */
+    val timeZonesOrNull: TimeZoneGrid? by lazy {
+        runCatching { timeZones }.onFailure { android.util.Log.w("Conjunction", "Time-zone grid unavailable", it) }.getOrNull()
+    }
+
+    /** The tz database's zone1970.tab: the fallback zone lookup (nearest reference city). */
+    val zoneTable: ZoneTable by lazy { app.assets.open(ZoneTable.ASSET_PATH).use(ZoneTable::read) }
 }
 
 class ConjunctionApp : Application() {

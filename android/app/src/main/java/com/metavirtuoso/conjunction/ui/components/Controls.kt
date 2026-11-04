@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -121,6 +122,7 @@ fun OrnateTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     minLines: Int = 1,
     isError: Boolean = false,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     OutlinedTextField(
         value = value,
@@ -130,6 +132,7 @@ fun OrnateTextField(
         minLines = minLines,
         isError = isError,
         keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         supportingText = supporting?.let { { Text(it) } },
         textStyle = MaterialTheme.typography.bodyLarge,
         shape = CutCornerShape(8.dp),

@@ -5,6 +5,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import com.metavirtuoso.conjunction.tz.TimeZoneGrid
+import com.metavirtuoso.conjunction.tz.ZoneTable
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalTime
@@ -36,7 +37,7 @@ class PlaceSearchException(message: String) : Exception(message)
 object Places {
     fun geocoderAvailable(): Boolean = Geocoder.isPresent()
 
-    suspend fun search(context: Context, query: String, grid: TimeZoneGrid, date: LocalDate, time: LocalTime?): List<PlaceResult> {
+    suspend fun search(context: Context, query: String, grid: TimeZoneGrid?, table: ZoneTable, date: LocalDate, time: LocalTime?): List<PlaceResult> {
         if (query.isBlank()) return emptyList()
         if (!Geocoder.isPresent()) throw PlaceSearchException("This phone has no place search. Enter coordinates instead.")
         val geocoder = Geocoder(context, Locale.getDefault())
@@ -59,13 +60,22 @@ object Places {
         }
         return withContext(Dispatchers.Default) {
             addresses.filter { it.hasLatitude() && it.hasLongitude() }
-                .map { a -> resolve(label(a), a.latitude, a.longitude, grid, date, time) }
+                .map { a -> resolve(label(a), a.latitude, a.longitude, grid, table, date, time, a.countryCode) }
                 .distinctBy { it.name }
         }
     }
 
-    fun resolve(name: String, lat: Double, lon: Double, grid: TimeZoneGrid, date: LocalDate, time: LocalTime?): PlaceResult {
-        val zone = grid.zoneFor(lat, lon)
+    /**
+     * The zone for a place: the offline [grid] when it is available and agrees with the geocoded
+     * country, otherwise the nearest tz-database reference city in that country ([table]).
+     */
+    fun resolve(
+        name: String, lat: Double, lon: Double, grid: TimeZoneGrid?, table: ZoneTable,
+        date: LocalDate, time: LocalTime?, countryCode: String? = null,
+    ): PlaceResult {
+        val fromGrid = grid?.let { runCatching { it.zoneFor(lat, lon) }.getOrNull() }
+            ?.takeIf { countryCode == null || table.zoneBelongsTo(it.id, countryCode) }
+        val zone = fromGrid ?: table.zoneFor(lat, lon, countryCode)
         return PlaceResult(name, lat, lon, zone.id, offsetLabel(zone, date, time))
     }
 
