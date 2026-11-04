@@ -17,7 +17,7 @@ from typing import Optional
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from . import canonjson, compat, crypto
+from . import canonjson, compat, crypto, instagram
 from . import messages as M
 from .link import CENTRAL, Friend, Link, LocalProfile, Policy, dedup_keep
 
@@ -40,6 +40,7 @@ class Persona:
     photo_h: int
     auto_swipe: Optional[str]
     replies: list
+    instagram: Optional[str] = None   # normalised handle shared with matches (SPEC 5d.6), or None
 
     @staticmethod
     def load(path: str) -> "Persona":
@@ -59,8 +60,13 @@ class Persona:
                  "lookingFor": p["lookingFor"]}
         # Validate through the real decoder so a bad persona fails early.
         M.decode(M.encode(M.hello("0" * 32, match, p["compat"], [])))
+        ig = None
+        if p.get("instagram"):
+            ig = instagram.normalize(p["instagram"])
+            if ig is None:
+                raise SystemExit(f"{path}: 'instagram' is not a valid Instagram username")
         return Persona(path, p["firstName"], p.get("bio"), match, p["compat"], photo, w or 0, h or 0,
-                       p.get("autoSwipe"), p.get("replies") or ["Received."])
+                       p.get("autoSwipe"), p.get("replies") or ["Received."], ig)
 
     @property
     def key(self) -> str:
@@ -97,6 +103,9 @@ class Store:
         self.outbox = self._load_json(self.outbox_path, {})  # friend ik hex -> [ {id, ts, text} ]
         self.hidden_path = os.path.join(self.dir, "hidden.json")
         self.hidden = self._load_json(self.hidden_path, {})  # fingerprint -> until epoch ms
+        # Instagram `profile` per friend (ik hex): {"share": ShareState json, "peerIg": str|None, "peerIgRev": int}
+        self.profiles_path = os.path.join(self.dir, "profiles.json")
+        self.profiles = self._load_json(self.profiles_path, {})
 
     def _load_identity(self) -> crypto.KeyPair:
         p = os.path.join(self.dir, "identity.pem")
@@ -132,6 +141,35 @@ class Store:
         self.friends.insert(0, Friend(ik, fs, name))
         self._save(self.friends_path, [{"ik": f.ik.hex(), "fs": f.fs.hex(), "name": f.name, "blocked": f.blocked}
                                        for f in self.friends])
+
+    def share_state(self, friend_ik: bytes, handle) -> "instagram.ShareState":
+        """Sender state toward this friend, updated to the persona's current handle (sharing on)."""
+        rec = self.profiles.get(friend_ik.hex())
+        eff = instagram.ShareState.effective(handle, True)
+        st = instagram.ShareState(eff) if rec is None else instagram.ShareState.from_json(rec.get("share")).with_effective(eff)
+        self.set_share_state(friend_ik, st)
+        return st
+
+    def set_share_state(self, friend_ik: bytes, st: "instagram.ShareState"):
+        rec = self.profiles.setdefault(friend_ik.hex(), {"peerIg": None, "peerIgRev": -1})
+        rec["share"] = st.to_json()
+        self._save(self.profiles_path, self.profiles)
+
+    def profile_acked(self, msg_id: str) -> bool:
+        for k, rec in self.profiles.items():
+            st = instagram.ShareState.from_json(rec.get("share"))
+            if st.in_flight_id == msg_id:
+                self.set_share_state(bytes.fromhex(k), st.on_ack(msg_id))
+                return True
+        return False
+
+    def peer_profile(self, friend_ik: bytes, rev: int, ig) -> bool:
+        rec = self.profiles.setdefault(friend_ik.hex(), {"peerIg": None, "peerIgRev": -1})
+        if not instagram.accept_received(rec.get("peerIgRev", -1), rev):
+            return False
+        rec["peerIg"], rec["peerIgRev"] = ig, rev
+        self._save(self.profiles_path, self.profiles)
+        return True
 
     def queue(self, friend_ik: bytes, text: str):
         self.outbox.setdefault(friend_ik.hex(), []).append(
@@ -314,12 +352,19 @@ class SimPeer:
             name = (ev["card"] or {}).get("firstName", "?")
             self.store.add_friend(ev["peer_ik"], ev["friend_secret"], name)
             log.info("[%s] IT'S A CONJUNCTION with %s; safety code %s; friend stored", handle, name, ev["safety_code"])
+            self._send_profile(handle, link, ev["peer_ik"])
             if self.greet:
                 self._send_chat(handle, link, f"Hi {name}! {self.persona.first_name} here.")
             self._flush_outbox(handle, link, ev["peer_ik"])
         elif t == "friend_nearby":
             log.info("[%s] friend %s is nearby (recognised by tag, key confirmed)", handle, ev["friend"].name)
+            self._send_profile(handle, link, ev["peer_ik"])
             self._flush_outbox(handle, link, ev["peer_ik"])
+        elif t == "profile":
+            m = ev["message"]
+            stored = self.store.peer_profile(link.peer_ik, m["rev"], m["ig"])
+            log.info("[%s] profile rev %d: instagram %s%s", handle, m["rev"],
+                     "@" + m["ig"] if m["ig"] else "not shared", "" if stored else " (old rev, ignored)")
         elif t == "chat":
             m = ev["message"]
             self.store.append_chat({"dir": "in", "peer": link.peer_ik.hex()[:16], **m})
@@ -335,6 +380,9 @@ class SimPeer:
             else:
                 log.info("[%s] read receipt for %s", handle, m["refs"])
         elif t == "delivered":
+            if self.store.profile_acked(ev["id"]):
+                log.info("[%s] profile acked", handle)
+                return
             self.store.delivered(ev["id"])
             log.info("[%s] delivered %s", handle, ev["id"])
         elif t == "protocol_error":
@@ -366,6 +414,15 @@ class SimPeer:
         self.store.append_chat({"dir": "out", "peer": link.peer_ik.hex()[:16], "id": mid, "text": text})
         log.info("[%s] CHAT -> %r", handle, text)
         self._after(handle, link)
+
+    def _send_profile(self, handle: str, link: Link, ik: bytes):
+        """SPEC 5d.6: the first chat on a SECURE link, when the friend has not acked the current rev."""
+        st = self.store.share_state(ik, self.persona.instagram)
+        if not st.needs_send:
+            return
+        mid = link.send_profile(st.rev, st.value)
+        self.store.set_share_state(ik, st.sent(mid))
+        log.info("[%s] PROFILE -> rev %d, instagram %s", handle, st.rev, "@" + st.value if st.value else "not shared")
 
     def _flush_outbox(self, handle: str, link: Link, ik: bytes):
         for m in list(self.store.outbox.get(ik.hex(), [])):

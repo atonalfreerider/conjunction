@@ -190,6 +190,43 @@ object Compatibility {
         return PairScore(score, best, aspectPart)
     }
 
+    /**
+     * One cross-aspect of the synastry bi-wheel (SPEC 5d.4): [pointA] of the first profile ("me",
+     * inner ring), [pointB] of the second ("them", outer ring), the in-orb [aspect], its deviation
+     * from exact in centidegrees ([orbCentideg], 0..orb), the PAIRS [weight] and the [pairScore] score
+     * (permille, -1000..1000). Gold lines: conjunction/sextile/trine; rose-copper: square/opposition.
+     */
+    data class SynastryLine(
+        val pointA: Point,
+        val pointB: Point,
+        val aspect: SynastryAspect,
+        val orbCentideg: Int,
+        val weight: Int,
+        val score: Int,
+    ) {
+        val isHarmonious: Boolean get() = aspect.name == "conjunction" || aspect.name == "sextile" || aspect.name == "trine"
+    }
+
+    /**
+     * Every [PAIRS] pair with both longitudes present and an in-orb aspect, ordered by |score x weight|
+     * descending, then PAIRS order (golden `synastry` in testdata/golden_compat.json).
+     */
+    fun synastry(a: CompatProfile, b: CompatProfile): List<SynastryLine> {
+        val lines = ArrayList<Pair<Int, SynastryLine>>()
+        for ((i, pair) in PAIRS.withIndex()) {
+            val (pa, pb, w) = pair
+            val la = centidegrees(lon(a, pa) ?: continue)
+            val lb = centidegrees(lon(b, pb) ?: continue)
+            val ps = pairScore(la, lb)
+            val asp = ps.aspect ?: continue
+            val diff = Math.abs(la - lb)
+            val sep = if (diff > 18_000) 36_000 - diff else diff
+            lines += i to SynastryLine(pa, pb, asp, Math.abs(sep - asp.angle), w, ps.score)
+        }
+        return lines.sortedWith(compareByDescending<Pair<Int, SynastryLine>> { Math.abs(it.second.score * it.second.weight) }.thenBy { it.first })
+            .map { it.second }
+    }
+
     fun chineseRelation(a: ChineseAnimal, b: ChineseAnimal): ChineseRelation {
         val x = a.ordinal
         val y = b.ordinal

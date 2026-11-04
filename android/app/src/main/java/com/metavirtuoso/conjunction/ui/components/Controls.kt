@@ -91,8 +91,8 @@ fun GoldSwitchRow(checked: Boolean, onChange: (Boolean) -> Unit, title: String, 
 /** Single-choice row of engraved "tablet" chips (radio semantics). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun <T> ChoiceChips(options: List<Pair<T, String>>, selected: T?, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
-    FlowRow(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+fun <T> ChoiceChips(options: List<Pair<T, String>>, selected: T?, onSelect: (T) -> Unit, modifier: Modifier = Modifier, centered: Boolean = false) {
+    FlowRow(modifier.fillMaxWidth(), horizontalArrangement = if (centered) Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally) else Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         options.forEach { (value, label) ->
             val isSelected = value == selected
             val shape = CutCornerShape(8.dp)
@@ -115,7 +115,7 @@ fun <T> ChoiceChips(options: List<Pair<T, String>>, selected: T?, onSelect: (T) 
 fun OrnateTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
+    label: String?,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
     supporting: String? = null,
@@ -123,11 +123,14 @@ fun OrnateTextField(
     minLines: Int = 1,
     isError: Boolean = false,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    placeholder: String? = null,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        // No label = the placeholder is the always-visible hint (no floating label over the art).
+        label = label?.let { { Text(it) } },
+        placeholder = placeholder?.let { { Text(it, color = Palette.MoonstoneDim.copy(alpha = 0.7f)) } },
         singleLine = singleLine,
         minLines = minLines,
         isError = isError,
@@ -144,8 +147,8 @@ fun OrnateTextField(
             cursorColor = Palette.GoldPale,
             focusedTextColor = Palette.Moonstone,
             unfocusedTextColor = Palette.Moonstone,
-            focusedContainerColor = Palette.Midnight.copy(alpha = 0.6f),
-            unfocusedContainerColor = Palette.Midnight.copy(alpha = 0.45f),
+            focusedContainerColor = Palette.Midnight.copy(alpha = 0.85f),
+            unfocusedContainerColor = Palette.Midnight.copy(alpha = 0.8f),
         ),
         modifier = modifier.fillMaxWidth(),
     )

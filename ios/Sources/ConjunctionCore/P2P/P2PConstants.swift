@@ -36,6 +36,10 @@ public enum P2PConstants {
     public static let maxBioBytes = 280
     public static let maxChatTextBytes = 4000
     public static let maxReadRefs = 64
+    /// Chat `profile.rev` (SPEC 5d.6): 0..2147483647.
+    public static let maxProfileRev = Int(Int32.max)
+    /// Chat `profile.ig`: 1..30 bytes of `[a-z0-9._]`.
+    public static let maxInstagramBytes = 30
     public static let maxPhotoSide = 640
 
     public static let friendTagLen = 8

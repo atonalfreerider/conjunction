@@ -27,6 +27,14 @@ class ModelUnavailableException(message: String, cause: Throwable? = null) : Exc
 interface TextModel {
     suspend fun availability(): ModelAvailability
     suspend fun generate(prompt: String, image: Bitmap? = null, onStatus: (String) -> Unit = {}): GeneratedText
+
+    /**
+     * One generation only when the model is ready now: never starts a download (onboarding, SPEC
+     * 5d.5). [temperature] null = the model's default ("Another" re-rolls a bio at 0.9).
+     */
+    suspend fun generateIfReady(prompt: String, image: Bitmap? = null, temperature: Float? = null): GeneratedText? =
+        if (availability() == ModelAvailability.Available) generate(prompt, image) else null
+
     fun close()
 }
 
@@ -87,6 +95,27 @@ class GeminiNanoModel : TextModel {
             GeneratedText(firstText(response.candidates.map { it.text }), usedImage = false)
         } catch (e: GenAiException) {
             throw ModelUnavailableException(e.message ?: "Gemini Nano could not write a reading.", e)
+        }
+    }
+
+    override suspend fun generateIfReady(prompt: String, image: Bitmap?, temperature: Float?): GeneratedText? {
+        if (availability() != ModelAvailability.Available) return null
+        return lock.withLock {
+            try {
+                val t = temperature ?: TEMPERATURE
+                if (image != null && !imagesRejected) {
+                    try {
+                        val r = model.generateContent(generateContentRequest(ImagePart(image), TextPart(prompt)) { this.temperature = t; topK = TOP_K })
+                        return@withLock GeneratedText(firstText(r.candidates.map { it.text }), usedImage = true)
+                    } catch (e: GenAiException) {
+                        imagesRejected = true
+                    }
+                }
+                val r = model.generateContent(generateContentRequest(TextPart(prompt)) { this.temperature = t; topK = TOP_K })
+                GeneratedText(firstText(r.candidates.map { it.text }), usedImage = false)
+            } catch (e: GenAiException) {
+                null
+            }
         }
     }
 

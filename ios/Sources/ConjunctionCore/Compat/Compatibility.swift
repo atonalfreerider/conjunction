@@ -241,6 +241,40 @@ public enum Compatibility {
 
     private static func elementIndex(_ e: Element) -> Int { Element.allCases.firstIndex(of: e)! }
 
+    /// One cross-aspect of the synastry bi-wheel (SPEC 5d.4): `pointA` of the first profile ("me",
+    /// inner ring), `pointB` of the second ("them", outer ring), the in-orb `aspect`, its deviation from
+    /// exact in centidegrees (`orbCentideg`, 0..orb), the pairs `weight` and the `pairScore` score
+    /// (permille, -1000..1000). Gold lines: conjunction/sextile/trine; rose-copper: square/opposition.
+    public struct SynastryLine: Hashable, Sendable {
+        public let pointA: Point
+        public let pointB: Point
+        public let aspect: SynastryAspect
+        public let orbCentideg: Int
+        public let weight: Int
+        public let score: Int
+
+        public var isHarmonious: Bool { ["conjunction", "sextile", "trine"].contains(aspect.name) }
+    }
+
+    /// Every `pairs` pair with both longitudes present and an in-orb aspect, ordered by
+    /// |score x weight| descending, then pairs order (golden `synastry` in testdata/golden_compat.json).
+    public static func synastry(_ a: CompatProfile, _ b: CompatProfile) -> [SynastryLine] {
+        var lines: [(Int, SynastryLine)] = []
+        for (i, (pa, pb, w)) in pairs.enumerated() {
+            guard let da = lon(a, pa), let db = lon(b, pb) else { continue }
+            let la = centidegrees(da), lb = centidegrees(db)
+            let ps = pairScore(la, lb)
+            guard let asp = ps.aspect else { continue }
+            let diff = abs(la - lb)
+            let sep = diff > 18_000 ? 36_000 - diff : diff
+            lines.append((i, SynastryLine(pointA: pa, pointB: pb, aspect: asp, orbCentideg: abs(sep - asp.angle), weight: w, score: ps.score)))
+        }
+        return lines.sorted { x, y in
+            let kx = abs(x.1.score * x.1.weight), ky = abs(y.1.score * y.1.weight)
+            return kx != ky ? kx > ky : x.0 < y.0
+        }.map { $0.1 }
+    }
+
     public static func chineseRelation(_ a: ChineseAnimal, _ b: ChineseAnimal) -> ChineseRelation {
         let x = a.ordinal, y = b.ordinal
         let d = abs(x - y)

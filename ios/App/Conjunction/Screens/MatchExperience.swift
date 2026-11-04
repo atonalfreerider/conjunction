@@ -18,7 +18,9 @@ struct MatchExperience: View {
     let onOpenChat: (ChatTarget) -> Void
     @State private var stage: CardStage
     @State private var blurb: String?
-    @State private var safety: StoredEncounter?
+    @State private var safety: NearbyScreen.SafetySheet?
+    @State private var tips = false
+    @State private var compat: CompatTarget?
 
     init(event: NearbyEvent, skipAnimation: Bool = false, onDismiss: @escaping () -> Void, onOpenChat: @escaping (ChatTarget) -> Void) {
         self.event = event
@@ -36,7 +38,8 @@ struct MatchExperience: View {
         ZStack {
             Palette.midnight.ignoresSafeArea()
             if let friendId {
-                ConjunctionPopup(friendId: friendId, card: card, onOpenChat: onOpenChat, onClose: onDismiss)
+                ConjunctionPopup(friendId: friendId, card: card, onOpenChat: onOpenChat,
+                                 onOpenCompat: { compat = CompatTarget(key: friendId) }, onClose: onDismiss)
             } else if let card, card.mySwipe != "left" {
                 if stage == .animating && card.mySwipe == nil {
                     MatchAnimation(card: card, mySign: app.charts?.natal.sunSign, myPhoto: app.ownerPhotoURL,
@@ -49,7 +52,18 @@ struct MatchExperience: View {
                                       repo.swipe(card.fingerprint, accept: accept)
                                       if accept { stage = .waiting } else { onDismiss() }
                                   },
-                                  onSafety: { safety = card }, onClose: onDismiss)
+                                  onChart: { compat = CompatTarget(key: card.fingerprint) },
+                                  onMenu: { action in
+                                      switch action {
+                                      case .snooze:
+                                          repo.snooze(card.fingerprint)
+                                          onDismiss()
+                                      case .tips: tips = true
+                                      case .block: safety = NearbyScreen.SafetySheet(target: .stranger(card), mode: "block")
+                                      case .report: safety = NearbyScreen.SafetySheet(target: .stranger(card), mode: "report")
+                                      }
+                                  },
+                                  onClose: onDismiss)
                 }
             } else {
                 VStack(spacing: 16) {
@@ -61,8 +75,12 @@ struct MatchExperience: View {
             }
         }
         .task(id: card?.fingerprint) { await loadBlurb() }
-        .sheet(item: $safety) { c in
-            SafetyActionsSheet(target: .stranger(c)) { closed in if closed { onDismiss() } }
+        .sheet(item: $safety) { s in
+            SafetyActionsSheet(target: s.target, initialMode: s.mode) { closed in if closed { onDismiss() } }
+        }
+        .sheet(isPresented: $tips) { SafetyTipsSheet() }
+        .fullScreenCover(item: $compat) { target in
+            CompatibilityScreen(key: target.key, onClose: { compat = nil })
         }
     }
 
@@ -70,10 +88,13 @@ struct MatchExperience: View {
         VStack(spacing: 12) {
             Image("popup_match_nearby").resizable().scaledToFit().frame(width: 220, height: 220).accessibilityHidden(true)
             GoldText("Your star is sent", style: .headlineMedium)
-            Text("If \(card.firstName ?? "they") says yes too, you'll both get a notification and the chat opens. " +
-                 "If you're out of range now, your answer goes the next time your phones are near each other (within 24 hours).")
+            Text(L10n.format(AppText.nearbyWaitingFor, card.firstName ?? "them"))
                 .typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            GoldButton("Done", fullWidth: false, action: onDismiss).padding(.top, 20)
+            GhostButton(ChartWheelGeometry.textGlyph("☌") + " " + AppText.matchCardChart, fullWidth: false) {
+                compat = CompatTarget(key: card.fingerprint)
+            }
+            .padding(.top, 10)
+            GoldButton(AppText.onbDone, fullWidth: false, action: onDismiss).padding(.top, 10)
         }
         .padding(32)
     }
@@ -293,14 +314,48 @@ struct Medallion: View {
 
 // MARK: - Swipe card
 
-/// The swipe card: right = accept, left = pass, plus buttons and accessibility actions.
-struct SwipeCardPage: View {
+/// The face of a match card (SPEC 5d.3): photo (or zodiac art) with the score medallion, first
+/// name, age, Sun / Moon / Rising, Chinese animal, relationship status, looking-for, kind chip.
+struct MatchCardFace: View {
     let card: StoredEncounter
     let photo: URL?
-    let blurb: String?
-    let onSwipe: (Bool) -> Void
-    let onSafety: () -> Void
-    let onClose: () -> Void
+    var blurb: String?
+    var photoSize: CGFloat?
+
+    var body: some View {
+        VStack(spacing: 4) {
+            ScreenedPhoto(url: photo, screening: card.photoScreening, placeholder: Art.signKey(card.sun))
+                .frame(width: photoSize, height: photoSize)
+                .aspectRatio(1, contentMode: .fit)
+                .clipShape(Circle())
+                .overlay(alignment: .bottomTrailing) { ScoreMedallion(total: card.total) }
+                .accessibilityLabel(photo != nil ? "Photo of \(card.firstName ?? "your match")" : "\(CardText.sign(card.sun)) artwork")
+            GoldText((card.exactTwin ? "Exact twin · " : card.birthdayTwin ? "Birthday twin · " : "")
+                     + "\(card.firstName ?? "Someone nearby")" + (card.age > 0 ? ", \(card.age)" : ""), style: .headlineSmall)
+                .padding(.top, 8)
+            Text(CardText.signsLine(sun: card.sun, moon: card.moon, rising: card.rising))
+                .typeStyle(.bodyMedium).foregroundStyle(Palette.goldPale).multilineTextAlignment(.center)
+            Text([CardText.animal(card.chineseAnimal), CardText.relationship(card.relationship), CardText.lookingFor(card.lookingFor)]
+                .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
+                .typeStyle(.bodySmall).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
+            KindChip(kind: card.kind).padding(.top, 6)
+            if let bio = card.bio {
+                Text("“\(bio)”").typeStyle(.bodySmall).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center).lineLimit(2)
+                    .padding(.top, 6)
+            }
+            if let blurb { Text(blurb).typeStyle(.bodySmall).foregroundStyle(Palette.moonstoneDim).multilineTextAlignment(.center).lineLimit(3) }
+        }
+    }
+}
+
+/// A swipeable framed card: right = accept, left = pass, with the hint stamps; accessibility
+/// actions for both. Buttons Pass / ☌ Chart / Accept under it.
+struct SwipeableMatchCard: View {
+    let card: StoredEncounter
+    let photo: URL?
+    let onAnswer: (Bool) -> Void
+    let onChart: () -> Void
+    var blurb: String?
     @State private var offsetX: CGFloat = 0
     @State private var answered = false
     private let threshold: CGFloat = 120
@@ -309,80 +364,51 @@ struct SwipeCardPage: View {
         guard !answered else { return }
         answered = true
         withAnimation(.easeIn(duration: 0.32)) { offsetX = accept ? threshold * 4 : -threshold * 4 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { onSwipe(accept) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { onAnswer(accept) }
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                HStack {
-                    GhostButton("Close", fullWidth: false, action: onClose)
-                    Spacer()
-                    GhostButton("Safety", color: Palette.roseCopper, fullWidth: false, action: onSafety)
-                }
-                cardView
-                    .aspectRatio(2.0 / 3.0, contentMode: .fit)
-                    .frame(maxWidth: 420)
-                    .offset(x: offsetX)
-                    .rotationEffect(.degrees(Double(offsetX / 40)))
-                    .gesture(
-                        DragGesture()
-                            .onChanged { if !answered { offsetX = $0.translation.width } }
-                            .onEnded { _ in
-                                if offsetX > threshold { answer(true) } else if offsetX < -threshold { answer(false) } else {
-                                    withAnimation(.spring()) { offsetX = 0 }
-                                }
+        VStack(spacing: 0) {
+            cardView
+                .aspectRatio(0.70, contentMode: .fit)
+                .frame(maxWidth: 420)
+                .offset(x: offsetX)
+                .rotationEffect(.degrees(Double(offsetX / 40)))
+                .gesture(
+                    DragGesture()
+                        .onChanged { if !answered { offsetX = $0.translation.width } }
+                        .onEnded { _ in
+                            if offsetX > threshold { answer(true) } else if offsetX < -threshold { answer(false) } else {
+                                withAnimation(.spring()) { offsetX = 0 }
                             }
-                    )
-                    .padding(.top, 10)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Match card for \(card.firstName ?? "someone nearby"), \(card.total) percent compatible. Swipe right to accept, left to pass.")
-                    .accessibilityAction(named: L10n.matchCardAccept) { answer(true) }
-                    .accessibilityAction(named: L10n.matchCardReject) { answer(false) }
-                FinePrint(L10n.matchCardAccessibilityHint, alignment: .center).padding(.top, 8)
-                HStack(spacing: 12) {
-                    GhostButton(L10n.matchCardReject, color: Palette.roseCopper, enabled: !answered) { answer(false) }
-                    GoldButton(L10n.matchCardAccept, enabled: !answered) { answer(true) }
-                }
-                .padding(.top, 12)
-                if !card.highlights.isEmpty {
-                    OrnatePanel {
-                        Text("WHY YOUR STARS ALIGN").typeStyle(.titleSmall).foregroundStyle(Palette.gold)
-                        ForEach(card.highlights, id: \.self) { StarBullet(text: $0) }
-                    }
-                    .padding(.top, 14)
-                }
-                FinePrint(L10n.matchCardEntertainmentNote, alignment: .center).padding(.top, 10)
+                        }
+                )
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Match card for \(card.firstName ?? "someone nearby"), \(card.total) percent compatible.")
+                .accessibilityHint(L10n.matchCardAccessibilityHint)
+                .accessibilityAction(named: L10n.matchCardAccept) { answer(true) }
+                .accessibilityAction(named: L10n.matchCardReject) { answer(false) }
+            HStack(spacing: 8) {
+                GhostButton(L10n.matchCardReject, color: Palette.roseCopper, enabled: !answered) { answer(false) }
+                GhostButton(ChartWheelGeometry.textGlyph("☌") + " " + AppText.matchCardChart, action: onChart)
+                GoldButton(L10n.matchCardAccept, enabled: !answered) { answer(true) }
             }
-            .padding(16)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(maxWidth: 420)
+            .padding(.top, 10)
         }
-        .background(Palette.midnight.ignoresSafeArea())
     }
 
     private var cardView: some View {
         ZStack {
             LinearGradient(colors: [Palette.inkViolet, Palette.midnight], startPoint: .top, endPoint: .bottom).padding(12)
-            VStack(spacing: 4) {
-                ScreenedPhoto(url: photo, screening: card.photoScreening, placeholder: Art.signKey(card.sun))
-                    .aspectRatio(1, contentMode: .fit)
-                    .clipShape(Circle())
-                    .accessibilityLabel(photo != nil ? "Photo of \(card.firstName ?? "your match")" : "\(CardText.sign(card.sun)) artwork")
-                GoldText("\(card.firstName ?? "Someone nearby")" + (card.age > 0 ? ", \(card.age)" : ""), style: .headlineSmall)
-                    .padding(.top, 8)
-                Text(CardText.signsLine(sun: card.sun, moon: card.moon, rising: card.rising))
-                    .typeStyle(.bodyMedium).foregroundStyle(Palette.goldPale).multilineTextAlignment(.center)
-                Text([CardText.animal(card.chineseAnimal), CardText.relationship(card.relationship), CardText.lookingFor(card.lookingFor)]
-                    .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .typeStyle(.bodySmall).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-                Text("\(card.total)% · \(card.kind == "dating" ? "Dating match" : "Friends match")")
-                    .typeStyle(.titleMedium).foregroundStyle(Palette.gold).padding(.top, 6)
-                if let bio = card.bio {
-                    Text("“\(bio)”").typeStyle(.bodySmall).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center).lineLimit(3)
-                }
-                if let blurb { Text(blurb).typeStyle(.bodySmall).foregroundStyle(Palette.moonstoneDim).multilineTextAlignment(.center) }
-                Spacer(minLength: 0)
+            GeometryReader { geo in
+                MatchCardFace(card: card, photo: photo, blurb: blurb,
+                              photoSize: min(geo.size.width * 0.86, geo.size.height * 0.55))
+                    .frame(width: geo.size.width)
             }
-            .padding(.horizontal, 30).padding(.vertical, 36)
+            .padding(.horizontal, 34).padding(.vertical, 38)
             Image("frame_swipe_card").resizable().allowsHitTesting(false)
             let accept = min(max(offsetX / threshold, 0), 1)
             let reject = min(max(-offsetX / threshold, 0), 1)
@@ -400,50 +426,81 @@ struct SwipeCardPage: View {
     }
 }
 
+/// The full-screen swipe card after the match animation (popup / notification).
+struct SwipeCardPage: View {
+    let card: StoredEncounter
+    let photo: URL?
+    let blurb: String?
+    let onSwipe: (Bool) -> Void
+    let onChart: () -> Void
+    let onMenu: (CardMenuAction) -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                HStack {
+                    GhostButton("Close", fullWidth: false, action: onClose)
+                    Spacer()
+                    CardMenu(onAction: onMenu)
+                }
+                SwipeableMatchCard(card: card, photo: photo, onAnswer: onSwipe, onChart: onChart, blurb: blurb)
+                    .padding(.top, 10)
+                FinePrint(L10n.matchCardAccessibilityHint, alignment: .center).padding(.top, 8)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+        }
+        .background(Palette.midnight.ignoresSafeArea())
+    }
+}
+
 // MARK: - It's a Conjunction!
 
-/// The friend's photo pops up with an intro box; the message is queued if they left already.
+/// "It's a Conjunction!": the friend's photo pops up; Say hi (chat) or See our chart (SPEC 5d.4).
 private struct ConjunctionPopup: View {
     @ObservedObject private var repo = AppModel.shared.nearby
     let friendId: String
     let card: StoredEncounter?
     let onOpenChat: (ChatTarget) -> Void
+    let onOpenCompat: () -> Void
     let onClose: () -> Void
-    @State private var intro = ""
     @State private var pop: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let f = repo.friend(friendId)?.friend
+        let summary = repo.friend(friendId)
+        let f = summary?.friend
         let name = f?.firstName ?? card?.firstName ?? "your match"
         let sun = f?.sun ?? card?.sun
         ZStack {
             Image("popup_its_a_conjunction").resizable().scaledToFill().opacity(0.55).ignoresSafeArea().accessibilityHidden(true)
             ScrollView {
                 VStack(spacing: 12) {
+                    Spacer().frame(height: 24)
                     GoldText("It's a Conjunction!", style: .displaySmall, heading: true)
                     OrnateDivider()
                     if let f, f.photoFile != nil {
                         ScreenedPhoto(url: repo.photoURL(f.photoFile), screening: f.photoScreening, placeholder: Art.signKey(sun))
-                            .frame(width: 180, height: 180).clipShape(Circle()).scaleEffect(pop)
+                            .frame(width: 190, height: 190).clipShape(Circle()).scaleEffect(pop)
                             .accessibilityLabel("Photo of \(name)")
                     } else {
                         Medallion(signArt: Art.signKey(sun), photo: nil, screening: .safe, size: 200).scaleEffect(pop)
                     }
                     GoldText(name, style: .headlineSmall)
-                    if let bio = f?.bio { Text("“\(bio)”").typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center) }
-                    Text(CardText.signsLine(sun: sun, moon: f?.moon ?? card?.moon, rising: f?.rising ?? card?.rising, separator: "   "))
-                        .typeStyle(.titleSmall).foregroundStyle(Palette.goldPale)
-                    Text("You and \(name) both said yes. Say hello.").typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone)
+                    Text("You and \(name) both said yes.").typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone)
                         .multilineTextAlignment(.center)
-                    OrnateTextField(label: "Introduce yourself", text: $intro, multiline: true, minLines: 2, limit: 500)
-                    FinePrint(L10n.chatFirstOpenNotice)
-                    GoldButton("Send & open chat", enabled: !intro.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
-                        repo.sendChat(friendId, intro)
-                        onOpenChat(ChatTarget(friendId: friendId))
+                    if let total = summary?.total ?? card?.total {
+                        Text("\(total)% compatible").typeStyle(.titleMedium).foregroundStyle(Palette.goldPale)
                     }
-                    GhostButton("Open chat") { onOpenChat(ChatTarget(friendId: friendId)) }
-                    GhostButton("Later", action: onClose)
+                    GoldButton(AppText.matchPopupSayHi) { onOpenChat(ChatTarget(friendId: friendId)) }
+                        .frame(maxWidth: 420).padding(.top, 8)
+                    GhostButton(ChartWheelGeometry.textGlyph("☌") + " " + AppText.matchPopupSeeChart, action: onOpenCompat)
+                        .frame(maxWidth: 420)
+                    Button(action: onClose) {
+                        Text("Later").typeStyle(.labelLarge).foregroundStyle(Palette.moonstoneDim).padding(12)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(24)
                 .frame(maxWidth: 640)

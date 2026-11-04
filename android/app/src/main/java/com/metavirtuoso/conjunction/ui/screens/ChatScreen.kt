@@ -3,6 +3,8 @@ package com.metavirtuoso.conjunction.ui.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
@@ -85,9 +85,11 @@ fun ChatScreen(container: AppContainer, target: ChatTarget, onClose: () -> Unit)
     val messages by remember(target.friendId) { repo.messages(target.friendId) }.collectAsState(initial = emptyList())
     var draft by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
-    var safety by remember { mutableStateOf(false) }
+    var safety by remember { mutableStateOf<String?>(null) }
     var tips by remember { mutableStateOf(false) }
     var verify by remember { mutableStateOf(false) }
+    val nav = com.metavirtuoso.conjunction.ui.LocalAppNav.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val list = rememberLazyListState()
     BackHandler(onBack = onClose)
 
@@ -104,26 +106,61 @@ fun ChatScreen(container: AppContainer, target: ChatTarget, onClose: () -> Unit)
 
     StarfieldBackground(dim = 0.7f) {
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
+            // SPEC 5d.8: Back · photo + name (→ Compatibility) · score chip (→ Compatibility) · ⋯
             Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Palette.GoldPale) }
-                ScreenedPhoto(f?.photoPath, f?.photoScreening ?: Screening.SAFE, Art.signKey(f?.sun), contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape).border(1.dp, GoldBrushes.leaf, CircleShape), compact = true)
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    GoldText(name, style = MaterialTheme.typography.titleMedium)
+                Row(
+                    Modifier.weight(1f).clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Compatibility chart") { nav.openCompat(target.friendId) },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ScreenedPhoto(f?.photoPath, f?.photoScreening ?: Screening.SAFE, Art.signKey(f?.sun), contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape).border(1.dp, GoldBrushes.leaf, CircleShape), compact = true)
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        GoldText(name, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            if (f?.inRange == true) "Nearby now" else listOfNotNull(f?.sun?.let { "☉ ${Art.displaySign(it)}" }, f?.moon?.let { "☽ ${Art.displaySign(it)}" }).joinToString("  "),
+                            style = MaterialTheme.typography.bodySmall, color = if (f?.inRange == true) Palette.Gold else Palette.MoonstoneDim,
+                        )
+                    }
+                }
+                f?.total?.let { total ->
                     Text(
-                        if (f?.inRange == true) "Nearby now" else listOfNotNull(f?.sun?.let { "☉ ${Art.displaySign(it)}" }, f?.moon?.let { "☽ ${Art.displaySign(it)}" }).joinToString("  "),
-                        style = MaterialTheme.typography.bodySmall, color = if (f?.inRange == true) Palette.Gold else Palette.MoonstoneDim,
+                        "$total ☌\uFE0E", style = MaterialTheme.typography.titleSmall, color = Palette.Midnight,
+                        modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(GoldBrushes.leaf)
+                            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Compatibility chart") { nav.openCompat(target.friendId) }
+                            .padding(horizontal = 10.dp, vertical = 6.dp).testTag("scoreChip"),
                     )
                 }
-                IconButton(onClick = { verify = true }) { Icon(Icons.Outlined.VerifiedUser, contentDescription = "Safety code", tint = Palette.GoldPale) }
-                IconButton(onClick = { tips = true }) { Text("?", color = Palette.GoldPale, style = MaterialTheme.typography.titleLarge) }
-                IconButton(onClick = { safety = true }, enabled = f != null) { Icon(Icons.Outlined.Shield, contentDescription = stringResource(R.string.chat_block_report), tint = Palette.RoseCopper) }
+                if (f != null) {
+                    FriendMenu(f, onAction = { a ->
+                        when (a) {
+                            FriendMenuAction.SHARE_INSTAGRAM -> scope.launch { repo.setInstagramShare(f.id, !f.igShareOn) }
+                            FriendMenuAction.SAFETY_CODE -> verify = true
+                            FriendMenuAction.UNMATCH -> safety = "unmatch"
+                            FriendMenuAction.BLOCK -> safety = "block"
+                            FriendMenuAction.REPORT -> safety = "report"
+                        }
+                    }, extra = { close ->
+                        f.peerIg?.let { h ->
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("${stringResource(R.string.instagram_chip)} @$h", color = Palette.GoldPale) },
+                                onClick = { close(); com.metavirtuoso.conjunction.data.Instagram.open(context, h) },
+                            )
+                        }
+                        androidx.compose.material3.DropdownMenuItem(text = { Text(stringResource(R.string.menu_safety_tips), color = Palette.Moonstone) }, onClick = { close(); tips = true })
+                    })
+                }
             }
             Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp).background(GoldBrushes.leaf).padding(top = 1.dp))
             LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                item {
-                    FinePrint(stringResource(R.string.chat_first_open_notice), Modifier.fillMaxWidth().padding(bottom = 4.dp))
-                    FinePrint(stringResource(R.string.chat_keep_note, name), Modifier.fillMaxWidth().padding(bottom = 8.dp))
+                // One centred line at the top of a new chat (SPEC 5d.8).
+                if (messages.isEmpty()) item {
+                    Text(
+                        stringResource(R.string.chat_first_open_notice),
+                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic), color = Palette.MoonstoneDim,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 24.dp).testTag("chatNotice"),
+                    )
                 }
                 items(messages, key = { it.id }) { m ->
                     val time = Instant.ofEpochMilli(m.ts).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
@@ -166,27 +203,15 @@ fun ChatScreen(container: AppContainer, target: ChatTarget, onClose: () -> Unit)
             }
         }
     }
-    if (safety && f != null) {
-        SafetyActionsDialog(container, SafetyTarget.friend(f), messages = messages, onDone = { closed ->
-            safety = false
+    val mode = safety
+    if (mode != null && f != null) {
+        SafetyActionsDialog(container, SafetyTarget.friend(f), messages = messages, initialMode = mode, onDone = { closed ->
+            safety = null
             if (closed) onClose()
         })
     }
-    if (tips) LegalDocDialog(LegalDoc.SAFETY, onDismiss = { tips = false })
-    if (verify && f != null) {
-        AlertDialog(
-            onDismissRequest = { verify = false },
-            containerColor = Palette.InkViolet,
-            title = { GoldText("Safety code", style = MaterialTheme.typography.titleLarge) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(f.safetyCode, style = MaterialTheme.typography.headlineSmall, color = Palette.GoldPale)
-                    FinePrint("When you meet, check that $name's phone shows the same digits. If they differ, someone may have interfered when you matched: block and report.")
-                }
-            },
-            confirmButton = { TextButton(onClick = { verify = false }) { Text("CLOSE", color = Palette.Gold) } },
-        )
-    }
+    if (tips) SafetyTipsDialog(container) { tips = false }
+    if (verify && f != null) SafetyCodeDialog(name, f.safetyCode) { verify = false }
 }
 
 @Composable

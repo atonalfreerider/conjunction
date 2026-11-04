@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Document | `TERMS` |
-| Version | 2.0 (draft of 2026-11-03) |
+| Version | 2.1 (draft of 2026-11-04) |
 | Effective date | [EFFECTIVE DATE] |
 | Publisher | MetaVirtuoso, the trade name of [LEGAL ENTITY NAME], [ADDRESS] |
 | Contact | [CONTACT EMAIL] |
@@ -21,8 +21,9 @@ Guidelines and Safety Tips are also part of these Terms.
 
 ## 1. Acceptance
 
-1.1. You accept these Terms by ticking "I agree" in the App during onboarding, or by using the App. The App
-records the version you accepted and when (Waiver, Section 19).
+1.1. You accept these Terms, including the Community Guidelines, by ticking the agreement box and
+tapping **Begin** in the App during onboarding (or another agreement control in the App), or by using
+the App. The App records the version you accepted and when (Waiver, Section 19).
 
 1.2. **You must be at least 18 years old** (or the age of majority where you live, if higher) to use the
 App. By accepting, you confirm that you are, and that you meet the other eligibility requirements in
@@ -225,7 +226,7 @@ conduct), 6.3 (for copies already sent), 6.4, 6.5, 9, 11 to 14, and the Waiver s
 9.1. **Ours.** The App, including its software, design, artwork, text, reading fragments, chart
 graphics, names, logos and trademarks, is owned by MetaVirtuoso or its licensors and is protected by
 intellectual-property laws. Bundled typefaces are used under the SIL Open Font License, and other
-open-source components under their own licences, listed in **Settings → Legal → Open-source
+open-source components under their own licences, listed in **Settings → Privacy & legal → Open-source
 licences**.
 
 9.2. **Licence to you.** Subject to these Terms, we grant you a **limited, personal, non-exclusive,

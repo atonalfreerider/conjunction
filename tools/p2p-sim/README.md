@@ -13,6 +13,7 @@ conjunction_p2p/
   messages.py      message schemas, encode/validate
   crypto.py        P-256 ECDH, HKDF-SHA256, AES-256-GCM, friend tags, safety code
   compat.py        Python port of Compatibility.score + MatchFilter.kind + Age (checked against golden_compat.json)
+  instagram.py     InstagramHandle normalize/isValid + per-friend `profile` ShareState (SPEC 5d.6)
   link.py          transport-free per-link state machine (= Kotlin P2pLink)
   peer.py          persona behaviour: auto-swipe, canned replies, friends/outbox storage, frame log
   ble_peripheral.py  BlueZ GATT server + advertisement over D-Bus (dbus-fast)
@@ -76,7 +77,11 @@ photos (saved to the state dir), the safety code after a mutual match, chats in 
 
 `personas/<name>.json`: `firstName`, `bio`, `gender`, `seeking`, `relationship`, `lookingFor`,
 `bloodType`, `birth` (date, time, lat/lon, zone, place), `compat` (the wire `hello.compat`
-object), `photo` (JPEG next to the file, ≤ 61440 bytes, ≤ 640 px), `autoSwipe`, `replies`.
+object), `photo` (JPEG next to the file, ≤ 61440 bytes, ≤ 640 px), `autoSwipe`, `replies`, and
+optionally `instagram` (a handle or profile link; normalised on load). The persona sends it to each
+friend in a chat `profile` (SPEC 5d.6) as the first message on every SECURE link until that friend
+acks the current revision, and logs the handles friends send it (state in `profiles.json`).
+Aurora has `aurora.stars`.
 
 `compat` is precomputed because the astronomy engines are Kotlin/Swift only. After editing a
 persona's birth data, set `"compat": null` and run `cd android && ./gradlew :core:test`:

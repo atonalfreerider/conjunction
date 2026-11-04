@@ -1,45 +1,35 @@
 import SwiftUI
+import PhotosUI
+import AVFoundation
 import ConjunctionCore
 
-/// First run (Android `OnboardingFlow`): 18+ age gate → waiver / terms / privacy (versioned
-/// acceptance) → birth date and exact time (or "unknown") → birth place (geocoded on the phone,
-/// time zone from the placemark) → blood type (optional) → dating & friends profile (optional,
-/// explicit consent) → Nearby (optional, off by default) → notifications. Strings come from
-/// legal/IN_APP_CONSENT_COPY.md.
+/// UX 2.0 onboarding (SPEC 5d.5; Android `OnboardingFlow`): four screens, Welcome · Your birth
+/// (free text -> confirm chips, the L1 clickwrap line and Begin) · About you (one sentence ->
+/// editable chips, optional) · Your card (photo, bio, Instagram, optional). Only the birth date,
+/// place and L1 are required. No permission prompt during onboarding (the photo picker needs none).
+/// The deterministic parsers fill the chips first; the on-device model only fills chips that are
+/// still empty, only when it is available now, and never blocks a button.
 struct OnboardingFlow: View {
     @EnvironmentObject var app: AppModel
-    @State private var step: OnboardingStep = .welcome
-    @State private var birthTime: LocalTime?
-    @State private var timeUnknown = false
+    @State private var step: OnboardingScreen = .welcome
     @State private var started = false
-
-    private var birthDate: LocalDate {
-        app.profile.birth?.date ?? app.profile.ageGateBirthDate ?? LocalDate.todayInCurrentTimeZone().plusYears(-25)
-    }
 
     private var background: String {
         switch step {
-        case .welcome, .age: return "bg_onboarding_1"
-        case .legal, .birthTime, .birthPlace: return "bg_onboarding_2"
+        case .welcome: return "bg_onboarding_1"
+        case .birth: return "bg_onboarding_2"
         default: return "bg_onboarding_3"
         }
     }
 
     var body: some View {
-        StarfieldBackground(background: background, dim: step == .welcome ? 0.55 : 0.74) {
+        StarfieldBackground(background: background, dim: step == .welcome ? 0.55 : 0.84) {
             Group {
                 switch step {
-                case .welcome: WelcomeStep { go(.age) }
-                case .age: AgeGateStep { go(.legal) }
-                case .legal: LegalStep { go(.birthTime) }
-                case .birthTime:
-                    BirthTimeStep(date: birthDate, time: $birthTime, unknown: $timeUnknown, onDate: nil, progress: 0.35) { go(.birthPlace) }
-                case .birthPlace:
-                    BirthPlaceStep(date: birthDate, time: timeUnknown ? nil : birthTime, progress: 0.5, onBack: { go(.birthTime) }) { go(.blood) }
-                case .blood: BloodStep { go(.profile) }
-                case .profile: DatingProfileStep(onSkip: { go(.notifications) }) { go(.nearby) }
-                case .nearby: NearbyOptInStep { go(.notifications) }
-                case .notifications: NotificationsStep { app.update { $0.onboardingComplete = true } }
+                case .welcome: WelcomeStep { go(.birth) }
+                case .birth: BirthStep { go(.about) }
+                case .about: AboutYouStep(onSkip: { go(.card) }, onNext: { go(.card) })
+                case .card: CardStep(onDone: { app.finishOnboarding() })
                 }
             }
             .id(step)
@@ -48,43 +38,77 @@ struct OnboardingFlow: View {
         .onAppear {
             guard !started else { return }
             started = true
-            step = app.profile.resumeStep
-            birthTime = app.profile.birth?.time
-            timeUnknown = app.profile.birth != nil && app.profile.birth?.time == nil
+            if let resume = app.profile.resumeScreen {
+                step = resume
+            } else {
+                // A user the old flow had taken past the dating step: onboarding is over.
+                app.update { $0.onboardingComplete = true; $0.onboardingStep = nil }
+            }
         }
     }
 
-    private func go(_ next: OnboardingStep) { withAnimation(.easeInOut(duration: 0.35)) { step = next } }
+    private func go(_ next: OnboardingScreen) {
+        withAnimation(.easeInOut(duration: 0.35)) { step = next }
+        app.update { $0.onboardingStep = next.rawValue }
+    }
 }
 
-/// Common page: progress, scrolling content, actions at the bottom.
+/// Page scaffold: 4-dot progress, optional Skip, scrolling content, fixed bottom actions. At
+/// accessibility text sizes the actions (privacy line, clickwrap, Begin) scroll with the content
+/// instead, so a tall clickwrap can never push Begin off screen; their order is unchanged.
 struct StepPage<Content: View, Actions: View>: View {
     let title: String
-    var progress: Double?
+    var stepIndex: Int?
+    var onSkip: (() -> Void)?
     @ViewBuilder var actions: Actions
     @ViewBuilder var content: Content
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(spacing: 0) {
-            if let progress {
-                ProgressView(value: progress).tint(Palette.gold)
-                    .padding(.horizontal, 24).padding(.vertical, 10)
-                    .accessibilityLabel("Setup progress")
+            ZStack {
+                if let stepIndex {
+                    HStack(spacing: 10) {
+                        ForEach(0..<4, id: \.self) { i in
+                            Circle().fill(i <= stepIndex ? Palette.gold : Palette.twilight)
+                                .frame(width: i == stepIndex ? 10 : 8, height: i == stepIndex ? 10 : 8)
+                        }
+                    }
+                    .accessibilityElement()
+                    .accessibilityLabel("Step \(stepIndex + 1) of 4")
+                }
+                if let onSkip {
+                    HStack {
+                        Spacer()
+                        Button(action: onSkip) {
+                            Text(AppText.onbSkip.uppercased()).typeStyle(.labelLarge).foregroundStyle(Palette.goldPale)
+                                .frame(minWidth: 44, minHeight: 44)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
+            .frame(height: 48)
+            .padding(.horizontal, 12)
             ScrollView {
                 VStack(spacing: 14) {
                     GoldText(title, style: .headlineMedium, heading: true)
                     OrnateDivider()
                     content
+                    if typeSize.isAccessibilitySize {
+                        VStack(spacing: 6) { actions }.padding(.top, 10)
+                    }
                 }
-                .padding(.horizontal, 20).padding(.vertical, 12)
+                .padding(.horizontal, 20).padding(.vertical, 4)
                 .frame(maxWidth: 640)
                 .frame(maxWidth: .infinity)
             }
             .scrollDismissesKeyboard(.interactively)
-            VStack(spacing: 10) { actions }
-                .padding(.horizontal, 20).padding(.vertical, 12)
-                .frame(maxWidth: 640)
+            if !typeSize.isAccessibilitySize {
+                VStack(spacing: 6) { actions }
+                    .padding(.horizontal, 20).padding(.vertical, 10)
+                    .frame(maxWidth: 640)
+            }
         }
     }
 }
@@ -99,9 +123,8 @@ private struct WelcomeStep: View {
             GoldText(AppInfo.name, style: .displayMedium, heading: true)
             OrnateDivider().padding(.vertical, 8)
             Text(AppText.tagline).typeStyle(.headlineSmall).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            Text("Your birth chart, Chinese zodiac, blood-type and palm readings — written by the AI on this phone. And, if you choose, the people nearby whose stars align with yours.")
-                .typeStyle(.bodyLarge).foregroundStyle(Palette.moonstoneDim).multilineTextAlignment(.center).padding(.top, 10)
-            GoldButton("Begin", action: onNext).padding(.top, 28)
+            Spacer().frame(height: 36)
+            GoldButton(AppText.onbWelcomeStart, action: onNext)
             Spacer().frame(height: 24)
         }
         .padding(24)
@@ -109,414 +132,262 @@ private struct WelcomeStep: View {
     }
 }
 
-/// Converts between `LocalDate` and the Gregorian `Date` a DatePicker shows (at noon UTC, so no
-/// zone can move it to another day).
-enum PickerDates {
-    static let utc = TimeZone(identifier: "UTC")!
-    static var calendar: Calendar {
-        var c = Calendar(identifier: .gregorian)
-        c.timeZone = utc
-        return c
-    }
+// MARK: - 2. Your birth
 
-    static func date(_ d: LocalDate) -> Date { ZonedDateTime.instant(d, LocalTime(12, 0), utc) }
-    static func local(_ date: Date) -> LocalDate { LocalDate.of(date, utc) }
-
-    static func longText(_ d: LocalDate) -> String {
-        let f = DateFormatter()
-        f.dateStyle = .long
-        f.timeZone = utc
-        return f.string(from: date(d))
-    }
-
-    static func timeText(_ t: LocalTime) -> String {
-        let f = DateFormatter()
-        f.timeStyle = .short
-        f.timeZone = utc
-        return f.string(from: ZonedDateTime.instant(LocalDate(2000, 1, 1), t, utc))
-    }
-}
-
-private struct AgeGateStep: View {
+/// Screen 2: free-text birth entry -> confirm chips (parser first, model fills gaps) -> L1 -> Begin.
+private struct BirthStep: View {
     @EnvironmentObject var app: AppModel
     let onNext: () -> Void
-    @State private var dob: LocalDate?
-    @State private var picking = false
+    let assistant = OnboardingAssistant()
+    let today = LocalDate.todayInCurrentTimeZone()
+    @State private var text = ""
+    @State private var parsed = BirthTextResult(date: nil, time: nil, timeUnknown: false, placeQuery: nil, ambiguousDate: false)
+    @State private var model: BirthExtraction?
+    @State private var askNonce = 0
+    @State private var working = false
+    // Values the person picked with a picker win over anything parsed or suggested.
+    @State private var userDate: LocalDate?
+    @State private var userTime: LocalTime?
+    @State private var userTimeSet = false
+    @State private var userTimeUnknown = false
+    @State private var place: PlaceResult?
+    @State private var placeFromUser = false
+    @State private var candidates: [PlaceResult] = []
+    @State private var searchingPlace = false
+    @State private var separately = false
+    @State private var accepted = false
+    @State private var alreadyAccepted = false
+    @State private var openDoc: LegalDoc?
+    @State private var loaded = false
+
+    private var merged: BirthTextResult { OnboardingExtraction.fillEmpty(parsed, model) }
+    private var date: LocalDate? {
+        userDate ?? merged.date.flatMap { BirthTextParser.isAcceptableDate($0, today: today) ? $0 : nil }
+    }
+    private var timeUnknown: Bool { userTimeSet ? userTimeUnknown : merged.timeUnknown }
+    private var time: LocalTime? { userTimeSet ? userTime : merged.time }
+    private var placeQuery: String? { merged.placeQuery }
 
     var body: some View {
-        StepPage(title: L10n.ageGateTitle, progress: 0.1, actions: {
-            GoldButton(L10n.ageGateContinue, enabled: dob != nil) {
-                guard let date = dob else { return }
-                if !Age.isAdult(date, today: LocalDate.todayInCurrentTimeZone()) {
-                    // Under 18: block this install; the date is not kept.
-                    app.update { $0.ageBlocked = true; $0.ageGateBirthDate = nil }
-                } else {
-                    app.update { $0.ageGateBirthDate = date }
-                    onNext()
-                }
+        StepPage(title: AppText.onbBirthTitle, stepIndex: 1, actions: {
+            if !alreadyAccepted {
+                LinkedText(template: L10n.legalPrivacyLine, links: [(L10n.legalLinkPrivacy, { openDoc = .privacy })])
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ClickwrapRow(checked: $accepted) { openDoc = $0 }
             }
+            GoldButton(L10n.legalBegin, enabled: (accepted || alreadyAccepted) && date != nil && place != nil, action: begin)
         }) {
-            Text(L10n.ageGateBody).typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            OrnatePanel {
-                Text(L10n.ageGateDobLabel.uppercased()).typeStyle(.labelMedium).foregroundStyle(Palette.gold)
-                Button { picking = true } label: {
-                    Text(dob.map(PickerDates.longText) ?? "Tap to choose").typeStyle(.headlineSmall).foregroundStyle(Palette.moonstone)
-                        .padding(.vertical, 10).frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.plain)
-                GhostButton("Choose date", fullWidth: false) { picking = true }
+            if !separately {
+                OrnateTextField(label: "Date, time and place", text: $text, limit: 200, onSubmit: ask,
+                                placeholder: AppText.onbBirthHint, onFocusLost: ask)
             }
-            FinePrint(L10n.ageGateDobNote)
-        }
-        .onAppear { dob = app.profile.ageGateBirthDate }
-        .sheet(isPresented: $picking) {
-            DatePickSheet(title: L10n.ageGateDobLabel, initial: dob ?? LocalDate.todayInCurrentTimeZone().plusYears(-25),
-                          latest: LocalDate.todayInCurrentTimeZone()) { dob = $0 }
-        }
-    }
-}
-
-/// Graphical date picker on ink violet, limited to 1900...[latest].
-struct DatePickSheet: View {
-    let title: String
-    let initial: LocalDate
-    let latest: LocalDate
-    let onPicked: (LocalDate) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var value = Date()
-
-    var body: some View {
-        OrnateSheet(title: title, onClose: { dismiss() }) {
-            DatePicker("", selection: $value, in: PickerDates.date(LocalDate(1900, 1, 1))...PickerDates.date(latest), displayedComponents: .date)
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .environment(\.timeZone, PickerDates.utc)
-                .environment(\.calendar, PickerDates.calendar)
-                .colorScheme(.dark)
-                .frame(maxWidth: .infinity)
-            GoldButton("OK") { onPicked(PickerDates.local(value)); dismiss() }
-            GhostButton("Cancel") { dismiss() }
-        }
-        .presentationDetents([.medium, .large])
-        .onAppear { value = PickerDates.date(initial) }
-    }
-}
-
-private struct LegalStep: View {
-    @EnvironmentObject var app: AppModel
-    let onNext: () -> Void
-    @State private var ageChecked = false
-    @State private var agreeChecked = false
-    @State private var open: LegalDoc?
-
-    var body: some View {
-        StepPage(title: L10n.legalTitle, progress: 0.2, actions: {
-            GoldButton(L10n.legalContinue, enabled: ageChecked && agreeChecked) {
-                for doc in LegalDoc.accepted { if let text = LegalTexts.load(doc) { app.recordDocument(text) } }
-                app.record(ConsentKeys.age18Confirmed, version: ConsentKeys.copyVersion, text: L10n.legalCheckboxAge)
-                app.update { $0.legalAccepted = true }
-                onNext()
-            }
-        }) {
-            OrnatePanel {
-                ForEach([L10n.legalSummary1, L10n.legalSummary2, L10n.legalSummary3, L10n.legalSummary6, L10n.legalSummary4,
-                         L10n.legalSummary5], id: \.self) { StarBullet(text: $0) }
-            }
-            GhostButton(L10n.legalReadWaiver) { open = .waiver }
-            GhostButton(L10n.legalReadTerms) { open = .terms }
-            GhostButton(L10n.legalReadPrivacy) { open = .privacy }
-            GoldCheckRow(checked: $ageChecked, text: L10n.legalCheckboxAge)
-            GoldCheckRow(checked: $agreeChecked, text: L10n.legalCheckboxAgree)
-        }
-        .sheet(item: $open) { LegalDocSheet(doc: $0) }
-    }
-}
-
-/// Birth date (optionally editable), exact birth time or "unknown".
-struct BirthTimeStep: View {
-    let date: LocalDate
-    @Binding var time: LocalTime?
-    @Binding var unknown: Bool
-    var onDate: ((LocalDate) -> Void)?
-    var progress: Double?
-    let onNext: () -> Void
-    @State private var pickingTime = false
-    @State private var pickingDate = false
-
-    var body: some View {
-        StepPage(title: "The moment you arrived", progress: progress, actions: {
-            GoldButton("Continue", enabled: unknown || time != nil, action: onNext)
-        }) {
-            Text("Your birth chart needs the exact hour and minute you were born — the Ascendant moves a whole sign every two hours.")
-                .typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            OrnatePanel {
-                Text("BIRTH DATE").typeStyle(.labelMedium).foregroundStyle(Palette.gold)
-                Text(PickerDates.longText(date)).typeStyle(.headlineSmall).foregroundStyle(Palette.moonstone)
-                if onDate != nil { GhostButton("Change date", fullWidth: false) { pickingDate = true } }
-                Text("BIRTH TIME (LOCAL CLOCK)").typeStyle(.labelMedium).foregroundStyle(Palette.gold).padding(.top, 12)
-                Button { if !unknown { pickingTime = true } } label: {
-                    Text(unknown ? "Unknown" : time.map(PickerDates.timeText) ?? "Tap to set")
-                        .typeStyle(.headlineSmall).foregroundStyle(Palette.moonstone)
-                        .padding(.vertical, 8).frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.plain)
-                GhostButton("Set time", enabled: !unknown, fullWidth: false) { pickingTime = true }
-                GoldCheckRow(checked: $unknown, text: "I don't know my birth time",
-                             note: "Your chart will skip the Ascendant, houses and the BaZi hour pillar. You can add the time later in Profile.")
-            }
-            FinePrint(L10n.birthPrivacyNote)
-        }
-        .sheet(isPresented: $pickingTime) { TimePickSheet(initial: time ?? LocalTime(12, 0)) { time = $0 } }
-        .sheet(isPresented: $pickingDate) {
-            DatePickSheet(title: "Birth date", initial: date, latest: Age.latestAdultBirthDate(LocalDate.todayInCurrentTimeZone())) { onDate?($0) }
-        }
-    }
-}
-
-struct TimePickSheet: View {
-    let initial: LocalTime
-    let onPicked: (LocalTime) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var value = Date()
-
-    var body: some View {
-        OrnateSheet(title: "Birth time", onClose: { dismiss() }) {
-            DatePicker("", selection: $value, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.wheel).labelsHidden()
-                .environment(\.timeZone, PickerDates.utc)
-                .colorScheme(.dark)
-                .frame(maxWidth: .infinity)
-            GoldButton("OK") {
-                let z = ZonedDateTime(value, PickerDates.utc)
-                onPicked(LocalTime(z.hour, z.minute))
-                dismiss()
-            }
-            GhostButton("Cancel") { dismiss() }
-        }
-        .presentationDetents([.medium])
-        .onAppear { value = ZonedDateTime.instant(LocalDate(2000, 1, 1), initial, PickerDates.utc) }
-    }
-}
-
-/// Birth place: geocoded on the phone; the time zone comes with the placemark.
-struct BirthPlaceStep: View {
-    @EnvironmentObject var app: AppModel
-    let date: LocalDate
-    let time: LocalTime?
-    var progress: Double?
-    let onBack: () -> Void
-    let onNext: () -> Void
-    @State private var query = ""
-    @State private var results: [PlaceResult] = []
-    @State private var chosen: PlaceResult?
-    @State private var searching = false
-    @State private var error: String?
-    @State private var manual = false
-    @State private var latText = ""
-    @State private var lonText = ""
-
-    var body: some View {
-        StepPage(title: "Where you were born", progress: progress, actions: {
-            GoldButton("Continue", enabled: chosen != nil) {
-                guard let p = chosen else { return }
-                app.update {
-                    $0.birth = BirthInput(date: date, time: time, latitude: p.latitude, longitude: p.longitude, zoneId: p.zoneId, placeName: p.name)
-                }
-                onNext()
-            }
-            GhostButton("Back", action: onBack)
-        }) {
-            Text("We look up the place on this phone and work out the time zone and daylight-saving rules in force on your birthday.")
-                .typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            OrnateTextField(label: "City or town of birth", text: $query, onSubmit: { if canSearch { search() } })
-            GoldButton(searching ? "Searching…" : "Search", enabled: canSearch, action: search)
-            if searching { OrreryLoader(size: 48) }
-            if let error { Text(error).typeStyle(.bodyMedium).foregroundStyle(Palette.roseCopper).multilineTextAlignment(.center) }
-            ForEach(results) { place in
-                let selected = chosen == place
-                Button { chosen = place } label: {
-                    OrnatePanel(padding: 16) {
-                        Text((selected ? "✦ " : "") + place.name).typeStyle(.titleMedium)
-                            .foregroundStyle(selected ? Palette.goldPale : Palette.moonstone).multilineTextAlignment(.leading)
-                        Text("\(place.zoneId) · \(place.offsetLabel)").typeStyle(.bodySmall).foregroundStyle(Palette.moonstoneDim)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selected ? .isSelected : [])
-            }
-            if let place = chosen, !results.contains(place) {
-                OrnatePanel(padding: 16) {
-                    Text("✦ \(place.name)").typeStyle(.titleMedium).foregroundStyle(Palette.goldPale)
-                    Text(place.zoneId).typeStyle(.bodySmall).foregroundStyle(Palette.moonstoneDim)
-                }
-            }
-            GhostButton(manual ? "Hide coordinates" : "Enter coordinates instead") { manual.toggle() }
-            if manual {
-                OrnateTextField(label: "Latitude (−90 to 90, north positive)", text: $latText, keyboard: .numbersAndPunctuation)
-                OrnateTextField(label: "Longitude (−180 to 180, east positive)", text: $lonText, keyboard: .numbersAndPunctuation)
-                GhostButton("Use these coordinates", action: useCoordinates)
-            }
+            BirthChips(date: date, time: time, timeUnknown: timeUnknown && time == nil, place: place, placeQuery: placeQuery,
+                       placeCandidates: candidates,
+                       onDate: { userDate = $0 },
+                       onTime: { t, unknown in
+                           userTimeSet = true
+                           userTime = t
+                           userTimeUnknown = unknown
+                       },
+                       onPlace: { place = $0; placeFromUser = true },
+                       ambiguousDate: parsed.ambiguousDate && userDate == nil,
+                       working: working,
+                       searchingPlace: searchingPlace)
+            SheetLink(text: AppText.onbBirthSeparately) { separately.toggle() }
+                .padding(.horizontal, 10)
+                .background(Palette.midnight.opacity(0.75).clipShape(CutCornerShape(cut: 8)))
         }
         .onAppear {
-            if let b = app.profile.birth, !b.placeName.isEmpty, chosen == nil {
-                query = b.placeName
-                chosen = PlaceResult(name: b.placeName, latitude: b.latitude, longitude: b.longitude, zoneId: b.zoneId, offsetLabel: "")
+            guard !loaded else { return }
+            loaded = true
+            let p = app.profile
+            alreadyAccepted = app.clickwrapAlreadyAccepted
+            userDate = p.birth?.date ?? p.ageGateBirthDate
+            if let b = p.birth {
+                userTimeSet = true
+                userTime = b.time
+                userTimeUnknown = b.time == nil
+                place = PlaceResult(name: b.placeName, latitude: b.latitude, longitude: b.longitude, zoneId: b.zoneId, offsetLabel: "")
+                placeFromUser = true
             }
         }
-    }
-
-    private var canSearch: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty && !searching }
-
-    private func search() {
-        searching = true
-        error = nil
-        Task {
-            do {
-                results = try await PlaceSearch.search(query, date: date, time: time)
-            } catch {
-                results = []
-                self.error = error.localizedDescription
+        // Deterministic parse 400 ms after typing stops.
+        .task(id: text) {
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !Task.isCancelled else { return }
+            parsed = BirthTextParser.parse(text, region: Locale.current.region?.identifier, today: today)
+            if text.trimmingCharacters(in: .whitespaces).isEmpty { model = nil }
+        }
+        // The geocoder resolves the place query: top result in the chip, up to 5 under "Change".
+        .task(id: "\(placeQuery ?? "")|\(date?.description ?? "")") {
+            guard !placeFromUser else { return }
+            guard let q = placeQuery else {
+                // The text no longer names a place: drop the old one so Begin can't save it.
+                place = nil
+                candidates = []
+                return
             }
-            searching = false
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            searchingPlace = true
+            let found = (try? await PlaceSearch.search(q, date: date ?? LocalDate(1995, 1, 1), time: time)) ?? []
+            searchingPlace = false
+            guard !Task.isCancelled, !placeFromUser else { return }
+            candidates = Array(found.prefix(5))
+            place = found.first
         }
+        // On Done / focus loss, the on-device model fills what is still missing (latest input wins).
+        .task(id: askNonce) {
+            guard askNonce > 0 else { return }
+            let asked = text
+            guard !asked.trimmingCharacters(in: .whitespaces).isEmpty, date == nil || place == nil else { return }
+            working = true
+            let answer = await assistant.birth(asked, today: today)
+            working = false
+            if !Task.isCancelled, asked == text, let answer { model = answer }
+        }
+        .sheet(item: $openDoc) { LegalDocSheet(doc: $0) }
     }
 
-    private func useCoordinates() {
-        func number(_ s: String) -> Double? {
-            Double(s.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: "−", with: "-").trimmingCharacters(in: .whitespaces))
-        }
-        guard let lat = number(latText), let lon = number(lonText), (-90...90).contains(lat), (-180...180).contains(lon) else {
-            error = "Enter a latitude between −90 and 90 and a longitude between −180 and 180."
+    private func ask() { askNonce += 1 }
+
+    private func begin() {
+        guard let d = date, let p = place else { return }
+        // Under 18: the install is blocked (the date is not kept); nothing is recorded.
+        guard Age.isAdult(d, today: today) else {
+            app.saveBirth(date: d, time: nil, place: p)
             return
         }
-        let label = String(format: "%.4f, %.4f", lat, lon)
-        let name = query.trimmingCharacters(in: .whitespaces).isEmpty ? label : query
-        Task {
-            chosen = await PlaceSearch.resolve(name: name, latitude: lat, longitude: lon, date: date, time: time)
-            error = nil
-        }
+        if !alreadyAccepted { app.recordClickwrap() }
+        if app.saveBirth(date: d, time: timeUnknown ? nil : time, place: p) { onNext() }
     }
 }
 
-private struct BloodStep: View {
-    @EnvironmentObject var app: AppModel
-    let onNext: () -> Void
-    @State private var type: BloodType?
-    @State private var rh: RhFactor?
-    @State private var forMatching = false
+// MARK: - 3. About you
 
-    var body: some View {
-        StepPage(title: L10n.bloodTypeTitle, progress: 0.62, actions: {
-            GoldButton(type == nil ? "Skip" : "Continue") {
-                let consent = forMatching && type != nil
-                let wasConsented = app.profile.bloodForMatching
-                app.update { $0.bloodType = type; $0.rh = rh; $0.bloodForMatching = consent }
-                if consent && !wasConsented {
-                    app.record(ConsentKeys.bloodTypeMatching, version: ConsentKeys.copyVersion, text: L10n.bloodTypeConsentCheckbox)
-                }
-                onNext()
-            }
-        }) {
-            Text(L10n.bloodTypeBody).typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            ChoiceChips(options: BloodType.allCases.map { ($0, "Type \($0.displayName)") }, selected: type) { type = $0 }
-            if type != nil {
-                ChoiceChips(options: RhChoice.options, selected: RhChoice(rh)) { rh = $0.factor }
-                OrnatePanel {
-                    GoldCheckRow(checked: $forMatching, text: L10n.bloodTypeConsentCheckbox, note: L10n.bloodTypeConsentNote)
-                }
-            }
-        }
-        .onAppear {
-            type = app.profile.bloodType
-            rh = app.profile.rh
-            forMatching = app.profile.bloodForMatching
-        }
-    }
-}
-
-/// Rh+ / Rh− / Not sure as a chip value.
-enum RhChoice: Hashable {
-    case positive, negative, unsure
-    init(_ f: RhFactor?) { self = f == .positive ? .positive : f == .negative ? .negative : .unsure }
-    var factor: RhFactor? { self == .positive ? .positive : self == .negative ? .negative : nil }
-    static let options: [(RhChoice, String)] = [(.positive, "Rh+"), (.negative, "Rh−"), (.unsure, "Not sure")]
-}
-
-private struct DatingProfileStep: View {
+/// Screen 3: one sentence about you -> editable chips (parser first, model fills gaps). Optional.
+/// Nothing here leaves the phone; the fields are sent only after the Nearby consent (L2).
+private struct AboutYouStep: View {
     @EnvironmentObject var app: AppModel
     let onSkip: () -> Void
     let onNext: () -> Void
+    let assistant = OnboardingAssistant()
+    @State private var text = ""
     @State private var name = ""
     @State private var gender: Gender?
     @State private var seeking: Seeking?
     @State private var status: RelationshipStatus?
     @State private var lookingFor: LookingFor?
-    @State private var consent = false
-    @State private var honest = false
-
-    private var complete: Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty && gender != nil && seeking != nil && status != nil && lookingFor != nil && consent && honest
-    }
+    @State private var interests = ""
+    /// Chips the person set by hand are never changed by the parser or the model.
+    @State private var edited: Set<String> = []
+    @State private var loaded = false
+    @State private var applying = false
 
     var body: some View {
-        StepPage(title: L10n.datingProfileTitle, progress: 0.75, actions: {
-            GoldButton("Continue", enabled: complete) {
-                app.record(ConsentKeys.orientationData, version: ConsentKeys.copyVersion, text: L10n.orientationConsentCheckbox)
-                app.record(ConsentKeys.profileHonesty, version: ConsentKeys.copyVersion, text: L10n.honestyCheckbox)
+        StepPage(title: AppText.onbAboutTitle, stepIndex: 2, onSkip: onSkip, actions: {
+            GoldButton(AppText.onbContinue) {
                 app.update {
-                    $0.displayName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                    $0.dating = DatingProfile(gender: gender!, seeking: seeking!, relationshipStatus: status!, lookingFor: lookingFor!)
-                    $0.orientationConsent = true
-                    $0.honestyConfirmed = true
+                    let n = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
+                    if !n.isEmpty { $0.displayName = n }
+                    $0.gender = gender
+                    $0.seeking = seeking
+                    $0.relationshipStatus = status
+                    $0.lookingFor = lookingFor
+                    $0.interests = OnboardingExtraction.cleanInterests(interests) ?? ""
                 }
                 onNext()
             }
-            GhostButton("Skip — charts and readings only") {
-                let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !n.isEmpty { app.update { $0.displayName = n } }
-                onSkip()
-            }
         }) {
-            OrnateTextField(label: "First name (shown on match cards)", text: $name, limit: 40)
-            DatingFields(gender: $gender, seeking: $seeking, status: $status, lookingFor: $lookingFor)
-            OrnatePanel {
-                Text(L10n.orientationConsentBody).typeStyle(.bodyMedium).foregroundStyle(Palette.moonstone)
-                GoldCheckRow(checked: $consent, text: L10n.orientationConsentCheckbox, note: L10n.orientationConsentWithdrawNote)
-                GoldCheckRow(checked: $honest, text: L10n.honestyCheckbox)
-            }
+            OrnateTextField(label: "In your own words", text: $text, multiline: true, minLines: 2, limit: 500,
+                            placeholder: AppText.onbAboutHint)
+            OrnateTextField(label: AppText.onbFirstName, text: binding($name, "name"), limit: 40)
+            // Plain bindings: only a tap on a chip marks it as set by hand (onUserEdit), so the
+            // Looking-for default that follows Status never blocks the parser or the model.
+            DatingFields(gender: $gender, seeking: $seeking, status: $status, lookingFor: $lookingFor,
+                         lookingForEdited: edited.contains("lookingFor"), onUserEdit: { touch($0) })
+            OrnateTextField(label: AppText.onbInterests, text: binding($interests, "interests"), limit: 200)
         }
         .onAppear {
-            name = app.profile.displayName
-            gender = app.profile.dating?.gender
-            seeking = app.profile.dating?.seeking
-            status = app.profile.dating?.relationshipStatus
-            lookingFor = app.profile.dating?.lookingFor
+            guard !loaded else { return }
+            loaded = true
+            let p = app.profile
+            name = p.displayName
+            gender = p.gender
+            seeking = p.seeking
+            status = p.relationshipStatus
+            lookingFor = p.lookingFor
+            interests = p.interests
+        }
+        .task(id: text) {
+            guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !Task.isCancelled else { return }
+            apply(AboutYouParser.parse(text), onlyEmpty: false)
+            // Then the on-device model, only for what is still empty (cancelled when the text changes).
+            if let found = await assistant.aboutYou(text), !Task.isCancelled { apply(found, onlyEmpty: true) }
+        }
+    }
+
+    private func touch(_ field: String) { if !applying { edited.insert(field) } }
+
+    /// A binding that marks the chip as set by hand.
+    private func binding<T>(_ b: Binding<T>, _ field: String) -> Binding<T> {
+        Binding(get: { b.wrappedValue }, set: { b.wrappedValue = $0; touch(field) })
+    }
+
+    private func apply(_ found: AboutYou, onlyEmpty: Bool) {
+        applying = true
+        defer { applying = false }
+        if !edited.contains("name"), let n = found.firstName, !onlyEmpty || name.trimmingCharacters(in: .whitespaces).isEmpty { name = n }
+        if !edited.contains("gender"), let g = found.gender, !onlyEmpty || gender == nil { gender = g }
+        if !edited.contains("seeking"), let s = found.seeking, !onlyEmpty || seeking == nil { seeking = s }
+        if !edited.contains("status"), let r = found.relationship, !onlyEmpty || status == nil {
+            status = r
+            if r == .inARelationship && !edited.contains("lookingFor") { lookingFor = .friends }
+        }
+        if !edited.contains("lookingFor"), let l = found.lookingFor, !onlyEmpty || lookingFor == nil, status != .inARelationship {
+            lookingFor = l
+        }
+        if !edited.contains("interests"), let i = found.interests, !onlyEmpty || interests.trimmingCharacters(in: .whitespaces).isEmpty {
+            interests = i
         }
     }
 }
 
-/// Gender / seeking / relationship status / looking-for pickers (also used in Profile).
+/// Gender / seeking / relationship status / looking-for chips (onboarding, the Nearby sheet, Profile).
 struct DatingFields: View {
     @Binding var gender: Gender?
     @Binding var seeking: Seeking?
     @Binding var status: RelationshipStatus?
     @Binding var lookingFor: LookingFor?
+    /// nil = no edit tracking (Nearby sheet, Profile): Status fills Looking for only while it is
+    /// empty. Otherwise Status fills it until the person picked Looking for by hand.
+    var lookingForEdited: Bool? = nil
+    /// Called with "gender", "seeking", "status" or "lookingFor" when the person taps that chip.
+    var onUserEdit: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             label(L10n.datingProfileIAm)
-            ChoiceChips(options: [(Gender.male, L10n.optionMale), (.female, L10n.optionFemale)], selected: gender) { gender = $0 }
+            ChoiceChips(options: [(Gender.male, L10n.optionMale), (.female, L10n.optionFemale)], selected: gender) { gender = $0; onUserEdit?("gender") }
             label(L10n.datingProfileSeeking)
-            ChoiceChips(options: [(Seeking.male, L10n.optionMale), (.female, L10n.optionFemale), (.both, L10n.optionBoth)], selected: seeking) { seeking = $0 }
+            ChoiceChips(options: [(Seeking.male, L10n.optionSeekingMen), (.female, L10n.optionSeekingWomen), (.both, L10n.optionBoth)], selected: seeking) {
+                seeking = $0
+                onUserEdit?("seeking")
+            }
             label(L10n.datingProfileStatus)
             ChoiceChips(options: [(RelationshipStatus.single, L10n.optionSingle), (.inARelationship, L10n.optionInRelationship)], selected: status) { s in
                 status = s
-                if lookingFor == nil || s == .inARelationship { lookingFor = MatchFilter.defaultLookingFor(s) }
+                onUserEdit?("status")
+                // The one place the "In a relationship → Friends" default is applied.
+                let fill = lookingForEdited.map { !$0 } ?? (lookingFor == nil)
+                if fill || s == .inARelationship { lookingFor = MatchFilter.defaultLookingFor(s) }
             }
             if status == .inARelationship { FinePrint(L10n.datingProfileInRelationshipNote) }
             label(L10n.datingProfileLookingFor)
             ChoiceChips(options: [(LookingFor.dating, L10n.optionDating), (.friends, L10n.optionFriends), (.both, L10n.optionDatingAndFriends)],
-                        selected: lookingFor) { lookingFor = $0 }
+                        selected: lookingFor) { lookingFor = $0; onUserEdit?("lookingFor") }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -526,156 +397,280 @@ struct DatingFields: View {
     }
 }
 
-private struct NearbyOptInStep: View {
-    let onNext: () -> Void
-    var body: some View { NearbyConsentContent(progress: 0.88, onDone: onNext) }
-}
+// MARK: - 4. Your card
 
-/// Nearby prominent disclosure (legal/IN_APP_CONSENT_COPY.md section 5) + consent + Bluetooth
-/// rationale, then the system Bluetooth prompt (created by turning the radio on). No location is
-/// ever requested. Reused from the Nearby tab.
-struct NearbyConsentContent: View {
-    @EnvironmentObject var app: AppModel
-    var progress: Double?
-    let onDone: () -> Void
-    @State private var understood = false
-    @State private var rationale = false
-    @State private var safety = false
-    @State private var error: String?
-
-    static var disclosure: [String] {
-        [L10n.nearbyBody, L10n.nearbyPointBluetooth, L10n.nearbyPointHello, L10n.nearbyPointCard, L10n.nearbyPointKeep,
-         L10n.nearbyPointSwipe, L10n.nearbyPointSafety, L10n.nearbyPointControl]
-    }
-
-    var body: some View {
-        StepPage(title: L10n.nearbyTitle, progress: progress, actions: {
-            GoldButton(L10n.nearbyTurnOn, enabled: understood && app.profile.nearbyEligible) { rationale = true }
-            GhostButton(L10n.nearbyNotNow, action: onDone)
-        }) {
-            Image("popup_match_nearby").resizable().scaledToFit().frame(height: 180).accessibilityHidden(true)
-            Text(Self.disclosure[0]).typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            OrnatePanel {
-                ForEach(Array(Self.disclosure.dropFirst()), id: \.self) { StarBullet(text: $0) }
-                FinePrint(L10n.nearbyIosBackgroundNote).padding(.top, 6)
-            }
-            GhostButton(L10n.nearbyReadSafety) { safety = true }
-            GoldCheckRow(checked: $understood, text: L10n.nearbyCheckbox)
-            if !app.profile.nearbyEligible {
-                FinePrint("Complete your birth details and your dating & friends profile first (Profile → Who you'd like to meet).")
-            }
-            if let error { Text(error).typeStyle(.bodyMedium).foregroundStyle(Palette.roseCopper).multilineTextAlignment(.center) }
-        }
-        .sheet(isPresented: $rationale) {
-            PermissionRationaleSheet(title: L10n.permBluetoothTitle, message: L10n.permBluetoothBody, button: L10n.permBluetoothButton,
-                                     art: "popup_match_nearby") {
-                rationale = false
-                turnOn()
-            }
-        }
-        .sheet(isPresented: $safety) {
-            LegalDocSheet(doc: .safety) { text in
-                app.recordDocument(text)
-                app.update { $0.safetyTipsSeen = true }
-            }
-        }
-    }
-
-    private func turnOn() {
-        guard app.nearby.bluetoothAllowed else {
-            error = L10n.permBluetoothDenied
-            return
-        }
-        // The consent record hashes the whole disclosure the person saw, plus the checkbox.
-        app.record(ConsentKeys.nearbyBluetooth, version: ConsentKeys.copyVersion,
-                   text: (Self.disclosure + [L10n.nearbyCheckbox]).joined(separator: "\n"))
-        app.update { $0.nearbyConsent = true }
-        do {
-            try app.enableNearby() // starts the radio: iOS shows its Bluetooth prompt now
-            onDone()
-        } catch {
-            self.error = error.localizedDescription
-        }
-    }
-}
-
-/// In-app rationale shown before a system permission prompt (consent copy section 9).
-struct PermissionRationaleSheet: View {
-    let title: String
-    let message: String
-    let button: String
-    var art: String?
-    let onConfirm: () -> Void
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        OrnateSheet(title: title, onClose: { dismiss() }) {
-            if let art { Image(art).resizable().scaledToFit().frame(maxWidth: .infinity).frame(height: 140).accessibilityHidden(true) }
-            Text(message).typeStyle(.bodyMedium).foregroundStyle(Palette.moonstone)
-            GoldButton(button, action: onConfirm)
-            GhostButton("Not now") { dismiss() }
-        }
-        .presentationDetents([.medium, .large])
-    }
-}
-
-private struct NotificationsStep: View {
+/// Screen 4: photo (face-centred crop), bio ("Write one for me") and Instagram. Optional.
+private struct CardStep: View {
     @EnvironmentObject var app: AppModel
     let onDone: () -> Void
-
-    var body: some View {
-        StepPage(title: L10n.permNotificationsTitle, progress: 1, actions: {
-            GoldButton(L10n.permNotificationsButton) {
-                Task {
-                    let granted = await Notifications.requestAuthorization()
-                    app.update { $0.notificationsPrompted = true; $0.dailyReminder = granted }
-                    onDone()
-                }
-            }
-            GhostButton(L10n.nearbyNotNow, action: onDone)
-        }) {
-            Image("popup_friend_connected").resizable().scaledToFit().frame(width: 200, height: 200).accessibilityHidden(true)
-            Text(L10n.permNotificationsBody).typeStyle(.bodyLarge).foregroundStyle(Palette.moonstone).multilineTextAlignment(.center)
-            FinePrint(L10n.permNotificationsDriving, alignment: .center)
-        }
-    }
-}
-
-/// Profile → Edit birth details: date, time (or unknown) and place, saved together.
-struct BirthEditor: View {
-    @EnvironmentObject var app: AppModel
-    let onDone: () -> Void
-    @State private var page = 0
-    @State private var date = LocalDate(2000, 1, 1)
-    @State private var time: LocalTime?
-    @State private var unknown = false
+    @State private var bio = ""
+    @State private var ig = ""
     @State private var loaded = false
 
+    private var igOk: Bool { ig.trimmingCharacters(in: .whitespaces).isEmpty || InstagramHandle.normalize(ig) != nil }
+
     var body: some View {
-        StarfieldBackground(background: "bg_onboarding_2", dim: 0.6) {
-            VStack(spacing: 0) {
-                HStack {
-                    Button(action: { if page == 1 { page = 0 } else { onDone() } }) {
-                        Image(systemName: "chevron.left").font(.system(size: 18, weight: .semibold)).foregroundStyle(Palette.goldPale)
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Back")
-                    Spacer()
-                }
-                .padding(.horizontal, 8)
-                if page == 0 {
-                    BirthTimeStep(date: date, time: $time, unknown: $unknown, onDate: { date = $0 }, progress: nil) { page = 1 }
-                } else {
-                    BirthPlaceStep(date: date, time: unknown ? nil : time, progress: nil, onBack: { page = 0 }, onNext: onDone)
-                }
+        StepPage(title: AppText.onbCardTitle, stepIndex: 3, onSkip: onDone, actions: {
+            // An invalid Instagram entry keeps Done disabled (fix or clear it), as in the Profile editor.
+            GoldButton(AppText.onbDone, enabled: igOk) {
+                app.update { $0.bio = NearbyText.trimUTF8(bio.trimmingCharacters(in: .whitespacesAndNewlines), 280) }
+                guard app.setInstagram(ig) else { return }
+                onDone()
             }
+        }) {
+            PhotoEditor()
+            BioEditor(bio: $bio, lookingFor: app.profile.lookingFor, interests: app.profile.interests)
+            InstagramField(value: $ig)
         }
         .onAppear {
             guard !loaded else { return }
             loaded = true
-            date = app.profile.birth?.date ?? app.profile.ageGateBirthDate ?? LocalDate.todayInCurrentTimeZone().plusYears(-25)
-            time = app.profile.birth?.time
-            unknown = app.profile.birth != nil && app.profile.birth?.time == nil
+            bio = app.profile.bio
+            ig = app.profile.instagram ?? ""
+        }
+    }
+}
+
+/// Your photo + "Choose from your photos" / "Take a photo" -> the crop sheet.
+struct PhotoEditor: View {
+    @EnvironmentObject var app: AppModel
+    @State private var pick: PhotosPickerItem?
+    @State private var cropping: CropImage?
+    @State private var camera = false
+    @State private var error: String?
+
+    struct CropImage: Identifiable {
+        let id = UUID()
+        let image: UIImage
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ProfilePhoto(url: app.ownerPhotoURL, placeholder: app.charts.map { Art.sign($0.natal.sunSign) } ?? "brand_mark")
+                .frame(width: 150, height: 150 * 5 / 4)
+                .clipShape(CutCornerShape(cut: 14))
+                .overlay(CutCornerShape(cut: 14).stroke(GoldBrush.leaf, lineWidth: 2))
+                .accessibilityLabel(L10n.photoTitle)
+            HStack(spacing: 8) {
+                PhotosPicker(selection: $pick, matching: .images, photoLibrary: .shared()) {
+                    Text((app.profile.photoFile == nil ? L10n.photoAdd : L10n.photoChange).uppercased()).typeStyle(.labelMedium)
+                        .foregroundStyle(Palette.goldPale).lineLimit(1).minimumScaleFactor(0.8)
+                        .padding(.horizontal, 12).frame(minHeight: 48)
+                        .background(Palette.midnight.opacity(0.55).clipShape(CutCornerShape(cut: 10)))
+                        .overlay(CutCornerShape(cut: 10).stroke(GoldBrush.leaf, lineWidth: 1))
+                }
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    GhostButton(AppText.photoTake, fullWidth: false, action: takePhoto)
+                }
+            }
+            FinePrint(L10n.photoNote)
+            if let error { Text(error).typeStyle(.bodySmall).foregroundStyle(Palette.roseCopper) }
+        }
+        .frame(maxWidth: .infinity)
+        .onChange(of: pick) { _, item in
+            guard let item else { return }
+            pick = nil
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let image = await Task.detached(priority: .userInitiated, operation: { ProfilePhotoCrop.load(data) }).value {
+                    cropping = CropImage(image: image)
+                } else {
+                    error = "The photo could not be used."
+                }
+            }
+        }
+        .sheet(item: $cropping) { c in
+            PhotoCropSheet(image: c.image) { jpeg in app.setPhoto(jpeg: jpeg) }
+        }
+        .fullScreenCover(isPresented: $camera) {
+            CameraPicker { image in
+                camera = false
+                if let image { cropping = CropImage(image: PhotoCodec.normalized(image, maxEdge: 2048)) }
+            }
+            .ignoresSafeArea()
+        }
+    }
+
+    /// The camera permission is asked only now (never during the rest of onboarding).
+    private func takePhoto() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized: camera = true
+        case .notDetermined:
+            Task {
+                if await AVCaptureDevice.requestAccess(for: .video) { camera = true } else { error = L10n.permCameraDenied }
+            }
+        default: error = L10n.permCameraDenied
+        }
+    }
+}
+
+/// Crop sheet: drag to move, pinch to zoom; starts on the face-centred 4:5 crop.
+struct PhotoCropSheet: View {
+    let image: UIImage
+    let onSave: (Data) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var crop: PhotoCropGeometry.Rect?
+    @State private var base: PhotoCropGeometry.Rect?
+    @State private var saving = false
+
+    var body: some View {
+        let size = ProfilePhotoCrop.pixelSize(image)
+        OrnateSheet(title: L10n.photoTitle, onClose: { dismiss() }) {
+            GeometryReader { geo in
+                let frameW = geo.size.width
+                let c = crop ?? PhotoCropGeometry.cropFor(width: size.width, height: size.height, face: nil)
+                let scale = frameW / c.width
+                Image(uiImage: image).resizable()
+                    .frame(width: size.width * scale, height: size.height * scale)
+                    .offset(x: -c.x * scale, y: -c.y * scale)
+                    .frame(width: frameW, height: frameW * 5 / 4, alignment: .topLeading)
+                    .clipShape(CutCornerShape(cut: 14))
+                    .overlay(CutCornerShape(cut: 14).stroke(GoldBrush.leaf, lineWidth: 2))
+                    .contentShape(Rectangle())
+                    // One combined gesture: move and pinch together update the crop in a single call
+                    // from one shared start, so neither resets the other.
+                    .gesture(
+                        SimultaneousGesture(DragGesture(), MagnifyGesture())
+                            .onChanged { v in
+                                let start = base ?? c
+                                if base == nil { base = c }
+                                let t = v.first?.translation ?? .zero
+                                crop = PhotoCropGeometry.moved(start, width: size.width, height: size.height, frameWidth: frameW,
+                                                               dx: t.width, dy: t.height, zoom: v.second?.magnification ?? 1)
+                            }
+                            .onEnded { _ in base = nil }
+                    )
+            }
+            .aspectRatio(4.0 / 5.0, contentMode: .fit)
+            .frame(maxWidth: 360)
+            .frame(maxWidth: .infinity)
+            FinePrint("Drag to move, pinch to zoom.", alignment: .center).frame(maxWidth: .infinity)
+            HStack(spacing: 10) {
+                GhostButton(AppText.notNow) { dismiss() }
+                GoldButton("Use photo", enabled: !saving) {
+                    saving = true
+                    let c = crop ?? PhotoCropGeometry.cropFor(width: size.width, height: size.height, face: nil)
+                    let source = image
+                    Task {
+                        let jpeg = await Task.detached(priority: .userInitiated, operation: { ProfilePhotoCrop.render(source, crop: c) }).value
+                        if let jpeg { onSave(jpeg) }
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .task {
+            // Face detection off the main thread; the sheet shows the centre crop meanwhile.
+            let source = image
+            let initial = await Task.detached(priority: .userInitiated, operation: { ProfilePhotoCrop.initialCrop(source) }).value
+            if crop == nil { crop = initial }
+        }
+    }
+}
+
+/// The system camera for "Take a photo" (front camera; the picked image never leaves the phone).
+struct CameraPicker: UIViewControllerRepresentable {
+    let onDone: (UIImage?) -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(onDone: onDone) }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        if UIImagePickerController.isCameraDeviceAvailable(.front) { picker.cameraDevice = .front }
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ vc: UIImagePickerController, context: Context) {}
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let onDone: (UIImage?) -> Void
+        init(onDone: @escaping (UIImage?) -> Void) { self.onDone = onDone }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            onDone(info[.originalImage] as? UIImage)
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) { onDone(nil) }
+    }
+}
+
+/// Bio line with "Write one for me": the bundled fallback line shows at once; when the on-device
+/// model is ready it refines it within 6 s (never blocking, never an error). "Another" re-rolls.
+struct BioEditor: View {
+    @EnvironmentObject var app: AppModel
+    @Binding var bio: String
+    let lookingFor: LookingFor?
+    let interests: String?
+    let assistant = OnboardingAssistant()
+    @State private var seed = 0
+    @State private var request = 0
+    @State private var reroll = false
+    @State private var writing = false
+    /// The fallback line "Write one for me" put in the field; the model's line replaces only that.
+    @State private var fallbackLine: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            OrnateTextField(label: AppText.bioLabel, text: Binding(get: { bio }, set: { bio = String($0.replacingOccurrences(of: "\n", with: " ").prefix(140)) }),
+                            supporting: "\(bio.count)/140")
+            HStack(spacing: 8) {
+                GhostButton(AppText.bioWriteForMe, enabled: app.charts != nil, fullWidth: false) { write(reroll: false) }
+                if !bio.trimmingCharacters(in: .whitespaces).isEmpty && app.charts != nil {
+                    GhostButton(AppText.bioAnother, fullWidth: false) { write(reroll: true) }
+                }
+            }
+            if writing { FinePrint("Polishing it on this phone…") }
+        }
+        .task(id: request) {
+            guard request > 0, let charts = app.charts else { return }
+            writing = true
+            let line = await assistant.bio(charts, lookingFor: lookingFor, interests: interests, reroll: reroll)
+            writing = false
+            // Never overwrite a line the person started editing while the model was writing.
+            if !Task.isCancelled, let line, bio == fallbackLine { bio = line; fallbackLine = line }
+        }
+    }
+
+    private func write(reroll: Bool) {
+        guard let charts = app.charts else { return }
+        if reroll { seed += 1 }
+        self.reroll = reroll
+        let line = OnboardingAssistant.fallbackBio(charts, interests: interests, seed: seed)
+        bio = line
+        fallbackLine = bio
+        request += 1
+    }
+}
+
+/// "Instagram (optional)": typed or pasted handle / profile link, normalised (SPEC 5d.6). The
+/// system Paste button reads the clipboard only when tapped (no paste prompt).
+struct InstagramField: View {
+    @Binding var value: String
+
+    var body: some View {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalized = InstagramHandle.normalize(trimmed)
+        let invalid = !trimmed.isEmpty && normalized == nil
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: 8) {
+                OrnateTextField(label: L10n.instagramLabel, text: $value, supporting: invalid ? AppText.instagramInvalid
+                                    : normalized.flatMap { $0 == trimmed.replacingOccurrences(of: "@", with: "") ? nil : "@\($0)" },
+                                limit: 200, isError: invalid)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                PasteButton(payloadType: String.self) { strings in
+                    guard let pasted = strings.first else { return }
+                    value = InstagramHandle.normalize(pasted) ?? String(pasted.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200))
+                }
+                .labelStyle(.titleOnly)
+                .buttonBorderShape(.capsule)
+                .tint(Palette.gold)
+                .padding(.top, 22)
+            }
+            FinePrint(L10n.instagramNote)
         }
     }
 }

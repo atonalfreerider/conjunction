@@ -677,6 +677,42 @@
       "0100030000000100ac7b2274223a2263686174222c22637472223a302c226374223a22676e7339577a71487864556435787348323358716558394a7a437a4238597958692b51576d6c336833664e6e6a77354d6d553771466479554d554e4c33564c747274586f4e694e6e4842366f44494c5774696c76334a48593470714c454c2f33496e4a2b56596b573936553048573332354a33613555792f77686244556a39352b7549337636446b782b6c2f2f547464227d"
      ]
     }
+   },
+   {
+    "sender": "A",
+    "key": "955185a39ad6575876dc2e30716b9046e4f3e074fbe8c5f581553213399194cb",
+    "ctr": 2,
+    "nonce": "000000000000000000000002",
+    "aadHex": "434a312d43484154",
+    "plaintext": "{\"id\":\"c8361f9b468e68c86da024270e0949ce\",\"ts\":1762171320000,\"kind\":\"profile\",\"rev\":3,\"ig\":\"aurora.stars\"}",
+    "ciphertextHex": "50641fda9e2d36682a167c985edc6f7e4fb71bdcd24b7d736638fc20e8d3560c49241ebbdfd59ea945306be95346258a536146c0c04826c8cd44dca5b614868cde8ac2e59a0897b2345dcfba3bb3a25fc92294e40e1f26abf0dd8683e6301be908ed94aecdc9f2340e8f696a778b59d2aa614f491912ebe72c",
+    "envelope": "{\"t\":\"chat\",\"ctr\":2,\"ct\":\"UGQf2p4tNmgqFnyYXtxvfk+3G9zSS31zZjj8IOjTVgxJJB6739WeqUUwa+lTRiWKU2FGwMBIJsjNRNylthSGjN6KwuWaCJeyNF3Pujuzol/JIpTkDh8mq/DdhoPmMBvpCO2Urs3J8jQOj2lqd4tZ0qphT0kZEuvnLA==\"}",
+    "framesByMtu": {
+     "23": [
+      "0100030000000f00c07b2274223a226368617422",
+      "0100030001000f2c22637472223a322c22637422",
+      "0100030002000f3a2255475166327034744e6d67",
+      "0100030003000f71466e795958747876666b2b33",
+      "0100030004000f47397a535333317a5a6a6a3849",
+      "0100030005000f4f6a545667784a4a4236373339",
+      "0100030006000f576571555577612b6c54526957",
+      "0100030007000f4b55324647774d42494a736a4e",
+      "0100030008000f524e796c746853476a4e364b77",
+      "0100030009000f755761434a65794e463350756a",
+      "010003000a000f757a6f6c2f4a4970546b446838",
+      "010003000b000f6d712f4464686f506d4d427670",
+      "010003000c000f434f32557273334a386a514f6a",
+      "010003000d000f326c716434745a307170685430",
+      "010003000e000f6b5a4575766e4c413d3d227d"
+     ],
+     "185": [
+      "0100030000000200c07b2274223a2263686174222c22637472223a322c226374223a2255475166327034744e6d6771466e795958747876666b2b3347397a535333317a5a6a6a38494f6a545667784a4a4236373339576571555577612b6c545269574b55324647774d42494a736a4e524e796c746853476a4e364b77755761434a65794e463350756a757a6f6c2f4a4970546b4468386d712f4464686f506d4d427670434f32557273334a386a514f6a326c71643474",
+      "010003000100025a3071706854306b5a4575766e4c413d3d227d"
+     ],
+     "517": [
+      "0100030000000100c07b2274223a2263686174222c22637472223a322c226374223a2255475166327034744e6d6771466e795958747876666b2b3347397a535333317a5a6a6a38494f6a545667784a4a4236373339576571555577612b6c545269574b55324647774d42494a736a4e524e796c746853476a4e364b77755761434a65794e463350756a757a6f6c2f4a4970546b4468386d712f4464686f506d4d427670434f32557273334a386a514f6a326c716434745a3071706854306b5a4575766e4c413d3d227d"
+     ]
+    }
    }
   ],
   "tamperedCiphertextHex": "a9c8d207e11a8a364a63b2740a64034c9b9a56301719cbed301c448248ff236532f9314ee2b5a4670d668b8149980eb17c9575e42fbdd9b0827c96c9200f9ebc598eb531d2d1b3f10721ca0f50d8dec4e5eb87572e8cff626866b6cdcd8114a21fc8ff1840109577e8037fa1ab3ee59e29fa5e0d71427c18c7abdabda3565f1cd88ad2f615176bd571fd629edbc42b642ac4f1b5",
@@ -945,6 +981,293 @@
     "blobHex": "",
     "frames": [
      "01000800000001001b7b2274223a22627965222c22726561736f6e223a22646f6e65227d"
+    ]
+   }
+  ]
+ },
+ "plaintexts": [
+  {
+   "name": "profile_handle",
+   "json": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":3,\"ig\":\"aurora.stars\"}",
+   "id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+   "ts": 1762171200000,
+   "rev": 3,
+   "ig": "aurora.stars"
+  },
+  {
+   "name": "profile_null",
+   "json": "{\"id\":\"ffffffffffffffffffffffffffffffff\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":0,\"ig\":null}",
+   "id": "ffffffffffffffffffffffffffffffff",
+   "ts": 1762171200000,
+   "rev": 0,
+   "ig": null
+  }
+ ],
+ "profileValidation": [
+  {
+   "ig": "Aurora.Stars",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"Aurora.Stars\"}",
+   "stored": null
+  },
+  {
+   "ig": "@aurora",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"@aurora\"}",
+   "stored": null
+  },
+  {
+   "ig": "",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"\"}",
+   "stored": null
+  },
+  {
+   "ig": "...",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"...\"}",
+   "stored": null
+  },
+  {
+   "ig": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+   "stored": null
+  },
+  {
+   "ig": "a b",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"a b\"}",
+   "stored": null
+  },
+  {
+   "ig": "a_b.c9",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"a_b.c9\"}",
+   "stored": "a_b.c9"
+  },
+  {
+   "ig": "a..b",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"a..b\"}",
+   "stored": "a..b"
+  },
+  {
+   "ig": "a.",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"a.\"}",
+   "stored": "a."
+  },
+  {
+   "ig": "aurora.stars",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"aurora.stars\"}",
+   "stored": "aurora.stars"
+  },
+  {
+   "ig": null,
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":null}",
+   "stored": null
+  },
+  {
+   "ig": "_",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"_\"}",
+   "stored": null
+  },
+  {
+   "ig": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+   "stored": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "ig": "zoë",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"zoë\"}",
+   "stored": null
+  },
+  {
+   "ig": "café.ig",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":1,\"ig\":\"café.ig\"}",
+   "stored": null
+  }
+ ],
+ "profileMalformed": [
+  {
+   "name": "rev -1",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":-1,\"ig\":\"aurora\"}",
+   "code": "malformed"
+  },
+  {
+   "name": "rev 2147483648",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":2147483648,\"ig\":\"aurora\"}",
+   "code": "malformed"
+  },
+  {
+   "name": "rev string",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":\"3\",\"ig\":\"aurora\"}",
+   "code": "malformed"
+  },
+  {
+   "name": "ig number",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":3,\"ig\":5}",
+   "code": "malformed"
+  },
+  {
+   "name": "rev missing",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"ig\":\"aurora\"}",
+   "code": "malformed"
+  },
+  {
+   "name": "rev float",
+   "plaintext": "{\"id\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":3.0,\"ig\":\"aurora\"}",
+   "code": "malformed"
+  },
+  {
+   "name": "bad id",
+   "plaintext": "{\"id\":\"E\",\"ts\":1762171200000,\"kind\":\"profile\",\"rev\":3,\"ig\":\"aurora\"}",
+   "code": "malformed"
+  }
+ ],
+ "normalize": [
+  {
+   "input": "@Aurora.Stars",
+   "handle": "aurora.stars"
+  },
+  {
+   "input": "https://www.instagram.com/aurora.stars/?igsh=xyz",
+   "handle": "aurora.stars"
+  },
+  {
+   "input": "See my profile https://instagram.com/_u/Aurora.Stars",
+   "handle": "aurora.stars"
+  },
+  {
+   "input": "instagram.com/p/abc",
+   "handle": null
+  },
+  {
+   "input": "  aurora ",
+   "handle": "aurora"
+  },
+  {
+   "input": "@@a",
+   "handle": null
+  }
+ ],
+ "profileTranscript": {
+  "attMtu": 185,
+  "today": "2026-11-03",
+  "nowMs": 1000,
+  "note": "friend reconnect: both sides hold the other as a friend (friend secret from identityA/identityB); the central sends profile rev 1",
+  "central": {
+   "profile": "hello",
+   "firstName": "Aurora",
+   "bio": "Stargazer. Tea, long walks, Saturn returns.",
+   "photoHex": "6a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee07626a8c61f707321777aaa5a68e6ba28cb67c1c8da094fa4609f31890c925ee0762",
+   "photoW": 480,
+   "photoH": 640,
+   "identity": "identityA",
+   "ephemeral": "ephemeralA",
+   "friend": "identityB"
+  },
+  "peripheral": {
+   "profile": "hello_unknown_time",
+   "firstName": "Orion",
+   "bio": null,
+   "photoHex": "",
+   "identity": "identityB",
+   "ephemeral": "ephemeralB",
+   "friend": "identityA"
+  },
+  "steps": [
+   {
+    "from": "central",
+    "type": "hello",
+    "json": "{\"t\":\"hello\",\"pv\":1,\"pmin\":1,\"eid\":\"0f1e2d3c4b5a69788796a5b4c3d2e1f0\",\"match\":{\"gender\":\"female\",\"seeking\":\"male\",\"relationship\":\"single\",\"lookingFor\":\"both\"},\"compat\":{\"sun\":35,\"moon\":21075,\"venus\":33012,\"mars\":9120,\"asc\":1550,\"animal\":\"rat\",\"stem\":\"geng\",\"blood\":\"o\",\"birthDate\":\"1996-03-20\",\"birthHour\":6},\"ft\":[\"tTmh+mLTybY=\",\"pGG1XvVbe+o=\",\"2X/GED2SCJs=\",\"pjQvoP24spQ=\",\"/T/rPJJQt5c=\",\"/YCamp6SW3k=\",\"SptSi2ljYyE=\",\"JfpeA59SqOg=\"]}",
+    "blobHex": "",
+    "frames": [
+     "0100000000000301b47b2274223a2268656c6c6f222c227076223a312c22706d696e223a312c22656964223a223066316532643363346235613639373838373936613562346333643265316630222c226d61746368223a7b2267656e646572223a2266656d616c65222c227365656b696e67223a226d616c65222c2272656c6174696f6e73686970223a2273696e676c65222c226c6f6f6b696e67466f72223a22626f7468227d2c22636f6d706174223a7b2273756e",
+     "01000000010003223a33352c226d6f6f6e223a32313037352c2276656e7573223a33333031322c226d617273223a393132302c22617363223a313535302c22616e696d616c223a22726174222c227374656d223a2267656e67222c22626c6f6f64223a226f222c22626972746844617465223a22313939362d30332d3230222c226269727468486f7572223a367d2c226674223a5b2274546d682b6d4c547962593d222c227047473158765662652b6f3d222c223258",
+     "010000000200032f4745443253434a733d222c22706a51766f5032347370513d222c222f542f72504a4a517435633d222c222f5943616d70365357336b3d222c225370745369326c6a5979453d222c224a66706541353953714f673d225d7d"
+    ]
+   },
+   {
+    "from": "peripheral",
+    "type": "hello",
+    "json": "{\"t\":\"hello\",\"pv\":1,\"pmin\":1,\"eid\":\"a1b2c3d4e5f60718293a4b5c6d7e8f90\",\"match\":{\"gender\":\"male\",\"seeking\":\"female\",\"relationship\":\"single\",\"lookingFor\":\"dating\"},\"compat\":{\"sun\":13978,\"moon\":3789,\"venus\":11859,\"mars\":4979,\"asc\":null,\"animal\":\"horse\",\"stem\":\"ji\",\"blood\":null,\"birthDate\":\"1990-08-12\",\"birthHour\":null},\"ft\":[\"qRJkZUPGl3o=\",\"CRr/6mqHFEo=\",\"NqvOZmaZpYw=\",\"xxZpGs2robg=\",\"MSIHERO9EgU=\",\"WkOsJ1PPEBc=\",\"16VtPPz5pE0=\",\"i90JqK247e4=\"]}",
+    "blobHex": "",
+    "frames": [
+     "0100000000000301bc7b2274223a2268656c6c6f222c227076223a312c22706d696e223a312c22656964223a226131623263336434653566363037313832393361346235633664376538663930222c226d61746368223a7b2267656e646572223a226d616c65222c227365656b696e67223a2266656d616c65222c2272656c6174696f6e73686970223a2273696e676c65222c226c6f6f6b696e67466f72223a22646174696e67227d2c22636f6d706174223a7b2273",
+     "01000000010003756e223a31333937382c226d6f6f6e223a333738392c2276656e7573223a31313835392c226d617273223a343937392c22617363223a6e756c6c2c22616e696d616c223a22686f727365222c227374656d223a226a69222c22626c6f6f64223a6e756c6c2c22626972746844617465223a22313939302d30382d3132222c226269727468486f7572223a6e756c6c7d2c226674223a5b2271524a6b5a5550476c336f3d222c224352722f366d714846",
+     "01000000020003456f3d222c224e71764f5a6d615a7059773d222c2278785a70477332726f62673d222c224d53494845524f394567553d222c22576b4f734a3150504542633d222c223136567450507a357045303d222c226939304a714b32343765343d225d7d"
+    ]
+   },
+   {
+    "from": "peripheral",
+    "type": "keyx",
+    "json": "{\"t\":\"keyx\",\"ik\":\"BDMIj6RvBZdQ+v5/KJXrray366/AcD6eTZ5iPNIO6r6wChFUKo3nCjAolEIauBLIc2px+Anx0ONWMJQcKwK/48Q=\",\"ek\":\"BB8UAUa/sbJR+E9N2+DUzc/Xev2YSpUg41eUAh+DErue7JlaCLH6dwTfPcwLUKlmUmP7dxH5X5+KRJxQluR8iSs=\"}",
+    "blobHex": "",
+    "frames": [
+     "0100010000000200cc7b2274223a226b657978222c22696b223a2242444d496a365276425a64512b76352f4b4a58727261793336362f4163443665545a3569504e494f36723677436846554b6f336e436a416f6c45496175424c49633270782b416e78304f4e574d4a51634b774b2f3438513d222c22656b223a22424238554155612f73624a522b45394e322b44557a632f5865763259537055673431655541682b4445727565374a6c61434c483664775466506377",
+     "010001000100024c554b6c6d556d50376478483558352b4b524a78516c7552386953733d227d"
+    ]
+   },
+   {
+    "from": "central",
+    "type": "keyx",
+    "json": "{\"t\":\"keyx\",\"ik\":\"BBFVxlLNd1rwTItjYRJ1JWgS0Ry4ulypcKHgljKmWNYV+nraxZ5nuzfnPi8xEqVwIsqDURXYjgo3Y6XK4EHSG28=\",\"ek\":\"BFFcPW6545a5BNP+yn9U/c0MwemXvzddylFa0KbDtANfRTa+OlDzGPv5pUdZAqIhUCvvDVfgjFOyzApW8X2fk1Q=\"}",
+    "blobHex": "",
+    "frames": [
+     "0100010000000200cc7b2274223a226b657978222c22696b223a2242424656786c4c4e643172775449746a59524a314a57675330527934756c7970634b48676c6a4b6d574e59562b6e7261785a356e757a666e506938784571567749737144555258596a676f335936584b344548534732383d222c22656b223a22424646635057363534356135424e502b796e39552f63304d77656d58767a6464796c4661304b624474414e665254612b4f6c447a47507635705564",
+     "010001000100025a4171496855437676445666676a464f797a417057385832666b31513d227d"
+    ]
+   },
+   {
+    "from": "central",
+    "type": "kc",
+    "json": "{\"t\":\"kc\",\"mac\":\"IDpvN7FsyNYph2EjJoKxMg==\"}",
+    "blobHex": "",
+    "frames": [
+     "01000200000001002b7b2274223a226b63222c226d6163223a22494470764e374673794e59706832456a4a6f4b784d673d3d227d"
+    ]
+   },
+   {
+    "from": "peripheral",
+    "type": "kc",
+    "json": "{\"t\":\"kc\",\"mac\":\"3R08LOwzagstU0DA3g3oXQ==\"}",
+    "blobHex": "",
+    "frames": [
+     "01000200000001002b7b2274223a226b63222c226d6163223a22335230384c4f777a61677374553044413367336f58513d3d227d"
+    ]
+   },
+   {
+    "action": "profile",
+    "side": "central",
+    "id": "99999999999999999999999999999999",
+    "ts": 1762171400000,
+    "rev": 1,
+    "ig": "aurora.stars"
+   },
+   {
+    "from": "central",
+    "type": "chat",
+    "json": "{\"t\":\"chat\",\"ctr\":0,\"ct\":\"qcjSB+Eaim4Sb7t1UG8LTZXFDGgbFpTnMBIb3Ubzezho9ToV4rj4Zw1mi4FJmA6xfJV15C+72bCCfJbJIA+evFmOtTHWxqTjTGGNWRmC2IOp6/UPIuHkbCUytYxaa/fwJ4n5HgEugzq1j2XKlClJSgFQRrzDpUcSmg==\"}",
+    "blobHex": "",
+    "frames": [
+     "0100030000000200c07b2274223a2263686174222c22637472223a302c226374223a2271636a53422b4561696d3453623774315547384c545a5846444767624670546e4d4249623355627a657a686f39546f5634726a345a77316d6934464a6d413678664a563135432b3732624343664a624a49412b6576466d4f745448577871546a5447474e57526d4332494f70362f55504975486b6243557974597861612f66774a346e3548674575677a71316a32584b6c436c",
+     "010003000100024a5367465152727a44705563536d673d3d227d"
+    ]
+   },
+   {
+    "from": "peripheral",
+    "type": "ack",
+    "json": "{\"t\":\"ack\",\"id\":\"99999999999999999999999999999999\"}",
+    "blobHex": "",
+    "frames": [
+     "0100030000000100337b2274223a2261636b222c226964223a223939393939393939393939393939393939393939393939393939393939393939227d"
+    ]
+   },
+   {
+    "action": "close",
+    "side": "central",
+    "reason": "done"
+   },
+   {
+    "from": "central",
+    "type": "bye",
+    "json": "{\"t\":\"bye\",\"reason\":\"done\"}",
+    "blobHex": "",
+    "frames": [
+     "01000400000001001b7b2274223a22627965222c22726561736f6e223a22646f6e65227d"
     ]
    }
   ]

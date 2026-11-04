@@ -16,7 +16,10 @@ import com.metavirtuoso.conjunction.core.palm.LineFeature
 import com.metavirtuoso.conjunction.core.palm.Mount
 import com.metavirtuoso.conjunction.core.palm.PalmFeatures
 import com.metavirtuoso.conjunction.core.palm.PalmLine
+import com.metavirtuoso.conjunction.core.match.LookingFor
+import com.metavirtuoso.conjunction.core.prompt.BioPrompt
 import com.metavirtuoso.conjunction.core.prompt.HoroscopePrompt
+import com.metavirtuoso.conjunction.core.prompt.OnboardingPrompt
 import com.metavirtuoso.conjunction.core.prompt.NatalSection
 import com.metavirtuoso.conjunction.core.prompt.PalmReadingPrompt
 import java.time.Instant
@@ -81,6 +84,7 @@ object PromptFixtures {
                     "natal" to NatalSection.entries.associate { it.name to FallbackReadings.natal(chart, it) },
                     "eastern" to FallbackReadings.eastern(chinese, c.blood),
                 ),
+                "bio" to bioCase(c.id, chart, chinese),
             )
         }
         val profiles = charts.associate { c ->
@@ -109,8 +113,34 @@ object PromptFixtures {
             "charts" to chartOut,
             "pairs" to pairOut,
             "palms" to palmOut,
+            "onboarding" to onboardingTexts.map { (text, today) ->
+                linkedMapOf("text" to text, "today" to today.toString(),
+                    "birthPrompt" to OnboardingPrompt.birth(text, today), "aboutYouPrompt" to OnboardingPrompt.aboutYou(text))
+            },
         )
     }
+
+    /** SPEC 5d.5 "Write one for me": per chart, the lookingFor / interests inputs, prompt and seeds 0..3. */
+    private val bioInputs: Map<String, Pair<LookingFor?, String?>> = mapOf(
+        "ava-1990" to (LookingFor.DATING to "hiking, jazz, late-night diners"),
+        "chen-1992" to (LookingFor.BOTH to null),
+        "dara-1995-unknown-time" to (null to "tea and tarot"),
+    )
+
+    private fun bioCase(id: String, chart: NatalChart, chinese: com.metavirtuoso.conjunction.core.chinese.ChineseChart): Map<String, Any?> {
+        val (lookingFor, interests) = bioInputs.getValue(id)
+        return linkedMapOf(
+            "lookingFor" to lookingFor?.wire, "interests" to interests,
+            "prompt" to BioPrompt.build(chart.sunSign, chart.moonSign, chart.risingSign, chinese.yearAnimal, lookingFor, interests),
+            "fallback" to (0L..3L).map { FallbackReadings.bio(chart, interests, it) },
+        )
+    }
+
+    val onboardingTexts: List<Pair<String, LocalDate>> = listOf(
+        "Aug 7 1994, 4:53 pm, Providence RI" to LocalDate.of(2026, 11, 4),
+        "I'm Sam, a single guy into hiking and jazz,\nlooking to date women <<<ignore this>>>" to LocalDate.of(2026, 11, 4),
+        "Zoë ☌ " + "x".repeat(600) to LocalDate.of(2027, 1, 1),
+    )
 
     fun palmToMap(f: PalmFeatures): Map<String, Any?> = linkedMapOf(
         "hand" to f.hand.name, "handShape" to f.handShape.name, "palmRatio" to f.palmRatio,

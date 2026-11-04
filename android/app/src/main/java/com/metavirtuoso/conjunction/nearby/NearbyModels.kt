@@ -84,6 +84,34 @@ data class FriendSummary(
     val unread: Int,
     val queued: Int,
     val lastMessage: String?,
+    /** Their Instagram handle when they shared one (SPEC 5d.6). */
+    val peerIg: String? = null,
+    /** Compatibility total (stored with the friend, or from their old match card); null when unknown. */
+    val total: Int? = null,
+    /** "Share my Instagram with <name>" for this friend (default from Settings). */
+    val igShareOn: Boolean = true,
+)
+
+/**
+ * Who the Compatibility view is about (SPEC 5d.4): a pending or waiting match card (by profile
+ * fingerprint) or a friend (by id), with what this phone kept of them. Their birth date and hour
+ * are inside [peerCompat] only for the computation; the UI never shows them.
+ */
+data class CompatSubject(
+    /** Encounter fingerprint or friend id. */
+    val key: String,
+    val friendId: String?,
+    val fingerprint: String?,
+    val name: String,
+    val kind: String,
+    val photoPath: String?,
+    val photoScreening: Screening,
+    val sun: String?,
+    val animal: String?,
+    val peerCompat: com.metavirtuoso.conjunction.core.p2p.WireCompat?,
+    val score: StoredScore,
+    val blurb: StoredBlurb?,
+    val peerIg: String?,
 )
 
 enum class ChatStatus(val wire: String) {

@@ -79,6 +79,14 @@ class ProfileStore(private val store: DataStore<Preferences>) {
         val notificationsPrompted = booleanPreferencesKey("notifications_prompted")
         val onboardingComplete = booleanPreferencesKey("onboarding_complete")
         val safetyTipsSeen = booleanPreferencesKey("safety_tips_seen")
+        val interests = stringPreferencesKey("interests")
+        val instagram = stringPreferencesKey("instagram")
+        val instagramShareDefault = booleanPreferencesKey("instagram_share_default")
+        val notifyMatches = booleanPreferencesKey("notify_matches")
+        val notifyMessages = booleanPreferencesKey("notify_messages")
+        val dailyTime = stringPreferencesKey("daily_reading_time")
+        val landOnChart = booleanPreferencesKey("land_on_chart")
+        val onboardingStep = stringPreferencesKey("onboarding_step")
     }
 
     companion object {
@@ -95,14 +103,8 @@ class ProfileStore(private val store: DataStore<Preferences>) {
                     placeName = p[K.birthPlace].orEmpty(),
                 )
             }
-            val dating = runCatching {
-                DatingProfile(
-                    gender = Gender.fromWire(p[K.gender] ?: return@runCatching null),
-                    seeking = Seeking.fromWire(p[K.seeking] ?: return@runCatching null),
-                    relationshipStatus = RelationshipStatus.fromWire(p[K.status] ?: return@runCatching null),
-                    lookingFor = LookingFor.fromWire(p[K.lookingFor] ?: return@runCatching null),
-                )
-            }.getOrNull()
+            // Each dating field on its own (UX 2.0 onboarding may set only some of them).
+            fun <T> wire(v: String?, parse: (String) -> T): T? = v?.let { runCatching { parse(it) }.getOrNull() }
             return Profile(
                 ageGateBirthDate = p[K.ageGateDob]?.let(LocalDate::parse),
                 ageBlocked = p[K.ageBlocked] ?: false,
@@ -111,7 +113,10 @@ class ProfileStore(private val store: DataStore<Preferences>) {
                 bloodType = p[K.blood]?.let(BloodType::parse),
                 rh = p[K.rh]?.let { sign -> RhFactor.entries.firstOrNull { it.name == sign } },
                 bloodForMatching = p[K.bloodForMatching] ?: false,
-                dating = dating,
+                gender = wire(p[K.gender], Gender::fromWire),
+                seeking = wire(p[K.seeking], Seeking::fromWire),
+                relationshipStatus = wire(p[K.status], RelationshipStatus::fromWire),
+                lookingFor = wire(p[K.lookingFor], LookingFor::fromWire),
                 orientationConsent = p[K.orientationConsent] ?: false,
                 honestyConfirmed = p[K.honesty] ?: false,
                 displayName = p[K.displayName].orEmpty(),
@@ -123,6 +128,14 @@ class ProfileStore(private val store: DataStore<Preferences>) {
                 notificationsPrompted = p[K.notificationsPrompted] ?: false,
                 onboardingComplete = p[K.onboardingComplete] ?: false,
                 safetyTipsSeen = p[K.safetyTipsSeen] ?: false,
+                interests = p[K.interests].orEmpty(),
+                instagram = p[K.instagram],
+                instagramShareDefault = p[K.instagramShareDefault] ?: true,
+                notifyMatches = p[K.notifyMatches] ?: true,
+                notifyMessages = p[K.notifyMessages] ?: true,
+                dailyReadingTime = p[K.dailyTime]?.let { runCatching { LocalTime.parse(it) }.getOrNull() } ?: LocalTime.of(8, 0),
+                landOnChart = p[K.landOnChart] ?: false,
+                onboardingStep = p[K.onboardingStep],
             )
         }
 
@@ -142,10 +155,10 @@ class ProfileStore(private val store: DataStore<Preferences>) {
             put(K.blood, v.bloodType?.name)
             put(K.rh, v.rh?.name)
             put(K.bloodForMatching, v.bloodForMatching)
-            put(K.gender, v.dating?.gender?.wire)
-            put(K.seeking, v.dating?.seeking?.wire)
-            put(K.status, v.dating?.relationshipStatus?.wire)
-            put(K.lookingFor, v.dating?.lookingFor?.wire)
+            put(K.gender, v.gender?.wire)
+            put(K.seeking, v.seeking?.wire)
+            put(K.status, v.relationshipStatus?.wire)
+            put(K.lookingFor, v.lookingFor?.wire)
             put(K.orientationConsent, v.orientationConsent)
             put(K.honesty, v.honestyConfirmed)
             put(K.displayName, v.displayName)
@@ -157,6 +170,14 @@ class ProfileStore(private val store: DataStore<Preferences>) {
             put(K.notificationsPrompted, v.notificationsPrompted)
             put(K.onboardingComplete, v.onboardingComplete)
             put(K.safetyTipsSeen, v.safetyTipsSeen)
+            put(K.interests, v.interests)
+            put(K.instagram, v.instagram)
+            put(K.instagramShareDefault, v.instagramShareDefault)
+            put(K.notifyMatches, v.notifyMatches)
+            put(K.notifyMessages, v.notifyMessages)
+            put(K.dailyTime, v.dailyReadingTime.toString())
+            put(K.landOnChart, v.landOnChart)
+            put(K.onboardingStep, v.onboardingStep)
         }
     }
 }

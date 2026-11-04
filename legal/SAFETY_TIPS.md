@@ -3,15 +3,17 @@
 | | |
 |---|---|
 | Document | `SAFETY_TIPS` |
-| Version | 2.0 (draft of 2026-11-03) |
+| Version | 2.1 (draft of 2026-11-04) |
 | Effective date | [EFFECTIVE DATE] |
 
-These tips are shown in the App before you first turn on Nearby, from every chat (shield icon), and under
-**Settings → Safety**. They are part of the Terms. Strings for the in-app version are in
+These tips are linked in the App when you first turn on Nearby, from every chat and match card (⋯
+menu), and under **Profile → Settings → Privacy & legal**. They are part of the Terms. Strings for the in-app version are in
 `IN_APP_CONSENT_COPY.md` (`safety_tip_*`).
 
 > **In danger right now? Call local emergency services first** (911 US/Canada, 112 EU, 999 UK,
 > 000 Australia). Then report the person in the App.
+
+**CONJUNCTION DOES NOT CONDUCT CRIMINAL BACKGROUND CHECKS ON ITS USERS.**
 
 **We do not run background checks or verify anyone's identity, age, gender or relationship status.**
 Your safety is in your hands. These tips help, but they cannot remove every risk.

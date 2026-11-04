@@ -8,6 +8,8 @@ struct RadioStatus: Equatable {
     var poweredOn = false
     var unauthorized = false
     var unsupported = false
+    /// Bluetooth is switched off in Control Centre / Settings (known, not just "not yet on").
+    var poweredOff = false
     var advertising = false
     var scanning = false
     /// Conjunction phones currently close by (RSSI gate), whether or not they match.
@@ -151,6 +153,7 @@ final class BleTransport: NSObject {
         status.unauthorized = auth == .denied || auth == .restricted
         status.poweredOn = central.state == .poweredOn && peripheralManager.state == .poweredOn
         status.unsupported = central.state == .unsupported
+        status.poweredOff = central.state == .poweredOff
     }
 
     // ------------------------------------------------------------------ peripheral: service + advertising

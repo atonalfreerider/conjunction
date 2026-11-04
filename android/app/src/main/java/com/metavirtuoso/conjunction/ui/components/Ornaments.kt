@@ -193,6 +193,7 @@ fun GoldButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     leading: (@Composable () -> Unit)? = null,
+    horizontalPadding: Dp = 24.dp,
 ) {
     val phase = rememberGoldShimmer()
     val shape = CutCornerShape(10.dp)
@@ -204,7 +205,7 @@ fun GoldButton(
             .drawBehind { drawRect(GoldBrushes.shimmer(phase.value, period = 500f)) }
             .border(1.dp, Palette.GoldPale.copy(alpha = 0.8f), shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp),
+            .padding(horizontal = horizontalPadding, vertical = 14.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -224,6 +225,7 @@ fun GhostButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     color: Color = Palette.GoldPale,
+    horizontalPadding: Dp = 20.dp,
 ) {
     val shape = CutCornerShape(10.dp)
     Box(
@@ -234,7 +236,7 @@ fun GhostButton(
             .background(Palette.Midnight.copy(alpha = 0.55f))
             .border(1.dp, GoldBrushes.leaf, shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = horizontalPadding, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(text.uppercase(), style = MaterialTheme.typography.labelMedium, color = color, textAlign = TextAlign.Center)

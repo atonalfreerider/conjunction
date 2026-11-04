@@ -114,7 +114,7 @@ final class P2PWireVectorsTests: XCTestCase {
 
     func testAesGcmVectorsAndTamper() throws {
         let vectors = crypto.list("aesGcm")
-        XCTAssertEqual(vectors.count, 3)
+        XCTAssertEqual(vectors.count, 4) // three text chats + one SPEC 5d.6 `profile`
         for v in vectors {
             let key = unhex(v.str("key"))
             let ctr = Int64(v.int("ctr"))

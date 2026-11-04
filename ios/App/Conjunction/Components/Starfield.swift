@@ -78,14 +78,18 @@ struct TabPage<Content: View>: View {
     let title: String
     var subtitle: String?
     @ViewBuilder var content: Content
+    /// Put above the title by a parent (the Readings "Eastern | Palm" segment control).
+    @Environment(\.tabHeader) private var header
 
     var body: some View {
         StarfieldBackground {
             ScrollView {
                 VStack(spacing: 16) {
+                    if let header { header }
                     SectionTitle(text: title, subtitle: subtitle)
                     content
-                    Spacer().frame(height: 24)
+                    // Room for the raised Nearby medallion over the end of the page.
+                    Spacer().frame(height: 44)
                 }
                 .frame(maxWidth: 640)
                 .padding(.horizontal, 16)

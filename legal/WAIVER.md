@@ -3,15 +3,15 @@
 | | |
 |---|---|
 | Document | `WAIVER` |
-| Version | 2.0 (draft of 2026-11-03) |
+| Version | 2.1 (draft of 2026-11-04) |
 | Effective date | [EFFECTIVE DATE] |
 | Publisher | MetaVirtuoso, the trade name of [LEGAL ENTITY NAME], [ADDRESS] |
 | Contact | [CONTACT EMAIL] |
 | Applies to | The Conjunction mobile apps for Android (`com.metavirtuoso.conjunction`) and iOS (the apps have no servers; they talk directly to other phones over Bluetooth) |
 
-> **Read this carefully. It affects your legal rights.** By ticking "I agree" in the app, you give up
-> certain rights, including the right to sue us for some kinds of harm, the right to a jury trial and
-> the right to take part in a class action. If you live in the United States, Section 14 requires most
+> **Read this carefully. It affects your legal rights.** By ticking the agreement box in the app
+> and tapping **Begin**, you give up certain rights, including the right to sue us for some kinds of
+> harm, the right to a jury trial and the right to take part in a class action. If you live in the United States, Section 14 requires most
 > disputes to be resolved by individual arbitration, unless you opt out within 30 days. Some of these
 > terms may not apply to you because of the law where you live (see Section 17).
 
@@ -428,7 +428,7 @@ written notice within 30 days after you first accept this Agreement** (or, if we
 this Section, within 30 days after you accept the change, as to the change only). Email
 [CONTACT EMAIL] with the subject "Arbitration Opt-Out", or write to [ADDRESS], and include your name,
 the email address you use to write to us, and a clear statement that you opt out of arbitration
-(the App's Settings → Legal screen can prepare this email for you, with the date you accepted). Opting out does not affect any other
+(the App's Settings → Privacy & legal screen can prepare this email for you, with the date you accepted). Opting out does not affect any other
 part of this Agreement, and it will not affect how we treat you in the App.
 
 14.8. **Changes.** If we change this Section after you accepted it, you may reject the change by
@@ -516,8 +516,9 @@ protections pass to the assignee.
 
 ## 19. Electronic acceptance
 
-19.1. **You accept this Agreement electronically** by ticking the "I agree" box and tapping
-**Continue** in the App. You agree that this is your electronic signature and has the same legal
+19.1. **You accept this Agreement electronically** by ticking the agreement box and tapping
+**Begin** in the App (or by using another agreement control in the App, such as **Agree and
+continue** when we ask you to accept a new version). You agree that this is your electronic signature and has the same legal
 effect as a handwritten signature, under the US Electronic Signatures in Global and National
 Commerce Act (E-SIGN), the Uniform Electronic Transactions Act as adopted in your state, Regulation
 (EU) No 910/2014 (eIDAS), and similar laws. You consent to receive this Agreement and related
@@ -526,7 +527,7 @@ notices electronically.
 19.2. **Record of acceptance.** When you accept, the App records: the document name and **version**
 (for example `WAIVER 1.0`); a **timestamp** in UTC; the platform and App version; and a hash of the
 exact document text displayed. The record is stored on your phone only (the App has no server). You
-can view it in **Settings → Legal**; if you send it to us (for example to opt out of arbitration), we
+can view it in **Settings → Privacy & legal**; if you send it to us (for example to opt out of arbitration), we
 keep that email as long as needed to establish or defend legal claims (see the Privacy Policy).
 
 19.3. **Changes.** We may update this Agreement. If a change is material, the App will show you the
@@ -534,13 +535,14 @@ new version and ask you to accept it before you continue using the affected feat
 applies to changes to the arbitration agreement. The version you accepted applies to events that
 happened before you accepted a new version.
 
-19.4. **Your copy.** You can read the current version at any time under **Settings → Legal** in the
-App and at [WEBSITE URL]/legal/waiver, and you can see your acceptance record under
-**Settings → Legal**.
+19.4. **Your copy.** You can read the current version at any time under **Settings → Privacy &
+legal** in the App and at [WEBSITE URL]/legal/waiver, and you can see your acceptance record under
+**Settings → Privacy & legal → My acceptance records**.
 
 ## 20. Your acknowledgement
 
-**By ticking "I agree", you confirm that:**
+**By ticking the agreement box and tapping Begin (or another agreement control in the App), you
+confirm that:**
 
 1. you are at least 18 years old;
 2. you have read and understood this Agreement, including the release of claims (Section 9), the
@@ -555,4 +557,4 @@ App and at [WEBSITE URL]/legal/waiver, and you can see your acceptance record un
 5. the information you give about your age, gender, relationship status and intentions is true;
 6. you are agreeing freely and voluntarily, intending to be legally bound.
 
-If you do not agree, do not tick the box, and do not use the App.
+If you do not agree, do not tick the box or tap Begin, and do not use the App.

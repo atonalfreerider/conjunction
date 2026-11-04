@@ -61,19 +61,48 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlinx.coroutines.launch
 
+/** Something a parent puts above a tab page's title (the Readings segment control). */
+val LocalTabHeader = androidx.compose.runtime.staticCompositionLocalOf<(@Composable () -> Unit)?> { null }
+
 /** Common tab page: starfield, title, scrolling content capped to a readable width. */
 @Composable
 fun TabPage(title: String, subtitle: String? = null, content: @Composable ColumnScope.() -> Unit) {
+    val header = LocalTabHeader.current
     StarfieldBackground {
         Column(
             Modifier.fillMaxSize().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(Modifier.widthIn(max = 640.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                header?.invoke()
                 SectionTitle(title, subtitle = subtitle)
                 content()
-                Spacer(Modifier.height(24.dp))
+                // Room for the raised Nearby medallion over the end of the page.
+                Spacer(Modifier.height(44.dp))
             }
+        }
+    }
+}
+
+enum class ReadingsSegment { EASTERN, PALM }
+
+/** Readings (SPEC 5d.2): Eastern and Palm under one "Eastern | Palm" segment control. */
+@Composable
+fun ReadingsScreen(container: AppContainer, profile: Profile, charts: Charts?, segment: ReadingsSegment, onSegment: (ReadingsSegment) -> Unit) {
+    val header: @Composable () -> Unit = {
+        com.metavirtuoso.conjunction.ui.components.ChoiceChips(
+            listOf(
+                ReadingsSegment.EASTERN to androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.readings_segment_eastern),
+                ReadingsSegment.PALM to androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.readings_segment_palm),
+            ),
+            segment, onSegment,
+            centered = true,
+        )
+    }
+    androidx.compose.runtime.CompositionLocalProvider(LocalTabHeader provides header) {
+        when (segment) {
+            ReadingsSegment.EASTERN -> EasternScreen(container, profile, charts)
+            ReadingsSegment.PALM -> PalmScreen(container)
         }
     }
 }
@@ -191,7 +220,7 @@ private fun NatalReadings(container: AppContainer, charts: Charts) {
 }
 
 @Composable
-fun TodayScreen(container: AppContainer, charts: Charts?) {
+fun TodayScreen(container: AppContainer, profile: Profile, charts: Charts?) {
     val today = remember { LocalDate.now() }
     val zone = remember { ZoneId.systemDefault() }
     var state by remember { mutableStateOf<ReadingState>(ReadingState.Loading()) }
@@ -211,6 +240,7 @@ fun TodayScreen(container: AppContainer, charts: Charts?) {
         ArtMedallion(Art.sign(sun), contentDescription = "${sun.displayName} sun", size = 170.dp)
         Text("${sun.displayName} sun · ${charts.natal.moonSign.displayName} moon${charts.natal.risingSign?.let { " · ${it.displayName} rising" } ?: ""}", style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center)
         ReadingCard("Your day", state, onRefresh = { load(refresh = true) })
+        if (state is ReadingState.Ready) NotificationsCard(container, profile)
         SkyNow(today, zone)
     }
 }
@@ -310,6 +340,40 @@ private fun PillarColumn(label: String, pillar: Pillar?) {
             Box(Modifier.height(2.dp))
             Text(pillar.stem.label, style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim, textAlign = TextAlign.Center)
             Text(pillar.branch.animal.displayName, style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim)
+        }
+    }
+}
+
+/**
+ * One-time card on Today (SPEC 5d.3.2): "Get your reading each morning?" after the first reading
+ * is shown, if notifications were never asked. Allow → system prompt (Android 13+) and the daily
+ * reminder; Not now → never shown again.
+ */
+@Composable
+private fun NotificationsCard(container: AppContainer, profile: Profile) {
+    if (profile.notificationsPrompted) return
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
+        scope.launch {
+            container.profileStore.update { it.copy(notificationsPrompted = true) }
+            if (granted) com.metavirtuoso.conjunction.ai.DailyReminderReceiver.setEnabled(context, true)
+        }
+    }
+    OrnatePanel(Modifier.fillMaxWidth(), contentPadding = 18.dp) {
+        Text(androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.perm_notifications_title), style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale)
+        Text(androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.perm_notifications_body), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone, modifier = Modifier.padding(vertical = 6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            com.metavirtuoso.conjunction.ui.components.GoldButton(androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.perm_notifications_button), modifier = Modifier.weight(1f), onClick = {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                else scope.launch {
+                    com.metavirtuoso.conjunction.ai.DailyReminderReceiver.setEnabled(context, true)
+                    container.profileStore.update { it.copy(notificationsPrompted = true) }
+                }
+            })
+            com.metavirtuoso.conjunction.ui.components.GhostButton(androidx.compose.ui.res.stringResource(com.metavirtuoso.conjunction.R.string.not_now), modifier = Modifier.weight(1f), onClick = {
+                scope.launch { container.profileStore.update { it.copy(notificationsPrompted = true) } }
+            })
         }
     }
 }

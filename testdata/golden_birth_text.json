@@ -1,0 +1,408 @@
+{
+ "description": "BirthTextParser.parse(text, region, today) golden cases (SPEC 5d.5). Hand-specified by testdata/tools/make_golden_onboarding.py; Kotlin and Swift must match every field.",
+ "today": "2026-11-04",
+ "cases": [
+  {
+   "text": "Aug 7 1994, 4:53 pm, Providence RI",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence RI",
+   "ambiguousDate": false,
+   "note": "the placeholder example"
+  },
+  {
+   "text": "August 7, 1994 4:53pm Providence, RI",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence, RI",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "7 Aug 1994 16:53 London",
+   "region": "GB",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "London",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "7th of August 1994 at noon in Lisbon, Portugal",
+   "region": "PT",
+   "date": "1994-08-07",
+   "time": "12:00",
+   "timeUnknown": false,
+   "placeQuery": "Lisbon, Portugal",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "1994-08-07 4.53pm Providence",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence",
+   "ambiguousDate": false,
+   "note": "ISO date, dotted 12-hour time"
+  },
+  {
+   "text": "8/7/1994 4pm Boston",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:00",
+   "timeUnknown": false,
+   "placeQuery": "Boston",
+   "ambiguousDate": true,
+   "note": "US: month first"
+  },
+  {
+   "text": "8/7/1994 4pm Boston",
+   "region": "GB",
+   "date": "1994-07-08",
+   "time": "16:00",
+   "timeUnknown": false,
+   "placeQuery": "Boston",
+   "ambiguousDate": true,
+   "note": "elsewhere: day first"
+  },
+  {
+   "text": "8/7/1994 4pm Boston",
+   "region": null,
+   "date": "1994-07-08",
+   "time": "16:00",
+   "timeUnknown": false,
+   "placeQuery": "Boston",
+   "ambiguousDate": true,
+   "note": "no region: day first"
+  },
+  {
+   "text": "8-7-94 Boston",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Boston",
+   "ambiguousDate": true,
+   "note": "two-digit year > 26 -> 19xx"
+  },
+  {
+   "text": "8/7/94 Manila",
+   "region": "PH",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Manila",
+   "ambiguousDate": true,
+   "note": "PH writes month first"
+  },
+  {
+   "text": "25/12/1990 midnight Paris",
+   "region": "FR",
+   "date": "1990-12-25",
+   "time": "00:00",
+   "timeUnknown": false,
+   "placeQuery": "Paris",
+   "ambiguousDate": false,
+   "note": "day > 12: not ambiguous"
+  },
+  {
+   "text": "07.08.1994 Berlin",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Berlin",
+   "ambiguousDate": false,
+   "note": "D.M.Y always day first"
+  },
+  {
+   "text": "Aug 7 1994, time unknown, Providence RI",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": true,
+   "placeQuery": "Providence RI",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "born in Providence, RI on 8/7/94 at 4:53 pm",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence, RI",
+   "ambiguousDate": true,
+   "note": "edge words removed"
+  },
+  {
+   "text": "Mar. 3rd, 2001 at 11 a.m. in São Paulo",
+   "region": "BR",
+   "date": "2001-03-03",
+   "time": "11:00",
+   "timeUnknown": false,
+   "placeQuery": "São Paulo",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "12/31/1999 11:59 PM New York",
+   "region": "US",
+   "date": "1999-12-31",
+   "time": "23:59",
+   "timeUnknown": false,
+   "placeQuery": "New York",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "Feb 30 1990 Rome",
+   "region": "IT",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Rome",
+   "ambiguousDate": false,
+   "note": "no such date: date null, span still removed"
+  },
+  {
+   "text": "I don't know my birth time, Sept 9 1985, Austin TX",
+   "region": "US",
+   "date": "1985-09-09",
+   "time": null,
+   "timeUnknown": true,
+   "placeQuery": "Austin TX",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "I don’t know, Sept 9 1985, Austin TX",
+   "region": "US",
+   "date": "1985-09-09",
+   "time": null,
+   "timeUnknown": true,
+   "placeQuery": "Austin TX",
+   "ambiguousDate": false,
+   "note": "curly apostrophe"
+  },
+  {
+   "text": "",
+   "region": "US",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": null,
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "Tokyo",
+   "region": "JP",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Tokyo",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "12am Jan 1 2000 Sydney",
+   "region": "AU",
+   "date": "2000-01-01",
+   "time": "00:00",
+   "timeUnknown": false,
+   "placeQuery": "Sydney",
+   "ambiguousDate": false,
+   "note": "12 am = 00:00"
+  },
+  {
+   "text": "Jan 1 2000 12pm",
+   "region": "US",
+   "date": "2000-01-01",
+   "time": "12:00",
+   "timeUnknown": false,
+   "placeQuery": null,
+   "ambiguousDate": false,
+   "note": "12 pm = 12:00, no place"
+  },
+  {
+   "text": "5/5/05 Dublin",
+   "region": "IE",
+   "date": "2005-05-05",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Dublin",
+   "ambiguousDate": false,
+   "note": "equal parts are not ambiguous; 05 <= 26 -> 2005"
+  },
+  {
+   "text": "3/4/30",
+   "region": "US",
+   "date": "1930-03-04",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": null,
+   "ambiguousDate": true,
+   "note": ""
+  },
+  {
+   "text": "June 15 1988, 25:61, Oslo",
+   "region": "NO",
+   "date": "1988-06-15",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Oslo",
+   "ambiguousDate": false,
+   "note": "invalid 24-hour time: dropped"
+  },
+  {
+   "text": "Born Nov 3 1995 in Sydney, Australia, unknown time",
+   "region": "AU",
+   "date": "1995-11-03",
+   "time": null,
+   "timeUnknown": true,
+   "placeQuery": "Sydney, Australia",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "may 5 1990 6:30 am  Madrid",
+   "region": "ES",
+   "date": "1990-05-05",
+   "time": "06:30",
+   "timeUnknown": false,
+   "placeQuery": "Madrid",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "Aug 7 1994 4:53 pm　Providence",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence",
+   "ambiguousDate": false,
+   "note": "Unicode spaces"
+  },
+  {
+   "text": "Ontario, Canada Jan 2 1980",
+   "region": "CA",
+   "date": "1980-01-02",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Ontario, Canada",
+   "ambiguousDate": false,
+   "note": "'On' of Ontario is not an edge word"
+  },
+  {
+   "text": "Aug 7 1994 in Turin",
+   "region": "IT",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Turin",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "midday 1 May 1990 Lagos",
+   "region": "NG",
+   "date": "1990-05-01",
+   "time": "12:00",
+   "timeUnknown": false,
+   "placeQuery": "Lagos",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "12/13/2001 Chicago",
+   "region": "US",
+   "date": "2001-12-13",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Chicago",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "13/12/2001",
+   "region": "US",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": null,
+   "ambiguousDate": false,
+   "note": "US month 13: no date"
+  },
+  {
+   "text": "I was born on July 4, 1976 at 9:15 pm in Philadelphia",
+   "region": "US",
+   "date": "1976-07-04",
+   "time": "21:15",
+   "timeUnknown": false,
+   "placeQuery": "Philadelphia",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "4:53 pm",
+   "region": "US",
+   "date": null,
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": null,
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "Providence RI 1994-08-07 16:53",
+   "region": "US",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "placeQuery": "Providence RI",
+   "ambiguousDate": false,
+   "note": ""
+  },
+  {
+   "text": "2030-01-01 Paris",
+   "region": "FR",
+   "date": "2030-01-01",
+   "time": null,
+   "timeUnknown": false,
+   "placeQuery": "Paris",
+   "ambiguousDate": false,
+   "note": "parser keeps a future date; isAcceptableDate rejects it"
+  }
+ ],
+ "acceptableDate": [
+  {
+   "date": "1900-01-01",
+   "acceptable": true
+  },
+  {
+   "date": "1899-12-31",
+   "acceptable": false
+  },
+  {
+   "date": "2026-11-04",
+   "acceptable": true
+  },
+  {
+   "date": "2026-11-05",
+   "acceptable": false
+  },
+  {
+   "date": "1994-08-07",
+   "acceptable": true
+  }
+ ]
+}

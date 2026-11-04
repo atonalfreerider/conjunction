@@ -39,6 +39,10 @@ object P2pConstants {
     const val MAX_BIO_BYTES = 280
     const val MAX_CHAT_TEXT_BYTES = 4000
     const val MAX_READ_REFS = 64
+    /** Chat `profile.rev` (SPEC 5d.6): 0..2147483647. */
+    const val MAX_PROFILE_REV = Int.MAX_VALUE
+    /** Chat `profile.ig`: 1..30 bytes of `[a-z0-9._]`. */
+    const val MAX_INSTAGRAM_BYTES = 30
     const val MAX_PHOTO_SIDE = 640
 
     const val FRIEND_TAG_LEN = 8

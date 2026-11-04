@@ -10,9 +10,13 @@ public struct LocalPeerProfile: Sendable, Equatable {
     public var photo: [UInt8]?
     public var photoW: Int
     public var photoH: Int
+    /// Normalised Instagram handle, sent only to friends inside the encrypted chat (SPEC 5d.6).
+    public var instagram: String?
+    /// Settings › Nearby "Share my Instagram with new matches": the per-friend switch's default.
+    public var shareInstagramByDefault: Bool
 
     public init(match: MatchProfile, compat: WireCompat, firstName: String, bio: String?, photo: [UInt8]?,
-                photoW: Int, photoH: Int) {
+                photoW: Int, photoH: Int, instagram: String? = nil, shareInstagramByDefault: Bool = true) {
         self.match = match
         self.compat = compat
         self.firstName = firstName
@@ -20,6 +24,8 @@ public struct LocalPeerProfile: Sendable, Equatable {
         self.photo = photo
         self.photoW = photoW
         self.photoH = photoH
+        self.instagram = instagram
+        self.shareInstagramByDefault = shareInstagramByDefault
     }
 }
 
@@ -96,6 +102,8 @@ public final class NearbyEngine {
         var portClosed = false
         var closeReason: String?
         var inflight: [String] = []
+        /// Rev of the `profile` already written on this link (not re-sent on the same link).
+        var profileSentRev = -1
         var chatTokens = NearbyEngine.chatBurst
         var chatTokensAt: Int64
 
@@ -274,6 +282,15 @@ public final class NearbyEngine {
         }
     }
 
+    /// The owner's Instagram handle or a per-friend share switch changed (SPEC 5d.6): send the new
+    /// `profile` now on every open secure friend link whose effective value changed.
+    public func refreshProfiles() {
+        for rec in links where rec.friendId != nil && rec.link.state == .secure {
+            sendProfileIfNeeded(rec)
+            flush(rec)
+        }
+    }
+
     /// Close every link to a person (block, unmatch, report, snooze).
     public func disconnectPeer(friendId: String?, fingerprint: String?) {
         for rec in links where (friendId != nil && rec.friendId == friendId) || (fingerprint != nil && rec.fingerprint == fingerprint) {
@@ -371,17 +388,36 @@ public final class NearbyEngine {
             onFriendEstablished(rec, ik: ik, fs: fs, safetyCode: code, card: card, peer: peer, now: now)
         case .friendNearby(let f):
             rec.friendId = f.id
-            store.update { s in for i in s.friends.indices where s.friends[i].id == f.id { s.friends[i].lastSeen = now } }
+            // SPEC 5d.4 backfill: the friend's hello (kc already verified) gives their chart
+            // positions; keep them (replace and re-score when they changed).
+            let peer = rec.link.peerHello?.compat
+            let rescored = peer.flatMap { rescore($0) }
+            store.update { s in
+                for i in s.friends.indices where s.friends[i].id == f.id {
+                    s.friends[i].lastSeen = now
+                    if let peer, peer != s.friends[i].peerCompat {
+                        s.friends[i].peerCompat = peer
+                        if let rescored { s.friends[i].score = rescored }
+                    }
+                }
+            }
             log("link \(rec.id): friend \(f.id.prefix(8)) nearby, secure")
+            sendProfileIfNeeded(rec)
             deliverQueued(rec)
             publishStatus()
         case .chatReceived(let payload):
             onChat(rec, payload)
+        case .profileReceived(_, _, let rev, let ig):
+            onProfile(rec, rev: rev, ig: ig)
         case .delivered(let id):
             rec.inflight.removeAll { $0 == id }
+            let fid = rec.friendId
             store.update { s in
                 for i in s.messages.indices where s.messages[i].id == id && s.messages[i].mine && s.messages[i].status != .read {
                     s.messages[i].status = .delivered
+                }
+                for i in s.friends.indices where s.friends[i].id == fid && s.friends[i].igState?.inFlightId == id {
+                    s.friends[i].igState = s.friends[i].igState?.onAck(id)
                 }
             }
         case .protocolError(let code, let detail, let byPeer):
@@ -424,7 +460,9 @@ public final class NearbyEngine {
                 firstName: old?.firstName, bio: old?.bio, photoFile: old?.photoFile,
                 photoScreening: old?.photoScreening ?? .pending, mySwipe: old?.mySwipe, peerSwipe: nil, friendId: nil,
                 createdAt: old?.createdAt ?? now, expiresAt: old?.expiresAt ?? (now + NearbyEngine.inboxTTLMs),
-                notifiedAt: old?.notifiedAt ?? 0)
+                notifiedAt: old?.notifiedAt ?? 0,
+                peerCompat: peer.compat, chineseRelation: m.score.chineseRelation.name, stemRelation: m.score.stemRelation.name,
+                blurb: old?.peerCompat == peer.compat ? old?.blurb : nil)
             announce = now - enc.notifiedAt > NearbyEngine.renotifyMs
             if announce { enc.notifiedAt = now }
             s.encounters.removeAll { $0.fingerprint == fingerprint }
@@ -462,6 +500,12 @@ public final class NearbyEngine {
         let enc = rec.fingerprint.flatMap { store.state.encounter($0) }
         let c = peer.compat
         let name = card?.firstName ?? enc?.firstName ?? "Your match"
+        let me = host?.localProfile()
+        let shareOn = me?.shareInstagramByDefault ?? true
+        let score: StoredScore? = {
+            if let enc, enc.peerCompat == nil || enc.peerCompat == c { return enc.storedScore() }
+            return rescore(c)
+        }()
         store.update { s in
             let friend = StoredFriend(
                 id: id, identityKey: P2PBytes.b64(ik), friendSecret: P2PBytes.b64(fs), safetyCode: safetyCode,
@@ -470,7 +514,8 @@ public final class NearbyEngine {
                 sun: P2PMatching.sign(c.sun).key, moon: P2PMatching.sign(c.moon).key,
                 rising: c.asc.map { P2PMatching.sign($0).key }, chineseAnimal: c.animal.key,
                 photoFile: enc?.photoFile, photoScreening: enc?.photoFile != nil ? (enc?.photoScreening ?? .pending) : .safe,
-                since: now, lastSeen: now)
+                since: now, lastSeen: now, peerCompat: c, score: score, blurb: enc?.blurb,
+                igShareOn: shareOn, igState: InstagramShareState.initial(handle: me?.instagram, shareWithThisFriend: shareOn))
             s.friends.removeAll { $0.id == id }
             s.friends.append(friend)
             for i in s.encounters.indices where s.encounters[i].fingerprint == rec.fingerprint { s.encounters[i].friendId = id }
@@ -479,8 +524,50 @@ public final class NearbyEngine {
         host?.announce(NearbyEvent(kind: .conjunction, encounterId: rec.fingerprint, friendId: id, matchKind: enc?.kind,
                                    total: enc?.total),
                        peerName: name, peerSun: enc.map { CardText.sign($0.sun) })
+        // The `profile` is the first chat on a new secure link (SPEC 5d.6), then queued messages.
+        sendProfileIfNeeded(rec)
         deliverQueued(rec)
         publishStatus()
+    }
+
+    /// Receiver side of `profile` (SPEC 5d.6): keep the newest rev only. The link already sent the ack.
+    private func onProfile(_ rec: Rec, rev: Int, ig: String?) {
+        guard let fid = rec.friendId else { return }
+        store.update { s in
+            for i in s.friends.indices where s.friends[i].id == fid && !s.friends[i].blocked
+                && InstagramShareState.acceptReceived(storedPeerIgRev: s.friends[i].peerIgRev, rev: rev) {
+                s.friends[i].peerIg = InstagramHandle.received(ig)
+                s.friends[i].peerIgRev = rev
+            }
+        }
+        log("link \(rec.id): profile rev \(rev) (\(ig == nil ? "no handle" : "handle"))")
+    }
+
+    /// Sender side of `profile` (SPEC 5d.6): applies the current effective value (the handle when
+    /// set and this friend's switch is on) and sends it when the friend has not acknowledged the
+    /// current rev. One send per rev per link; a new link re-sends with a fresh id.
+    private func sendProfileIfNeeded(_ rec: Rec) {
+        guard let fid = rec.friendId, rec.link.state == .secure, let f = store.state.friend(fid), !f.blocked else { return }
+        let me = host?.localProfile()
+        let on = f.igShareOn ?? me?.shareInstagramByDefault ?? true
+        var st = (f.igState ?? InstagramShareState.initial(handle: me?.instagram, shareWithThisFriend: on))
+            .withEffective(InstagramShareState.effective(handle: me?.instagram, shareWithThisFriend: on))
+        if st.needsSend && rec.profileSentRev != st.rev, let id = try? rec.link.sendProfile(rev: st.rev, ig: st.value) {
+            st = st.sent(id)
+            rec.profileSentRev = st.rev
+            rec.chatTokens -= 1
+            rec.lastActivity = clock()
+        }
+        if st != f.igState {
+            let updated = st
+            store.update { s in for i in s.friends.indices where s.friends[i].id == fid { s.friends[i].igState = updated } }
+        }
+    }
+
+    /// Compatibility of the owner with [peer] (the friend backfill and friends made without a card).
+    private func rescore(_ peer: WireCompat) -> StoredScore? {
+        guard let me = host?.localProfile()?.compat else { return nil }
+        return StoredScore(Compatibility.score(me.toCompatProfile(), peer.toCompatProfile()))
     }
 
     private func onChat(_ rec: Rec, _ payload: ChatPayload) {
@@ -507,7 +594,7 @@ public final class NearbyEngine {
                     st.messages[i].status = .read
                 }
             }
-        case .unknown:
+        case .profile, .unknown:
             break
         }
     }

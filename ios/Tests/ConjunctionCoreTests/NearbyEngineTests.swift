@@ -9,7 +9,7 @@ import XCTest
 /// format. A port of the Android app's NearbyEngineTest.
 final class NearbyEngineTests: XCTestCase {
     final class Host: NearbyHost {
-        let profile: LocalPeerProfile
+        var profile: LocalPeerProfile
         var announced: [NearbyEvent] = []
         var logs: [String] = []
         weak var engine: NearbyEngine?
@@ -229,6 +229,73 @@ final class NearbyEngineTests: XCTestCase {
         a.tick()
         let reopened = P2PStore(fileURL: storeA.fileURL, photosDirectory: storeA.photosDirectory)
         XCTAssertEqual(reopened.state, storeA.state)
+    }
+
+    /// SPEC 5d.4 / 5d.6: the match keeps the peer's chart; the friend inherits it; both sides send
+    /// `profile` rev 0 first on the new secure link; a handle change or the per-friend switch sends
+    /// the next rev; an old friend without a chart is backfilled on the next verified link.
+    func testPeerChartIsKeptAndInstagramProfilesAreExchanged() throws {
+        let net = Net()
+        let (cId, pId) = connect(net, a, b)
+        net.pump()
+        let encA = storeA.state.encounters[0]
+        XCTAssertEqual(encA.peerCompat, vega.compat, "C-2: the match stores the peer's hello.compat")
+        XCTAssertNotNil(encA.chineseRelation)
+        XCTAssertNotNil(encA.stemRelation)
+        a.swipe(encA.fingerprint, .right)
+        b.swipe(storeB.state.encounters[0].fingerprint, .right)
+        net.pump()
+        let fA = try XCTUnwrap(storeA.state.friends.first), fB = try XCTUnwrap(storeB.state.friends.first)
+        XCTAssertEqual(fA.peerCompat, vega.compat, "the friend inherits the chart")
+        XCTAssertEqual(fA.score?.total, encA.total)
+        // I-3: rev 0 (no handle) both ways, acknowledged.
+        XCTAssertEqual(fA.peerIgRev, 0)
+        XCTAssertNil(fA.peerIg)
+        XCTAssertEqual(storeA.state.friends[0].igState?.ackedRev, 0)
+        XCTAssertEqual(storeB.state.friends[0].igState?.ackedRev, 0)
+        XCTAssertTrue(storeA.state.messages.isEmpty, "a profile is not a chat message")
+
+        // Aurora adds her handle: rev 1 goes out on the open link.
+        hostA.profile.instagram = "aurora.stars"
+        a.refreshProfiles()
+        net.pump()
+        XCTAssertEqual(storeB.state.friend(fB.id)?.peerIg, "aurora.stars")
+        XCTAssertEqual(storeB.state.friend(fB.id)?.peerIgRev, 1)
+        XCTAssertEqual(storeA.state.friend(fA.id)?.igState?.ackedRev, 1)
+        a.refreshProfiles()
+        net.pump()
+        XCTAssertEqual(storeB.state.friend(fB.id)?.peerIgRev, 1, "nothing changed: nothing sent")
+
+        // The per-friend switch off sends ig:null and the chip disappears.
+        storeA.update { $0.setInstagramShare(fA.id, on: false) }
+        a.refreshProfiles()
+        net.pump()
+        XCTAssertNil(storeB.state.friend(fB.id)?.peerIg)
+        XCTAssertEqual(storeB.state.friend(fB.id)?.peerIgRev, 2)
+
+        // C-4: a friend kept without a chart (made before UX 2.0) is backfilled on the next link.
+        drop(a, cId, b, pId())
+        net.queue.removeAll()
+        storeB.update { s in for i in s.friends.indices { s.friends[i].peerCompat = nil; s.friends[i].score = nil } }
+        storeB.update { s in s.encounters.removeAll() }
+        XCTAssertFalse(CompatView.of(try XCTUnwrap(storeB.state.compatSubject(fB.id, now: now)), me: vega.compat.toCompatProfile()).hasWheel)
+        // Aurora turns sharing back on while apart: rev 3 waits for the next secure link.
+        storeA.update { $0.setInstagramShare(fA.id, on: true) }
+        now += 16 * 60_000
+        let net2 = Net()
+        connect(net2, b, a)
+        net2.pump()
+        let back = try XCTUnwrap(storeB.state.friend(fB.id))
+        XCTAssertEqual(back.peerCompat, aurora.compat)
+        XCTAssertEqual(back.score?.total, Compatibility.score(vega.compat.toCompatProfile(), aurora.compat.toCompatProfile()).total)
+        XCTAssertEqual(back.peerIg, "aurora.stars")
+        XCTAssertEqual(back.peerIgRev, 3)
+        XCTAssertTrue(CompatView.of(try XCTUnwrap(storeB.state.compatSubject(fB.id, now: now)), me: vega.compat.toCompatProfile()).hasWheel)
+
+        // Block deletes what this phone kept of them (I-5 / C-2).
+        storeB.update { $0.blockFriend(fB.id) }
+        XCTAssertNil(storeB.state.friend(fB.id)?.peerIg)
+        XCTAssertNil(storeB.state.friend(fB.id)?.peerCompat)
     }
 
     func testOutOfRangeSwipeIsAppliedAtNextEncounter() {

@@ -45,7 +45,7 @@ class MatchGalleryActivity : ComponentActivity() {
             ConjunctionTheme {
                 var run by remember { mutableIntStateOf(0) }
                 when (screen) {
-                    "card" -> SwipeCardPage(card, "Fire meets fire: a bright, easy warmth.", onSwipe = {}, onSafety = {}, onClose = { finish() })
+                    "card" -> SwipeCardPage(card, "Fire meets fire: a bright, easy warmth.", onSwipe = {}, onChart = {}, onMenu = {}, onClose = { finish() })
                     else -> androidx.compose.runtime.key(run) {
                         MatchAnimation(card, R.drawable.zodiac_leo, null, "Fire meets fire: a bright, easy warmth.", onFinished = { run++ })
                     }

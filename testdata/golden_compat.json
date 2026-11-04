@@ -45,7 +45,57 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 207,
+     "weight": 4,
+     "score": 694
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 14,
+     "weight": 3,
+     "score": 839
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 18,
+     "weight": 2,
+     "score": 836
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 9,
+     "weight": 1,
+     "score": 843
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 668,
+     "weight": 2,
+     "score": -218
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 488,
+     "weight": 1,
+     "score": 184
+    }
+   ]
   },
   {
    "id": "pair-02-ava-1990-sam-1990",
@@ -90,7 +140,65 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 14,
+     "weight": 4,
+     "score": 839
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 3,
+     "score": 849
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 2,
+     "score": 849
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": 850
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 386,
+     "weight": 2,
+     "score": -379
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 296,
+     "weight": 1,
+     "score": 628
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 683,
+     "weight": 2,
+     "score": -209
+    }
+   ]
   },
   {
    "id": "pair-03-ava-1990-kai-1990",
@@ -130,7 +238,57 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 186,
+     "weight": 4,
+     "score": 710
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 13,
+     "weight": 3,
+     "score": 840
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 16,
+     "weight": 2,
+     "score": 838
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 7,
+     "weight": 1,
+     "score": 844
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "sextile",
+     "orbCentideg": 262,
+     "weight": 1,
+     "score": 540
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 695,
+     "weight": 2,
+     "score": -202
+    }
+   ]
   },
   {
    "id": "pair-04-ava-1990-lena-1990",
@@ -170,7 +328,49 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 34,
+     "weight": 3,
+     "score": 824
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 490,
+     "weight": 4,
+     "score": 482
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 42,
+     "weight": 2,
+     "score": 818
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 20,
+     "weight": 1,
+     "score": 835
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 440,
+     "weight": 2,
+     "score": 202
+    }
+   ]
   },
   {
    "id": "pair-05-ava-1990-omar-1975",
@@ -210,7 +410,49 @@
     "sharesBirthday": true,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 8,
+     "weight": 4,
+     "score": 743
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 64,
+     "weight": 3,
+     "score": 802
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 306,
+     "weight": 2,
+     "score": 681
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 45,
+     "weight": 2,
+     "score": -474
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 463,
+     "weight": 1,
+     "score": 202
+    }
+   ]
   },
   {
    "id": "pair-06-ava-1990-ben-1988",
@@ -255,7 +497,65 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "sextile",
+     "orbCentideg": 199,
+     "weight": 5,
+     "score": 590
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 322,
+     "weight": 2,
+     "score": 670
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 499,
+     "weight": 4,
+     "score": -214
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "opposition",
+     "orbCentideg": 425,
+     "weight": 2,
+     "score": 293
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "square",
+     "orbCentideg": 559,
+     "weight": 2,
+     "score": -280
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 431,
+     "weight": 2,
+     "score": 226
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 630,
+     "weight": 2,
+     "score": -150
+    }
+   ]
   },
   {
    "id": "pair-07-ben-1988-chen-1992",
@@ -299,7 +599,57 @@
     "sharesBirthday": false,
     "chineseRelation": "TRINE",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 45,
+     "weight": 2,
+     "score": 816
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "sextile",
+     "orbCentideg": 144,
+     "weight": 2,
+     "score": 634
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "square",
+     "orbCentideg": 331,
+     "weight": 4,
+     "score": -310
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 518,
+     "weight": 2,
+     "score": 530
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "sextile",
+     "orbCentideg": 283,
+     "weight": 2,
+     "score": 523
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 180,
+     "weight": 2,
+     "score": -497
+    }
+   ]
   },
   {
    "id": "pair-08-chen-1992-milo-1984",
@@ -339,7 +689,41 @@
     "sharesBirthday": false,
     "chineseRelation": "HARM",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 42,
+     "weight": 4,
+     "score": 818
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 154,
+     "weight": 4,
+     "score": 626
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 170,
+     "weight": 3,
+     "score": 722
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 259,
+     "weight": 2,
+     "score": 655
+    }
+   ]
   },
   {
    "id": "pair-09-dara-1995-eli-1985",
@@ -382,7 +766,33 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 55,
+     "weight": 5,
+     "score": -568
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "opposition",
+     "orbCentideg": 118,
+     "weight": 2,
+     "score": 370
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 472,
+     "weight": 2,
+     "score": 282
+    }
+   ]
   },
   {
    "id": "pair-10-eli-1985-fatima-1999",
@@ -422,7 +832,41 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 494,
+     "weight": 5,
+     "score": 547
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 431,
+     "weight": 4,
+     "score": -353
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 516,
+     "weight": 2,
+     "score": 531
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 403,
+     "weight": 2,
+     "score": -269
+    }
+   ]
   },
   {
    "id": "pair-11-fatima-1999-gus-1978",
@@ -467,7 +911,81 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "sextile",
+     "orbCentideg": 34,
+     "weight": 4,
+     "score": 722
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 741,
+     "weight": 5,
+     "score": 294
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "sextile",
+     "orbCentideg": 27,
+     "weight": 2,
+     "score": 728
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 131,
+     "weight": 3,
+     "score": -425
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 469,
+     "weight": 2,
+     "score": 498
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 383,
+     "weight": 4,
+     "score": 176
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 64,
+     "weight": 1,
+     "score": -563
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 664,
+     "weight": 2,
+     "score": 234
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 748,
+     "weight": 2,
+     "score": -37
+    }
+   ]
   },
   {
    "id": "pair-12-gus-1978-hana-2001",
@@ -507,7 +1025,49 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 222,
+     "weight": 5,
+     "score": 344
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 388,
+     "weight": 3,
+     "score": -378
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 488,
+     "weight": 2,
+     "score": 551
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 149,
+     "weight": 2,
+     "score": -414
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "sextile",
+     "orbCentideg": 440,
+     "weight": 4,
+     "score": 98
+    }
+   ]
   },
   {
    "id": "pair-13-hana-2001-ivan-1993",
@@ -551,7 +1111,57 @@
     "sharesBirthday": false,
     "chineseRelation": "HARMONY",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 232,
+     "weight": 2,
+     "score": 734
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "square",
+     "orbCentideg": 437,
+     "weight": 4,
+     "score": -350
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 437,
+     "weight": 5,
+     "score": 222
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 578,
+     "weight": 2,
+     "score": 487
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "opposition",
+     "orbCentideg": 250,
+     "weight": 2,
+     "score": 337
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 646,
+     "weight": 1,
+     "score": 365
+    }
+   ]
   },
   {
    "id": "pair-14-ivan-1993-jade-1990",
@@ -595,7 +1205,65 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 78,
+     "weight": 4,
+     "score": 687
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 342,
+     "weight": 4,
+     "score": -404
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 242,
+     "weight": 2,
+     "score": 668
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 631,
+     "weight": 5,
+     "score": -239
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 654,
+     "weight": 5,
+     "score": 236
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "sextile",
+     "orbCentideg": 217,
+     "weight": 2,
+     "score": 576
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 488,
+     "weight": 2,
+     "score": 128
+    }
+   ]
   },
   {
    "id": "pair-15-milo-1984-nia-2000",
@@ -639,7 +1307,41 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "sextile",
+     "orbCentideg": 225,
+     "weight": 4,
+     "score": 570
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 185,
+     "weight": 3,
+     "score": 711
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 707,
+     "weight": 5,
+     "score": 319
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 330,
+     "weight": 2,
+     "score": 602
+    }
+   ]
   },
   {
    "id": "pair-16-nia-2000-omar-1975",
@@ -679,7 +1381,33 @@
     "sharesBirthday": false,
     "chineseRelation": "HARM",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 247,
+     "weight": 2,
+     "score": 723
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 391,
+     "weight": 3,
+     "score": 302
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 409,
+     "weight": 1,
+     "score": 422
+    }
+   ]
   },
   {
    "id": "pair-17-omar-1975-pia-2003",
@@ -723,7 +1451,57 @@
     "sharesBirthday": false,
     "chineseRelation": "TRINE",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 468,
+     "weight": 4,
+     "score": 565
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 329,
+     "weight": 2,
+     "score": 665
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 638,
+     "weight": 4,
+     "score": 315
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 218,
+     "weight": 2,
+     "score": -375
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 467,
+     "weight": 2,
+     "score": 283
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 527,
+     "weight": 1,
+     "score": 73
+    }
+   ]
   },
   {
    "id": "pair-18-pia-2003-quinn-1982",
@@ -766,7 +1544,73 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "SAME_ELEMENT"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "sextile",
+     "orbCentideg": 110,
+     "weight": 4,
+     "score": 662
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 365,
+     "weight": 5,
+     "score": -391
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 4,
+     "weight": 2,
+     "score": 847
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 434,
+     "weight": 4,
+     "score": -252
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "square",
+     "orbCentideg": 285,
+     "weight": 2,
+     "score": -437
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 422,
+     "weight": 2,
+     "score": 192
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 630,
+     "weight": 2,
+     "score": -140
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 629,
+     "weight": 1,
+     "score": 178
+    }
+   ]
   },
   {
    "id": "pair-19-quinn-1982-rosa-1996",
@@ -811,7 +1655,65 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 202,
+     "weight": 2,
+     "score": 755
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "opposition",
+     "orbCentideg": 559,
+     "weight": 4,
+     "score": 260
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 568,
+     "weight": 4,
+     "score": 258
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 158,
+     "weight": 1,
+     "score": 787
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 674,
+     "weight": 3,
+     "score": 231
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 754,
+     "weight": 2,
+     "score": 211
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 180,
+     "weight": 1,
+     "score": 421
+    }
+   ]
   },
   {
    "id": "pair-20-rosa-1996-sam-1990",
@@ -855,7 +1757,41 @@
     "sharesBirthday": false,
     "chineseRelation": "CLASH",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 716,
+     "weight": 5,
+     "score": 313
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "sextile",
+     "orbCentideg": 453,
+     "weight": 2,
+     "score": 387
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 486,
+     "weight": 3,
+     "score": -222
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "square",
+     "orbCentideg": 320,
+     "weight": 4,
+     "score": 133
+    }
+   ]
   },
   {
    "id": "pair-21-sam-1990-tara-1970",
@@ -895,7 +1831,25 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 217,
+     "weight": 5,
+     "score": 745
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 358,
+     "weight": 2,
+     "score": 644
+    }
+   ]
   },
   {
    "id": "pair-22-tara-1970-ava-1990",
@@ -935,7 +1889,25 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 203,
+     "weight": 5,
+     "score": 755
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 372,
+     "weight": 2,
+     "score": 634
+    }
+   ]
   },
   {
    "id": "pair-23-dara-1995-lena-1990",
@@ -975,7 +1947,25 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "SAME_ELEMENT"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 135,
+     "weight": 2,
+     "score": 803
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "opposition",
+     "orbCentideg": 714,
+     "weight": 5,
+     "score": 221
+    }
+   ]
   },
   {
    "id": "pair-24-chen-1992-hana-2001",
@@ -1019,7 +2009,41 @@
     "sharesBirthday": false,
     "chineseRelation": "HARMONY",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "square",
+     "orbCentideg": 689,
+     "weight": 2,
+     "score": 394
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "opposition",
+     "orbCentideg": 80,
+     "weight": 2,
+     "score": 380
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "opposition",
+     "orbCentideg": 217,
+     "weight": 2,
+     "score": 345
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 542,
+     "weight": 2,
+     "score": 260
+    }
+   ]
   },
   {
    "id": "pair-25-eli-1985-rosa-1996",
@@ -1064,7 +2088,65 @@
     "sharesBirthday": false,
     "chineseRelation": "HARMONY",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 300,
+     "weight": 4,
+     "score": 685
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 6,
+     "weight": 2,
+     "score": 845
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 387,
+     "weight": 2,
+     "score": 623
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 533,
+     "weight": 5,
+     "score": -195
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 265,
+     "weight": 2,
+     "score": -448
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 660,
+     "weight": 2,
+     "score": 428
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 603,
+     "weight": 2,
+     "score": 197
+    }
+   ]
   },
   {
    "id": "pair-26-kai-1990-jade-1990",
@@ -1104,7 +2186,49 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 27,
+     "weight": 3,
+     "score": 829
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 393,
+     "weight": 4,
+     "score": 555
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 34,
+     "weight": 2,
+     "score": 824
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 16,
+     "weight": 1,
+     "score": 838
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "sextile",
+     "orbCentideg": 226,
+     "weight": 1,
+     "score": 119
+    }
+   ]
   },
   {
    "id": "pair-27-ben-1988-ben-1988",
@@ -1149,7 +2273,49 @@
     "sharesBirthday": false,
     "chineseRelation": "SAME_SELF_PUNISHMENT",
     "stemRelation": "SAME_STEM"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 4,
+     "score": 850
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 3,
+     "score": 850
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 2,
+     "score": 850
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": 850
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": 850
+    }
+   ]
   },
   {
    "id": "pair-28-gus-1978-quinn-1982",
@@ -1193,7 +2359,49 @@
     "sharesBirthday": false,
     "chineseRelation": "TRINE",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 219,
+     "weight": 4,
+     "score": 743
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 482,
+     "weight": 2,
+     "score": 555
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "sextile",
+     "orbCentideg": 317,
+     "weight": 2,
+     "score": 496
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 239,
+     "weight": 2,
+     "score": 470
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 644,
+     "weight": 2,
+     "score": 440
+    }
+   ]
   },
   {
    "id": "pair-29-fatima-1999-nia-2000",
@@ -1233,7 +2441,41 @@
     "sharesBirthday": false,
     "chineseRelation": "HARM",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 104,
+     "weight": 4,
+     "score": -440
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 195,
+     "weight": 2,
+     "score": 760
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 373,
+     "weight": 2,
+     "score": 570
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 634,
+     "weight": 4,
+     "score": -153
+    }
+   ]
   },
   {
    "id": "pair-30-ivan-1993-pia-2003",
@@ -1273,7 +2515,49 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "GENERATING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "opposition",
+     "orbCentideg": 87,
+     "weight": 5,
+     "score": 378
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 109,
+     "weight": 2,
+     "score": 768
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 309,
+     "weight": 2,
+     "score": 618
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "opposition",
+     "orbCentideg": 576,
+     "weight": 1,
+     "score": 256
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "opposition",
+     "orbCentideg": 769,
+     "weight": 2,
+     "score": 57
+    }
+   ]
   },
   {
    "id": "pair-31-edge-zero-edge-orb-limit",
@@ -1318,7 +2602,113 @@
     "sharesBirthday": true,
     "chineseRelation": "TRINE",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 0,
+     "weight": 4,
+     "score": 750
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 700,
+     "weight": 5,
+     "score": 400
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 700,
+     "weight": 5,
+     "score": 325
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 700,
+     "weight": 4,
+     "score": 325
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 700,
+     "weight": 3,
+     "score": 400
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 0,
+     "weight": 2,
+     "score": -600
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 0,
+     "weight": 2,
+     "score": -600
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 700,
+     "weight": 2,
+     "score": 400
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "trine",
+     "orbCentideg": 700,
+     "weight": 2,
+     "score": 400
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": 750
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 700,
+     "weight": 2,
+     "score": 325
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "conjunction",
+     "orbCentideg": 700,
+     "weight": 2,
+     "score": 325
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": -600
+    }
+   ]
   },
   {
    "id": "pair-32-edge-zero-edge-wrap",
@@ -1362,7 +2752,89 @@
     "sharesBirthday": false,
     "chineseRelation": "CLASH",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 5,
+     "score": 850
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 3,
+     "score": 850
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 4,
+     "score": 549
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 2,
+     "score": 850
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 0,
+     "weight": 2,
+     "score": 850
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "opposition",
+     "orbCentideg": 0,
+     "weight": 4,
+     "score": 400
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 2,
+     "score": 549
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 2,
+     "score": 549
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 1,
+     "weight": 2,
+     "score": 549
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "opposition",
+     "orbCentideg": 0,
+     "weight": 1,
+     "score": 400
+    }
+   ]
   },
   {
    "id": "pair-33-edge-zero-edge-square",
@@ -1402,7 +2874,145 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "SAME_ELEMENT"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 757
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 5,
+     "score": -529
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 3,
+     "score": -529
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 369
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": -529
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": -529
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": -429
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": -429
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 123,
+     "weight": 1,
+     "score": 757
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 369
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 369
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 369
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 1,
+     "score": -429
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 5,
+     "score": 71
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 71
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 71
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 71
+    }
+   ]
   },
   {
    "id": "pair-34-edge-orb-limit-edge-square",
@@ -1446,7 +3056,81 @@
     "sharesBirthday": false,
     "chineseRelation": "HARMONY",
     "stemRelation": "CONTROLLING"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "trine",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 812
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "trine",
+     "orbCentideg": 677,
+     "weight": 4,
+     "score": 416
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "SUN",
+     "aspect": "conjunction",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 757
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 577,
+     "weight": 5,
+     "score": -270
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "sextile",
+     "orbCentideg": 123,
+     "weight": 1,
+     "score": 651
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 577,
+     "weight": 2,
+     "score": 255
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "ASC",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 1,
+     "score": 369
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 577,
+     "weight": 2,
+     "score": -170
+    },
+    {
+     "pointA": "ASC",
+     "pointB": "MOON",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 119
+    }
+   ]
   },
   {
    "id": "pair-35-edge-wrap-edge-square",
@@ -1490,7 +3174,113 @@
     "sharesBirthday": false,
     "chineseRelation": "NEUTRAL",
     "stemRelation": "COMBINATION"
-   }
+   },
+   "synastry": [
+    {
+     "pointA": "MOON",
+     "pointB": "SUN",
+     "aspect": "sextile",
+     "orbCentideg": 123,
+     "weight": 5,
+     "score": 651
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "VENUS",
+     "aspect": "conjunction",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 757
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "MOON",
+     "aspect": "trine",
+     "orbCentideg": 123,
+     "weight": 4,
+     "score": 462
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MARS",
+     "aspect": "conjunction",
+     "orbCentideg": 124,
+     "weight": 4,
+     "score": 457
+    },
+    {
+     "pointA": "MOON",
+     "pointB": "ASC",
+     "aspect": "trine",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 812
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 3,
+     "score": -529
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 122,
+     "weight": 2,
+     "score": -530
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "ASC",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": -429
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 2,
+     "score": 369
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "VENUS",
+     "aspect": "opposition",
+     "orbCentideg": 124,
+     "weight": 2,
+     "score": 219
+    },
+    {
+     "pointA": "MARS",
+     "pointB": "MARS",
+     "aspect": "opposition",
+     "orbCentideg": 123,
+     "weight": 1,
+     "score": 369
+    },
+    {
+     "pointA": "SUN",
+     "pointB": "MOON",
+     "aspect": "square",
+     "orbCentideg": 123,
+     "weight": 5,
+     "score": 71
+    },
+    {
+     "pointA": "VENUS",
+     "pointB": "SUN",
+     "aspect": "square",
+     "orbCentideg": 124,
+     "weight": 2,
+     "score": 71
+    }
+   ]
   }
  ]
 }

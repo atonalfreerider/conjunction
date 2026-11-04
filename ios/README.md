@@ -12,12 +12,18 @@ Bundle id `com.metavirtuoso.conjunction`, version 1.0.0 (1), display name `Conju
 
 ## Features (mirrors the Android app screen for screen)
 
-- **Onboarding** — 18+ age gate (an under-18 date blocks the install), waiver / terms / privacy with
-  versioned on-phone acceptance records, birth date + time (or "unknown"), birth place looked up with
-  `CLGeocoder` (the placemark's `timeZone` gives the IANA zone, so historical DST is right; no
-  location permission; coordinates can be typed), optional blood type with its separate consent,
-  dating profile with the orientation consent, Nearby opt-in, notifications.
-- **Chart** (animated wheel drawn in `Canvas`), **Today**, **Eastern** (BaZi, blood type) — readings
+- **UX 2.0 (SPEC 5d)** — bar Today · Chart · [Nearby] · Readings · Profile with the raised 68 pt
+  gold Nearby medallion (shimmer when on, badge for new matches); legal UI minimised to L1 (one
+  clickwrap line above **Begin**), L2 (one Nearby consent sheet), L3 (the blood-type switch) and L4
+  (a compact re-accept / notice sheet: only a major version asks again); everything else in Profile ›
+  Settings › Privacy & legal.
+- **Onboarding** — four screens: Welcome, Your birth (one text box parsed by `BirthTextParser` into
+  date / time / place chips, the on-device model fills only empty chips; the birth date is the 18+
+  gate), About you (`AboutYouParser` + guided generation, optional), Your card (PhotosPicker with a
+  Vision face-centred 512×640 crop, "Write one for me" bio, Instagram handle with `PasteButton`,
+  optional). Places are looked up with `CLGeocoder` (the placemark's `timeZone` gives the IANA zone,
+  no location permission; coordinates can be typed). No permission prompt during onboarding.
+- **Chart** (animated wheel drawn in `Canvas`), **Today**, **Readings** (Eastern | Palm) — readings
   written by Apple's on-device model (Foundation Models, iOS 26 + Apple Intelligence) from
   ConjunctionCore's prompts, cleaned by `ReadingCleaner`, cached per day; on iOS 17–25 or without
   Apple Intelligence the bundled `FallbackReadings` text is used. Never a cloud model.
@@ -27,16 +33,22 @@ Bundle id `com.metavirtuoso.conjunction`, version 1.0.0 (1), display name `Conju
   Hessian ridge filter, lower bar for the fate line — the Android algorithm, ported and tested on
   Linux) → `PalmAnalyzer` → `PalmFeatures` → reading. The result shows the traced lines and the
   "scanner view". The photo is kept only if you tap Save (app-private storage).
-- **Nearby (serverless, Bluetooth LE)** — `App/Conjunction/Nearby/`: see below.
-- **Matches** — full-screen animation (my sun medallion from the upper-left, theirs from the
-  lower-right, each with the profile photo inset, spiralling into the conjunction emblem with the
-  gold burst, % counting up; twins get the twin burst and star confetti; tap to skip; Reduce Motion
-  cross-fades), swipe card (drag, buttons and VoiceOver actions), "It's a Conjunction!" with an intro
-  box, then the end-to-end encrypted chat (queued messages say "Waiting — delivered next time you're
-  near…", flagged ones are hidden behind "Show anyway", safety code, block / report / unmatch).
-- **Profile** — photo, name, bio, birth details, blood type, dating profile + withdrawal, morning
-  reminder, pause / turn off Nearby, blocked people, legal documents, acceptance records,
-  arbitration opt-out email, export, **Delete all my data** (also deletes the identity key).
+- **Nearby (serverless, Bluetooth LE)** — `App/Conjunction/Nearby/`: see below. The Nearby tab holds
+  only cards (status card / empty state, New matches swipe stack, Waiting, Conjunctions); all toggles
+  are in Profile › Settings › Nearby.
+- **Matches** — full-screen animation, swipe card (Pass / ☌ Chart / Accept, ⋯ Snooze / Block /
+  Report / Safety Tips), "It's a Conjunction!" (Say hi / See our chart), then the end-to-end
+  encrypted chat (header photo + name and score chip open the Compatibility view; ⋯ holds Instagram,
+  the per-friend share switch, safety code, Safety Tips, unmatch, block, report).
+- **Compatibility view** — `Screens/CompatibilityScreen.swift`: medallions, count-up score, the
+  synastry bi-wheel (`SynastryWheel`, from the peer's stored `hello.compat`), score breakdown,
+  aspects, Eastern relations and a reading generated once and cached on the match / friend.
+- **Instagram** — handle only (no sign-in or import exists for consumer accounts); sent only to
+  friends inside the encrypted chat (`profile` message); the chip opens
+  `https://www.instagram.com/<handle>/` (universal link → app, else Safari).
+- **Profile** — Your card (live preview, tap to edit), Birth chips, Eastern (blood type + L3), then
+  Settings › Nearby / Notifications / Privacy & legal (documents, Nearby consent with Withdraw,
+  records, arbitration opt-out, blocked people, export, **Delete all my data**).
 - **Look** — the Android "Celestial Art Nouveau" tokens (`Theme/Theme.swift`), bundled OFL fonts
   (Cinzel Decorative, Cinzel, Cormorant Garamond, licences included), filigree panels, gold-leaf
   buttons, starfield with parallax and twinkle. The gold shimmer slides a pre-laid-out gradient by

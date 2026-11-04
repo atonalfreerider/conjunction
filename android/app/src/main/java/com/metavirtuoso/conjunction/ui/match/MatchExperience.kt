@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -42,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -79,7 +82,6 @@ import com.metavirtuoso.conjunction.ui.components.GoldButton
 import com.metavirtuoso.conjunction.ui.components.GoldText
 import com.metavirtuoso.conjunction.ui.components.OrnateDivider
 import com.metavirtuoso.conjunction.ui.components.OrnatePanel
-import com.metavirtuoso.conjunction.ui.components.OrnateTextField
 import com.metavirtuoso.conjunction.ui.components.OrreryLoader
 import com.metavirtuoso.conjunction.ui.components.ProfilePhoto
 import com.metavirtuoso.conjunction.ui.components.ScreenedPhoto
@@ -115,6 +117,7 @@ fun MatchExperience(
     onDismiss: () -> Unit,
     onOpenChat: (ChatTarget) -> Unit,
     skipAnimation: Boolean = false,
+    onOpenCompat: (String) -> Unit = {},
 ) {
     val repo = container.nearby
     val scope = rememberCoroutineScope()
@@ -124,7 +127,7 @@ fun MatchExperience(
     val encounter by remember(fp) { fp?.let(repo::encounter) ?: flowOf(null) }.collectAsState(initial = fp?.let { repo.store.state.value.encounter(it)?.toCard() })
     var stage by remember(event) { mutableStateOf(if (skipAnimation) CardStage.CARD else CardStage.ANIMATING) }
     var blurb by remember(event) { mutableStateOf<String?>(null) }
-    var safety by remember { mutableStateOf<EncounterCard?>(null) }
+    var safety by remember { mutableStateOf<Pair<EncounterCard, String>?>(null) }
     BackHandler(onBack = onDismiss)
     val card = encounter
     val friendId = event.friendId ?: card?.friendId
@@ -151,7 +154,7 @@ fun MatchExperience(
         Modifier.fillMaxSize().background(Palette.Midnight).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {},
     ) {
         when {
-            friendId != null -> ConjunctionPopup(container, friendId, card, onOpenChat = onOpenChat, onClose = onDismiss)
+            friendId != null -> ConjunctionPopup(container, friendId, card, onOpenChat = onOpenChat, onOpenCompat = onOpenCompat, onClose = onDismiss)
             !ready -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OrreryLoader(size = 96.dp) }
             card == null || (card.mySwipe == "left") -> Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Text("This match is no longer available.", style = MaterialTheme.typography.titleMedium, color = Palette.Moonstone, textAlign = TextAlign.Center)
@@ -173,6 +176,7 @@ fun MatchExperience(
                     style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center,
                 )
                 GoldButton("Done", onClick = onDismiss, modifier = Modifier.padding(top = 20.dp))
+                GhostButton("☌\uFE0E " + stringResource(R.string.match_card_chart), onClick = { onOpenCompat(card.encounterId) }, modifier = Modifier.padding(top = 10.dp))
             }
             else -> SwipeCardPage(
                 card = card,
@@ -183,16 +187,26 @@ fun MatchExperience(
                         if (accept) stage = CardStage.WAITING else onDismiss()
                     }
                 },
-                onSafety = { safety = card },
+                onChart = { onOpenCompat(card.encounterId) },
+                onMenu = { action ->
+                    when (action) {
+                        CardMenuAction.SNOOZE -> scope.launch { repo.snooze(card.encounterId); onDismiss() }
+                        CardMenuAction.TIPS -> safety = card to "tips"
+                        CardMenuAction.BLOCK -> safety = card to "block"
+                        CardMenuAction.REPORT -> safety = card to "report"
+                    }
+                },
                 onClose = onDismiss,
             )
         }
     }
-    safety?.let { c ->
-        SafetyActionsDialog(
+    safety?.let { (c, mode) ->
+        if (mode == "tips") com.metavirtuoso.conjunction.ui.screens.SafetyTipsDialog(container) { safety = null }
+        else SafetyActionsDialog(
             container = container,
             target = SafetyTarget.stranger(c),
             onDone = { closed -> safety = null; if (closed) onDismiss() },
+            initialMode = mode,
         )
     }
 }
@@ -337,12 +351,101 @@ fun Medallion(@DrawableRes signArt: Int, photoPath: String?, screening: Screenin
     }
 }
 
-/** The swipe card: right = accept, left = pass, plus buttons and accessibility actions. */
+/** The ⋯ menu of a stranger's card (SPEC 5d.3): Snooze 7 days, Block, Report, Safety Tips. */
+enum class CardMenuAction { SNOOZE, BLOCK, REPORT, TIPS }
+
 @Composable
-internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolean) -> Unit, onSafety: () -> Unit, onClose: () -> Unit) {
+fun CardMenu(onAction: (CardMenuAction) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        com.metavirtuoso.conjunction.ui.components.MoreButton("More options", onClick = { open = true })
+        androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = Palette.InkViolet) {
+            listOf(
+                CardMenuAction.SNOOZE to R.string.menu_snooze, CardMenuAction.BLOCK to R.string.menu_block,
+                CardMenuAction.REPORT to R.string.menu_report, CardMenuAction.TIPS to R.string.menu_safety_tips,
+            ).forEach { (action, label) ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(stringResource(label), color = if (action == CardMenuAction.REPORT || action == CardMenuAction.BLOCK) Palette.RoseCopper else Palette.Moonstone) },
+                    onClick = { open = false; onAction(action) },
+                )
+            }
+        }
+    }
+}
+
+/** Gold score medallion ("87%") for cards. */
+@Composable
+fun ScoreMedallion(total: Int, size: Dp = 56.dp) {
+    Box(
+        Modifier.size(size).clip(CircleShape).background(com.metavirtuoso.conjunction.ui.theme.GoldBrushes.leaf),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("$total%", style = MaterialTheme.typography.titleSmall, color = Palette.Midnight)
+    }
+}
+
+/**
+ * The face of a match card (SPEC 5d.3): photo (or zodiac art), first name, age, Sun / Moon /
+ * Rising glyphs, Chinese animal, relationship status, looking-for, kind chip and score medallion.
+ */
+@Composable
+fun MatchCardFace(card: EncounterCard, modifier: Modifier = Modifier, blurb: String? = null, photoSize: Dp? = null) {
+    val c = card.card
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box {
+            ScreenedPhoto(
+                path = card.photoPath,
+                screening = card.photoScreening,
+                placeholder = Art.signKey(c?.sun),
+                contentDescription = if (card.photoPath != null) "Photo of ${c?.firstName ?: "your match"}" else "${Art.displaySign(c?.sun)} artwork",
+                modifier = (if (photoSize != null) Modifier.size(photoSize) else Modifier.fillMaxWidth().aspectRatio(1f)).clip(CircleShape),
+            )
+            Box(Modifier.align(Alignment.BottomEnd)) { ScoreMedallion(card.total) }
+        }
+        Spacer(Modifier.height(8.dp))
+        GoldText(
+            (if (card.exactTwin) "Exact twin · " else if (card.birthdayTwin) "Birthday twin · " else "") +
+                "${c?.firstName ?: "Someone nearby"}${c?.age?.takeIf { it > 0 }?.let { ", $it" } ?: ""}",
+            style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center,
+        )
+        Text(
+            listOfNotNull(c?.sun?.let { "☉ ${Art.displaySign(it)}" }, c?.moon?.let { "☽ ${Art.displaySign(it)}" }, c?.rising?.let { "AC ${Art.displaySign(it)}" }).joinToString("  "),
+            style = MaterialTheme.typography.bodyMedium, color = Palette.GoldPale, textAlign = TextAlign.Center,
+        )
+        Text(
+            listOfNotNull(
+                c?.chineseAnimal?.let { Art.displayAnimal(it) },
+                c?.relationshipStatus?.let { if (it == "single") "Single" else "In a relationship" },
+                c?.lookingFor?.let { when (it) { "dating" -> "Looking for dating"; "friends" -> "Looking for friends"; else -> "Dating & friends" } },
+            ).joinToString(" · "),
+            style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone, textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(6.dp))
+        KindChip(card.kind)
+        c?.bio?.let { Text("“$it”", style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone, textAlign = TextAlign.Center, maxLines = 2, modifier = Modifier.padding(top = 6.dp)) }
+        blurb?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim, textAlign = TextAlign.Center, maxLines = 3) }
+    }
+}
+
+/**
+ * A swipeable framed card: right = accept, left = pass, with the hint stamps; accessibility
+ * actions for both. Buttons Pass / ☌ Chart / Accept under it; the card's own ⋯ menu (Snooze,
+ * Safety Tips, Block, Report) in the frame's top-right corner when [onMenu] is set. [maxCardHeight]
+ * caps the framed card (the Nearby list keeps the next section in view).
+ */
+@Composable
+fun SwipeableMatchCard(
+    card: EncounterCard,
+    onAnswer: (Boolean) -> Unit,
+    onChart: () -> Unit,
+    modifier: Modifier = Modifier,
+    blurb: String? = null,
+    onMenu: ((CardMenuAction) -> Unit)? = null,
+    maxCardHeight: Dp? = null,
+) {
     val scope = rememberCoroutineScope()
-    val offsetX = remember { Animatable(0f) }
-    var answered by remember { mutableStateOf(false) }
+    val offsetX = remember(card.encounterId) { Animatable(0f) }
+    var answered by remember(card.encounterId) { mutableStateOf(false) }
     val density = LocalDensity.current
     val threshold = with(density) { 120.dp.toPx() }
     fun answer(accept: Boolean) {
@@ -350,26 +453,19 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
         answered = true
         scope.launch {
             offsetX.animateTo(if (accept) threshold * 4 else -threshold * 4, tween(320))
-            onSwipe(accept)
+            onAnswer(accept)
         }
     }
     val c = card.card
     val acceptLabel = stringResource(R.string.match_card_accept)
     val rejectLabel = stringResource(R.string.match_card_reject)
-    Column(
-        Modifier.fillMaxSize().background(Palette.Midnight).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            GhostButton("Close", onClick = onClose)
-            GhostButton("Safety", onClick = onSafety, color = Palette.RoseCopper)
-        }
-        Spacer(Modifier.height(10.dp))
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+      BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        val cardWidth = minOf(maxWidth, 420.dp, maxCardHeight?.let { it * 0.70f } ?: 420.dp)
         Box(
             Modifier
-                .widthIn(max = 420.dp)
-                .fillMaxWidth()
-                .aspectRatio(2f / 3f)
+                .width(cardWidth)
+                .aspectRatio(0.70f)
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                 .graphicsLayer { rotationZ = offsetX.value / 40f }
                 .pointerInput(card.encounterId) {
@@ -387,7 +483,7 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
                     }
                 }
                 .semantics {
-                    contentDescription = "Match card for ${c?.firstName ?: "someone nearby"}, ${card.total} percent compatible. " + "Swipe right to accept, left to pass."
+                    contentDescription = "Match card for ${c?.firstName ?: "someone nearby"}, ${card.total} percent compatible."
                     customActions = listOf(
                         CustomAccessibilityAction(acceptLabel) { answer(true); true },
                         CustomAccessibilityAction(rejectLabel) { answer(false); true },
@@ -395,62 +491,53 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
                 },
         ) {
             Box(Modifier.fillMaxSize().padding(12.dp).background(Brush.verticalGradient(listOf(Palette.InkViolet, Palette.Midnight))))
-            Column(Modifier.fillMaxSize().padding(horizontal = 30.dp, vertical = 36.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                ScreenedPhoto(
-                    path = card.photoPath,
-                    screening = card.photoScreening,
-                    placeholder = Art.signKey(c?.sun),
-                    contentDescription = if (card.photoPath != null) "Photo of ${c?.firstName ?: "your match"}" else "${Art.displaySign(c?.sun)} artwork",
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(CircleShape),
-                )
-                Spacer(Modifier.height(8.dp))
-                GoldText("${c?.firstName ?: "Someone nearby"}${c?.age?.takeIf { it > 0 }?.let { ", $it" } ?: ""}", style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-                Text(
-                    listOfNotNull(c?.sun?.let { "☉ ${Art.displaySign(it)}" }, c?.moon?.let { "☽ ${Art.displaySign(it)}" }, c?.rising?.let { "AC ${Art.displaySign(it)}" }).joinToString("  "),
-                    style = MaterialTheme.typography.bodyMedium, color = Palette.GoldPale, textAlign = TextAlign.Center,
-                )
-                Text(
-                    listOfNotNull(
-                        c?.chineseAnimal?.let { Art.displayAnimal(it) },
-                        c?.relationshipStatus?.let { if (it == "single") "Single" else "In a relationship" },
-                        c?.lookingFor?.let { when (it) { "dating" -> "Looking for dating"; "friends" -> "Looking for friends"; else -> "Dating & friends" } },
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone, textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text("${card.total}% · ${if (card.kind == "dating") "Dating match" else "Friends match"}", style = MaterialTheme.typography.titleMedium, color = Palette.Gold)
-                c?.bio?.let { Text("“$it”", style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone, textAlign = TextAlign.Center, maxLines = 3) }
-                blurb?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim, textAlign = TextAlign.Center) }
+            BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 34.dp, vertical = 38.dp)) {
+                MatchCardFace(card, Modifier.fillMaxSize(), blurb = blurb, photoSize = minOf(maxWidth * 0.86f, maxHeight * 0.55f))
             }
             Image(painterResource(R.drawable.frame_swipe_card), contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
-            // Swipe hint stamps.
             val accept = (offsetX.value / threshold).coerceIn(0f, 1f)
             val reject = (-offsetX.value / threshold).coerceIn(0f, 1f)
             if (accept > 0f) Text(acceptLabel.uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.Gold, modifier = Modifier.align(Alignment.TopStart).padding(40.dp).graphicsLayer { alpha = accept; rotationZ = -15f })
             if (reject > 0f) Text(rejectLabel.uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.RoseCopper, modifier = Modifier.align(Alignment.TopEnd).padding(40.dp).graphicsLayer { alpha = reject; rotationZ = 15f })
-        }
-        FinePrint(stringResource(R.string.match_card_accessibility_hint), Modifier.padding(top = 8.dp))
-        Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            GhostButton(rejectLabel, onClick = { answer(false) }, modifier = Modifier.weight(1f), enabled = !answered, color = Palette.RoseCopper)
-            GoldButton(acceptLabel, onClick = { answer(true) }, modifier = Modifier.weight(1f), enabled = !answered)
-        }
-        if (card.highlights.isNotEmpty()) {
-            OrnatePanel(Modifier.fillMaxWidth().padding(top = 14.dp)) {
-                Text("WHY YOUR STARS ALIGN", style = MaterialTheme.typography.titleSmall, color = Palette.Gold)
-                card.highlights.forEach { Text("✦ $it", style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone) }
+            if (onMenu != null) {
+                // A dark disc keeps the ⋯ legible over the frame's corner ornament.
+                Box(
+                    Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 20.dp)
+                        .clip(CircleShape).background(Palette.Midnight.copy(alpha = 0.88f))
+                        .border(1.dp, com.metavirtuoso.conjunction.ui.theme.GoldBrushes.leaf, CircleShape),
+                ) { CardMenu(onMenu) }
             }
         }
-        FinePrint(stringResource(R.string.match_card_entertainment_note), Modifier.padding(top = 10.dp))
+      }
+        Row(Modifier.widthIn(max = 420.dp).fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            GhostButton(rejectLabel, onClick = { answer(false) }, modifier = Modifier.weight(1f), enabled = !answered, color = Palette.RoseCopper, horizontalPadding = 6.dp)
+            GhostButton("☌\uFE0E " + stringResource(R.string.match_card_chart), onClick = onChart, modifier = Modifier.weight(1f), horizontalPadding = 6.dp)
+            GoldButton(acceptLabel, onClick = { answer(true) }, modifier = Modifier.weight(1f), enabled = !answered, horizontalPadding = 6.dp)
+        }
     }
 }
 
-/** "It's a Conjunction!": the friend's photo pops up with an intro box; the message is queued if they left. */
+/** The full-screen swipe card after the match animation (popup / notification). */
 @Composable
-private fun ConjunctionPopup(container: AppContainer, friendId: String, card: EncounterCard?, onOpenChat: (ChatTarget) -> Unit, onClose: () -> Unit) {
-    val scope = rememberCoroutineScope()
+internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolean) -> Unit, onChart: () -> Unit, onMenu: (CardMenuAction) -> Unit, onClose: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().background(Palette.Midnight).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            GhostButton("Close", onClick = onClose)
+            CardMenu(onMenu)
+        }
+        Spacer(Modifier.height(10.dp))
+        SwipeableMatchCard(card, onAnswer = onSwipe, onChart = onChart, blurb = blurb)
+        FinePrint(stringResource(R.string.match_card_accessibility_hint), Modifier.padding(top = 8.dp))
+    }
+}
+
+/** "It's a Conjunction!": the friend's photo pops up; Say hi (chat) or See our chart (SPEC 5d.4). */
+@Composable
+internal fun ConjunctionPopup(container: AppContainer, friendId: String, card: EncounterCard?, onOpenChat: (ChatTarget) -> Unit, onOpenCompat: (String) -> Unit, onClose: () -> Unit) {
     val friend by remember(friendId) { container.nearby.friend(friendId) }.collectAsState(initial = null)
-    var intro by remember { mutableStateOf("") }
-    var sending by remember { mutableStateOf(false) }
     val reduced = LocalReducedMotion.current
     val pop = remember { Animatable(if (reduced) 1f else 0f) }
     LaunchedEffect(Unit) { if (!reduced) pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.45f, stiffness = 140f)) }
@@ -462,37 +549,34 @@ private fun ConjunctionPopup(container: AppContainer, friendId: String, card: En
         Column(
             Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
-            GoldText("It's a Conjunction!", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
+            // A soft dark scrim keeps the gold title legible over the figures' halos.
+            Box(
+                Modifier.fillMaxWidth().drawBehind {
+                    // Soft top and bottom edges (no visible band).
+                    drawRect(Brush.verticalGradient(listOf(Palette.Midnight.copy(alpha = 0f), Palette.Midnight.copy(alpha = 0.72f), Palette.Midnight.copy(alpha = 0.72f), Palette.Midnight.copy(alpha = 0f))))
+                }.padding(vertical = 26.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                GoldText("It's a Conjunction!", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
+            }
             OrnateDivider()
             if (f?.photoPath != null) {
-                ScreenedPhoto(f.photoPath, f.photoScreening, Art.signKey(sun), "Photo of $name", Modifier.size(180.dp).clip(CircleShape).graphicsLayer { scaleX = pop.value; scaleY = pop.value })
+                ScreenedPhoto(f.photoPath, f.photoScreening, Art.signKey(sun), "Photo of $name", Modifier.size(190.dp).clip(CircleShape).graphicsLayer { scaleX = pop.value; scaleY = pop.value })
             } else {
                 Medallion(signArt = Art.signKey(sun), photoPath = null, screening = Screening.SAFE, size = 200.dp, modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value })
             }
             GoldText(name, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-            f?.bio?.let { Text("“$it”", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center) }
+            Text("You and $name both said yes.", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
+            (f?.total ?: card?.total)?.let { Text("$it% compatible", style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale) }
+            Spacer(Modifier.height(8.dp))
+            GoldButton(stringResource(R.string.match_popup_say_hi), onClick = { onOpenChat(ChatTarget(friendId)) }, modifier = Modifier.fillMaxWidth().widthIn(max = 420.dp))
+            GhostButton("☌\uFE0E " + stringResource(R.string.match_popup_see_chart), onClick = { onOpenCompat(friendId) }, modifier = Modifier.fillMaxWidth().widthIn(max = 420.dp))
             Text(
-                listOfNotNull(sun?.let { "☉ ${Art.displaySign(it)}" }, (f?.moon ?: card?.card?.moon)?.let { "☽ ${Art.displaySign(it)}" }, (f?.rising ?: card?.card?.rising)?.let { "AC ${Art.displaySign(it)}" }).joinToString("   "),
-                style = MaterialTheme.typography.titleSmall, color = Palette.GoldPale,
+                "Later", style = MaterialTheme.typography.labelLarge, color = Palette.MoonstoneDim,
+                modifier = Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClose).padding(12.dp),
             )
-            Text("You and $name both said yes. Say hello.", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
-            OrnateTextField(intro, { intro = it.take(500) }, label = "Introduce yourself", singleLine = false, minLines = 2)
-            FinePrint(stringResource(R.string.chat_first_open_notice))
-            GoldButton(if (sending) "Sending…" else "Send & open chat", enabled = intro.isNotBlank() && !sending, modifier = Modifier.fillMaxWidth(), onClick = {
-                sending = true
-                scope.launch {
-                    try {
-                        container.nearby.sendChat(friendId, intro)
-                        onOpenChat(ChatTarget(friendId))
-                    } finally {
-                        sending = false
-                    }
-                }
-            })
-            GhostButton("Open chat", onClick = { onOpenChat(ChatTarget(friendId)) }, modifier = Modifier.fillMaxWidth())
-            GhostButton("Later", onClick = onClose, modifier = Modifier.fillMaxWidth())
         }
     }
 }

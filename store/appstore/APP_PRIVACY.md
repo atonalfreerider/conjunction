@@ -1,6 +1,6 @@
 # App Privacy ("nutrition label") and privacy manifest (serverless Bluetooth build)
 
-App Store Connect → the app → **App Privacy**. Built from `SPEC.md` §5c and `legal/PRIVACY.md` 2.0.
+App Store Connect → the app → **App Privacy**. Built from `SPEC.md` §5c and §5d and `legal/PRIVACY.md` 2.1.
 Apple's definitions, re-read 2026-11-03 at <https://developer.apple.com/app-store/app-privacy-details/>:
 
 - **"Collect"** = "transmitting data off the device in a way that allows **you and/or your
@@ -27,7 +27,10 @@ Apple's definitions, re-read 2026-11-03 at <https://developer.apple.com/app-stor
    access the data. Another user who receives your card is neither, and nothing passes through
    infrastructure we or a partner control. So the card and the chat are **not "collected"** in
    Apple's sense, even though they leave the device. The private-messaging FAQ does not apply
-   because the messages never reach us.
+   because the messages never reach us. The same holds for what PRIVACY.md 2.1 adds: the optional
+   Instagram username (sent only to mutual matches, inside the end-to-end encrypted chat) and the
+   chart positions a match or friend keeps for the compatibility wheel (phone to phone, kept on
+   their phone): neither reaches us or a partner, so the answer stays **Data Not Collected**.
 3. **Report and support emails** are written in, and sent from, the user's own mail account (iOS
    mail sheet), only when the user taps Send, for an infrequent, optional purpose that is not the
    app's primary functionality, showing exactly what is sent — this meets the optional-disclosure

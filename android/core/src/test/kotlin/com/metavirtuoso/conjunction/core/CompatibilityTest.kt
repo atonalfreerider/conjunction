@@ -38,6 +38,29 @@ class CompatibilityTest {
     }
 
     @Test
+    fun synastryGolden() {
+        val cases = Json.arr(TestData.json("golden_compat.json")["cases"]).map(Json::obj)
+        var lines = 0
+        for (c in cases) {
+            val a = CompatWire.profileFromMap(Json.obj(c["a"]))
+            val b = CompatWire.profileFromMap(Json.obj(c["b"]))
+            val expected = Json.arr(c["synastry"]).map(Json::obj).map { m -> m.mapValues { (_, v) -> if (v is Number) v.toLong() else v } }
+            val got = CompatWire.synastryToList(Compatibility.synastry(a, b)).map { m -> m.mapValues { (_, v) -> if (v is Number) v.toLong() else v } }
+            assertEquals("${c["id"]}", expected, got)
+            lines += got.size
+        }
+        assertTrue("golden synastry should have lines", lines > 50)
+        // Every line is in orb and sorted by |score x weight|.
+        val profiles = CompatFixtures.allProfiles().values.toList()
+        for (a in profiles) for (b in profiles) {
+            val s = Compatibility.synastry(a, b)
+            assertTrue(s.all { it.orbCentideg in 0..it.aspect.orb })
+            assertEquals(s.map { Math.abs(it.score * it.weight) }.sortedDescending(), s.map { Math.abs(it.score * it.weight) })
+            if (a.ascendant == null || b.ascendant == null) assertTrue(s.none { it.pointA == Compatibility.Point.ASC && it.pointB == Compatibility.Point.ASC })
+        }
+    }
+
+    @Test
     fun symmetricAndBounded() {
         val profiles = CompatFixtures.allProfiles().values.toList()
         for (a in profiles) for (b in profiles) {

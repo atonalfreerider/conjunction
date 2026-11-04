@@ -62,24 +62,26 @@ final class AppSupportTests: XCTestCase {
         XCTAssertEqual(rec.acceptedAt, "1970-01-01T00:00:00Z")
         XCTAssertEqual(rec.textSha256, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
         XCTAssertEqual(rec.platform, "ios")
-        let changed = LegalVersions.changed(records: [rec], bundled: [.terms: "2.1", .waiver: "2.0"])
-        XCTAssertEqual(changed, [.terms])
+        XCTAssertEqual(LegalVersions.major("2.1"), "2")
+        XCTAssertEqual(LegalVersions.major("unversioned"), nil)
     }
 
     func testOwnerProfileFileAndNearbyEligibility() throws {
         var p = OwnerProfile()
-        XCTAssertEqual(p.resumeStep, .welcome)
+        XCTAssertEqual(p.resumeScreen, .welcome)
         p.ageGateBirthDate = LocalDate(1996, 3, 12)
-        XCTAssertEqual(p.resumeStep, .legal)
+        XCTAssertEqual(p.resumeScreen, .birth)
         p.legalAccepted = true
-        XCTAssertEqual(p.resumeStep, .birthTime)
+        XCTAssertEqual(p.resumeScreen, .birth)
         p.birth = BirthInput(date: LocalDate(1996, 3, 12), time: LocalTime(6, 40), latitude: 48.8566, longitude: 2.3522,
                              zoneId: "Europe/Paris", placeName: "Paris")
-        XCTAssertEqual(p.resumeStep, .blood)
+        XCTAssertEqual(p.resumeScreen, .about)
         XCTAssertFalse(p.nearbyEligible)
         p.dating = DatingProfile(gender: .female, seeking: .both, relationshipStatus: .single, lookingFor: .both)
+        XCTAssertNil(p.resumeScreen, "the old flow was at Nearby / Notifications: finished")
         p.orientationConsent = true
-        p.honestyConfirmed = true
+        XCTAssertFalse(p.nearbyEligible, "L2 needs both consent records")
+        p.nearbyConsent = true
         p.displayName = "Aurora Borealis"
         p.bio = "Stargazer.\nTea."
         p.bloodType = .o
@@ -98,6 +100,10 @@ final class AppSupportTests: XCTestCase {
         XCTAssertEqual(local.compat.birthHour, 6)
         p.bloodForMatching = true
         XCTAssertEqual(OwnerCharts.localPeerProfile(p, charts: charts, photo: nil)?.compat.blood, .o)
+        p.instagram = "aurora.stars"
+        p.instagramShareDefault = false
+        XCTAssertEqual(OwnerCharts.localPeerProfile(p, charts: charts, photo: nil)?.instagram, "aurora.stars")
+        XCTAssertEqual(OwnerCharts.localPeerProfile(p, charts: charts, photo: nil)?.shareInstagramByDefault, false)
         p.orientationConsent = false
         XCTAssertNil(OwnerCharts.localPeerProfile(p, charts: charts, photo: nil))
         XCTAssertEqual(charts.fingerprint.count, 16)

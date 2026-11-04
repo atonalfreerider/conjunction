@@ -1,6 +1,6 @@
 # Play Console Data safety answers (serverless Bluetooth build)
 
-Policy → App content → **Data safety**. Built from `SPEC.md` §5c and `legal/PRIVACY.md` 2.0.
+Policy → App content → **Data safety**. Built from `SPEC.md` §5c and §5d and `legal/PRIVACY.md` 2.1.
 Definitions are Google's, re-read on 2026-11-03 at
 <https://support.google.com/googleplay/android-developer/answer/10787469>:
 
@@ -89,13 +89,14 @@ match cards up to 24 h and friends' cards indefinitely).
 | **Personal info → Name** | First name in the `card` (sent only to matches) | Optional (Nearby) | App functionality |
 | **Personal info → Sexual orientation** | Gender + seeking in the `hello`, sent to **every** nearby phone with Nearby on (not only matches), can reveal it; sent only with `CONSENT_ORIENTATION_DATA` | Optional | App functionality |
 | **Personal info → Other info** | Birth date and birth hour (age, twins check), gender, relationship status, looking-for, chart summary (Sun, Moon, Venus, Mars, Ascendant longitudes; Chinese year animal; day stem), first line of bio, temporary ID | Optional | App functionality |
-| **Health and fitness → Health info** | Blood type (A/B/AB/O, never Rh) in the `hello` to every nearby phone, only if the user ticks "use my blood type in Nearby compatibility" (declared conservatively; entertainment use) | Optional | App functionality |
+| **Health and fitness → Health info** | Blood type (A/B/AB/O, never Rh) in the `hello` to every nearby phone, only if the user switches on "Use in Nearby matching" (Profile › Blood type) (declared conservatively; entertainment use) | Optional | App functionality |
 | **Photos and videos → Photos** | Profile photo (≤ 640 px), sent only to matches. **Palm photos are not collected** (on-device only). | Optional | App functionality |
 | **App info and performance → Diagnostics** and **Other app performance data** | ML Kit GenAI usage/performance diagnostics to Google | Required (whenever on-device AI runs) | Analytics |
 | **Device or other IDs** | ML Kit per-installation / device identifiers | Required | Analytics |
 
 **Not collected:** location (the app has no location permission), messages (end-to-end encrypted →
-exempt), email address, user IDs (no accounts), app interactions (swipes, blocks stay on the phone;
+exempt), Instagram username (optional; sent only to mutual matches inside the end-to-end encrypted
+chat → exempt), email address, user IDs (no accounts), app interactions (swipes, blocks stay on the phone;
 the swipe answer itself goes to one peer — declare under "App activity → App interactions" only if
 Google's reviewers ask; it reveals no more than the match), birth time minute and place, full chart,
 readings, palm photos, contacts, calendar, SMS, call logs, microphone, files, web history, installed

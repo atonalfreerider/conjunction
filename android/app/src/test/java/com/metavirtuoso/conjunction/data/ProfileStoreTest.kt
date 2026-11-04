@@ -23,7 +23,7 @@ class ProfileStoreTest {
             bloodType = BloodType.AB,
             rh = RhFactor.NEGATIVE,
             bloodForMatching = true,
-            dating = DatingProfile(Gender.FEMALE, Seeking.BOTH, RelationshipStatus.SINGLE, LookingFor.BOTH),
+            gender = Gender.FEMALE, seeking = Seeking.BOTH, relationshipStatus = RelationshipStatus.SINGLE, lookingFor = LookingFor.BOTH,
             orientationConsent = true,
             honestyConfirmed = true,
             displayName = "Ada Lovelace",
@@ -32,11 +32,44 @@ class ProfileStoreTest {
             nearbyEnabled = true,
             nearbyPausedUntil = 123L,
             onboardingComplete = true,
+            interests = "jazz, hiking",
+            instagram = "ada.stars",
+            instagramShareDefault = false,
+            notifyMatches = false,
+            dailyReadingTime = LocalTime.of(7, 15),
+            onboardingStep = "CARD",
         )
         val prefs = mutablePreferencesOf()
         ProfileStore.encode(prefs, profile)
         assertEquals(profile, ProfileStore.decode(prefs))
         assertEquals("Ada", profile.firstName)
+        assertEquals(DatingProfile(Gender.FEMALE, Seeking.BOTH, RelationshipStatus.SINGLE, LookingFor.BOTH), profile.dating)
+        assertEquals(true, profile.nearbyEligible)
+    }
+
+    /** SPEC 5d.1.4: a 2.0 profile (no new keys, honesty set) decodes with UX 2.0 defaults and stays eligible. */
+    @Test
+    fun legacyProfileMigrates() {
+        val prefs = mutablePreferencesOf()
+        val legacy = Profile(
+            birth = BirthInput(LocalDate.of(1990, 8, 15), null, 1.0, 2.0, "UTC", "x"),
+            gender = Gender.MALE, seeking = Seeking.FEMALE, relationshipStatus = RelationshipStatus.SINGLE, lookingFor = LookingFor.DATING,
+            orientationConsent = true, honestyConfirmed = true, nearbyConsent = true, nearbyEnabled = true, onboardingComplete = true,
+        )
+        ProfileStore.encode(prefs, legacy)
+        listOf("interests", "instagram", "instagram_share_default", "notify_matches", "notify_messages", "daily_reading_time", "land_on_chart", "onboarding_step")
+            .forEach { prefs.remove(androidx.datastore.preferences.core.stringPreferencesKey(it)); prefs.remove(androidx.datastore.preferences.core.booleanPreferencesKey(it)) }
+        val decoded = ProfileStore.decode(prefs)
+        assertEquals(true, decoded.instagramShareDefault)
+        assertEquals(LocalTime.of(8, 0), decoded.dailyReadingTime)
+        assertNull(decoded.instagram)
+        assertEquals(true, decoded.nearbyEligible)
+        assertEquals(true, decoded.nearbyEnabled)
+        // A partial dating profile is kept field by field.
+        val partial = mutablePreferencesOf()
+        ProfileStore.encode(partial, Profile(gender = Gender.FEMALE))
+        assertEquals(Gender.FEMALE, ProfileStore.decode(partial).gender)
+        assertNull(ProfileStore.decode(partial).dating)
     }
 
     @Test

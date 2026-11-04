@@ -55,34 +55,59 @@ public struct DatingProfile: Codable, Hashable, Sendable {
 
 /// Everything the app remembers about its owner (Android `Profile`). Kept in one JSON file in the
 /// app's Application Support folder, excluded from backups.
+///
+/// UX 2.0 (SPEC 5d): the four dating fields are kept one by one (onboarding screen 3 may fill only
+/// some of them; the Nearby sheet collects the rest) and `dating` is the complete set. Files written
+/// before 2.1 kept them as one `dating` object, which is still read. `honestyConfirmed` and
+/// `legalAccepted` stay readable but no longer gate anything.
 public struct OwnerProfile: Codable, Hashable, Sendable {
     public var ageGateBirthDateText: String?
-    /// Set when the age gate saw an under-18 date: onboarding stays blocked on this install.
+    /// Set when an under-18 birth date was entered: the app stays blocked on this install.
     public var ageBlocked = false
     public var legalAccepted = false
     public var birth: BirthInput?
     public var bloodType: BloodType?
     public var rh: RhFactor?
-    /// CONSENT_BLOOD_TYPE_MATCHING: blood type may be sent to nearby phones for compatibility.
+    /// CONSENT_BLOOD_TYPE_MATCHING (the L3 switch): blood type may be sent to nearby phones.
     public var bloodForMatching = false
-    public var dating: DatingProfile?
-    /// CONSENT_ORIENTATION_DATA: required before any dating field leaves the phone.
+    public var gender: Gender?
+    public var seeking: Seeking?
+    public var relationshipStatus: RelationshipStatus?
+    public var lookingFor: LookingFor?
+    /// CONSENT_ORIENTATION_DATA recorded and not withdrawn (half of the L2 Nearby consent).
     public var orientationConsent = false
     public var honestyConfirmed = false
     public var displayName = ""
     public var bio = ""
+    /// Free-text interests from onboarding screen 3 (feeds "Write one for me"); stays on the phone.
+    public var interests = ""
     /// The owner's photo file name in the app's private folder (sent only to Nearby matches, 640 px).
     public var photoFile: String?
-    /// CONSENT_NEARBY_BLUETOOTH recorded (consent copy 2.0).
+    /// Normalised Instagram username (`InstagramHandle.normalize`). Sent only to friends, encrypted.
+    public var instagram: String?
+    /// Settings › Nearby "Share my Instagram with new matches" (the per-friend switch's default).
+    public var instagramShareDefault = true
+    /// CONSENT_NEARBY_BLUETOOTH recorded and not withdrawn (the other half of the L2 consent).
     public var nearbyConsent = false
     public var nearbyEnabled = false
     public var nearbyPausedUntil: Int64 = 0
+    /// The notification permission was asked once (Today's card stops showing).
     public var notificationsPrompted = false
+    public var notifyMatches = true
+    public var notifyMessages = true
     public var onboardingComplete = false
+    /// UX 2.0 onboarding screen to resume at (`OnboardingScreen` raw value); nil = legacy mapping.
+    public var onboardingStep: String?
+    /// Set by onboarding's Done: the first main screen is Chart (the wheel draws itself) once.
+    public var landOnChart = false
     public var safetyTipsSeen = false
     public var dailyReminder = false
+    /// Daily reading time on the local clock, "HH:mm" (default 08:00).
+    public var dailyReadingTimeText = "08:00"
 
     public init() {}
+
+    private enum LegacyKeys: String, CodingKey { case dating }
 
     public init(from decoder: Decoder) throws {
         // Every field optional on read, so the file format can grow without losing the owner's data.
@@ -94,19 +119,39 @@ public struct OwnerProfile: Codable, Hashable, Sendable {
         bloodType = try? c.decodeIfPresent(BloodType.self, forKey: .bloodType)
         rh = try? c.decodeIfPresent(RhFactor.self, forKey: .rh)
         bloodForMatching = try c.decodeIfPresent(Bool.self, forKey: .bloodForMatching) ?? false
-        dating = try? c.decodeIfPresent(DatingProfile.self, forKey: .dating)
+        gender = try? c.decodeIfPresent(Gender.self, forKey: .gender)
+        seeking = try? c.decodeIfPresent(Seeking.self, forKey: .seeking)
+        relationshipStatus = try? c.decodeIfPresent(RelationshipStatus.self, forKey: .relationshipStatus)
+        lookingFor = try? c.decodeIfPresent(LookingFor.self, forKey: .lookingFor)
+        // Files from before UX 2.0 kept the four fields as one object.
+        if gender == nil && seeking == nil && relationshipStatus == nil && lookingFor == nil,
+           let legacy = try? decoder.container(keyedBy: LegacyKeys.self),
+           let d = try? legacy.decodeIfPresent(DatingProfile.self, forKey: .dating) {
+            gender = d.gender
+            seeking = d.seeking
+            relationshipStatus = d.relationshipStatus
+            lookingFor = d.lookingFor
+        }
         orientationConsent = try c.decodeIfPresent(Bool.self, forKey: .orientationConsent) ?? false
         honestyConfirmed = try c.decodeIfPresent(Bool.self, forKey: .honestyConfirmed) ?? false
         displayName = try c.decodeIfPresent(String.self, forKey: .displayName) ?? ""
         bio = try c.decodeIfPresent(String.self, forKey: .bio) ?? ""
+        interests = try c.decodeIfPresent(String.self, forKey: .interests) ?? ""
         photoFile = try c.decodeIfPresent(String.self, forKey: .photoFile)
+        instagram = InstagramHandle.normalize(try c.decodeIfPresent(String.self, forKey: .instagram))
+        instagramShareDefault = try c.decodeIfPresent(Bool.self, forKey: .instagramShareDefault) ?? true
         nearbyConsent = try c.decodeIfPresent(Bool.self, forKey: .nearbyConsent) ?? false
         nearbyEnabled = try c.decodeIfPresent(Bool.self, forKey: .nearbyEnabled) ?? false
         nearbyPausedUntil = try c.decodeIfPresent(Int64.self, forKey: .nearbyPausedUntil) ?? 0
         notificationsPrompted = try c.decodeIfPresent(Bool.self, forKey: .notificationsPrompted) ?? false
+        notifyMatches = try c.decodeIfPresent(Bool.self, forKey: .notifyMatches) ?? true
+        notifyMessages = try c.decodeIfPresent(Bool.self, forKey: .notifyMessages) ?? true
         onboardingComplete = try c.decodeIfPresent(Bool.self, forKey: .onboardingComplete) ?? false
+        onboardingStep = try c.decodeIfPresent(String.self, forKey: .onboardingStep)
+        landOnChart = try c.decodeIfPresent(Bool.self, forKey: .landOnChart) ?? false
         safetyTipsSeen = try c.decodeIfPresent(Bool.self, forKey: .safetyTipsSeen) ?? false
         dailyReminder = try c.decodeIfPresent(Bool.self, forKey: .dailyReminder) ?? false
+        dailyReadingTimeText = try c.decodeIfPresent(String.self, forKey: .dailyReadingTimeText) ?? "08:00"
     }
 
     public var ageGateBirthDate: LocalDate? {
@@ -114,29 +159,65 @@ public struct OwnerProfile: Codable, Hashable, Sendable {
         set { ageGateBirthDateText = newValue?.description }
     }
 
+    public var dailyReadingTime: LocalTime {
+        get { LocalTime.parse(dailyReadingTimeText) ?? LocalTime(8, 0) }
+        set { dailyReadingTimeText = String(format: "%02d:%02d", newValue.hour, newValue.minute) }
+    }
+
     public var firstName: String {
         String(displayName.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: " ").first ?? "")
     }
 
-    /// Whether Nearby can be used at all (the Nearby consent is separate).
-    public var nearbyEligible: Bool { dating != nil && orientationConsent && honestyConfirmed && birth != nil }
+    /// The four dating fields when all are set; setting it writes (or, with nil, clears) all four.
+    public var dating: DatingProfile? {
+        get {
+            guard let gender, let seeking, let relationshipStatus, let lookingFor else { return nil }
+            return DatingProfile(gender: gender, seeking: seeking, relationshipStatus: relationshipStatus, lookingFor: lookingFor)
+        }
+        set {
+            gender = newValue?.gender
+            seeking = newValue?.seeking
+            relationshipStatus = newValue?.relationshipStatus
+            lookingFor = newValue?.lookingFor
+        }
+    }
+
+    public var datingFieldsComplete: Bool { dating != nil }
+
+    /// L2 given: both Nearby consent records present and not withdrawn (SPEC 5d.1.4).
+    public var nearbyConsentGiven: Bool { orientationConsent && nearbyConsent }
+
+    /// SPEC 5d.1.4: birth data, the four dating fields and the L2 consent.
+    public var nearbyEligible: Bool { birth != nil && datingFieldsComplete && nearbyConsentGiven }
+
+    /// The turn-on flow must show the L2 sheet first (consent, dating fields or first name missing).
+    public var nearbyNeedsSheet: Bool { !nearbyConsentGiven || !datingFieldsComplete || firstName.isEmpty }
 
     public func isPaused(nowMs: Int64) -> Bool { nearbyPausedUntil > nowMs }
 
     /// Nearby is on, consented and not paused: the radio should run.
-    public func nearbyShouldRun(nowMs: Int64) -> Bool { nearbyEnabled && nearbyConsent && nearbyEligible && !isPaused(nowMs: nowMs) }
+    public func nearbyShouldRun(nowMs: Int64) -> Bool { nearbyEnabled && nearbyEligible && !isPaused(nowMs: nowMs) }
 
-    /// Onboarding step a partly-onboarded profile should resume at.
-    public var resumeStep: OnboardingStep {
-        if ageGateBirthDate == nil { return .welcome }
-        if !legalAccepted { return .legal }
-        if birth == nil { return .birthTime }
-        return .blood
+    /// Where a partly onboarded profile resumes (SPEC 5d.1.4), or nil = onboarding is over. Old
+    /// steps map by what was saved: nothing -> Welcome; an age-gate date but no birth data -> Birth
+    /// (the date pre-filled); birth saved -> About you; the dating profile also saved (the old flow
+    /// was at Nearby / Notifications) -> finished.
+    public var resumeScreen: OnboardingScreen? {
+        if onboardingComplete { return nil }
+        if let saved = onboardingStep.flatMap(OnboardingScreen.init(rawValue:)) { return saved }
+        if birth == nil && ageGateBirthDate == nil { return .welcome }
+        if birth == nil { return .birth }
+        if dating != nil { return nil }
+        return .about
     }
 }
 
-public enum OnboardingStep: Int, CaseIterable, Sendable {
-    case welcome, age, legal, birthTime, birthPlace, blood, profile, nearby, notifications
+/// The four onboarding screens (SPEC 5d.5).
+public enum OnboardingScreen: String, CaseIterable, Sendable {
+    case welcome = "WELCOME", birth = "BIRTH", about = "ABOUT", card = "CARD"
+
+    /// 0-based position for the 4-dot progress indicator.
+    public var index: Int { OnboardingScreen.allCases.firstIndex(of: self)! }
 }
 
 /// Everything computed on the phone from the birth data.
@@ -169,10 +250,12 @@ public struct OwnerCharts: Sendable {
     /// What this phone sends in hello and card ([photo] = card JPEG from the app's photo codec).
     /// Nil when the profile may not take part in Nearby.
     public static func localPeerProfile(_ p: OwnerProfile, charts: OwnerCharts?, photo: (jpeg: [UInt8], w: Int, h: Int)?) -> LocalPeerProfile? {
-        guard let charts, let dating = p.dating, p.orientationConsent, p.birth != nil else { return nil }
+        // The dating fields leave the phone only after the L2 consent (SPEC 5d.5 screen 3).
+        guard let charts, let dating = p.dating, p.nearbyConsentGiven, p.birth != nil else { return nil }
         let compat = WireCompat.from(charts.compatProfile(includeBlood: p.bloodForMatching))
         return LocalPeerProfile(match: dating.matchProfile, compat: compat,
                                 firstName: NearbyText.cardName(p.firstName, sun: charts.natal.sunSign),
-                                bio: NearbyText.cardBio(p.bio), photo: photo?.jpeg, photoW: photo?.w ?? 0, photoH: photo?.h ?? 0)
+                                bio: NearbyText.cardBio(p.bio), photo: photo?.jpeg, photoW: photo?.w ?? 0, photoH: photo?.h ?? 0,
+                                instagram: InstagramHandle.normalize(p.instagram), shareInstagramByDefault: p.instagramShareDefault)
     }
 }

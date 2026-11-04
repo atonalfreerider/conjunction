@@ -2,6 +2,8 @@ package com.metavirtuoso.conjunction.core.p2p
 
 import com.metavirtuoso.conjunction.core.match.MatchKind
 import com.metavirtuoso.conjunction.core.match.MatchProfile
+import com.metavirtuoso.conjunction.core.profile.InstagramHandle
+import com.metavirtuoso.conjunction.core.profile.InstagramShareState
 import java.security.SecureRandom
 import java.time.LocalDate
 import java.util.Random
@@ -70,7 +72,14 @@ sealed class LinkEvent {
     ) : LinkEvent()
     /** A known friend is nearby and the link is secure: send queued chats now. */
     data class FriendNearby(val friend: FriendRecord) : LinkEvent()
+    /** Text or read receipt (never [ChatPayload.Profile]: that arrives as [ProfileReceived]). */
     data class ChatReceived(val payload: ChatPayload) : LinkEvent()
+    /**
+     * SPEC 5d.6: the friend's Instagram handle (`ig` already validated; null = not shared). Store it
+     * as peerIg/peerIgRev only when [InstagramShareState.acceptReceived] (rev > stored peerIgRev).
+     * The link has already sent the `ack`.
+     */
+    data class ProfileReceived(val profile: ChatPayload.Profile) : LinkEvent()
     data class Delivered(val id: String) : LinkEvent()
     data class ProtocolError(val code: String, val detail: String?, val byPeer: Boolean) : LinkEvent()
     data class Closed(val reason: String, val byPeer: Boolean) : LinkEvent()
@@ -200,6 +209,20 @@ class P2pLink(
         check(state == LinkState.SECURE) { "read receipts require a secure link" }
         require(refs.size in 1..P2pConstants.MAX_READ_REFS)
         sendSecure(ChatPayload.Read(id, tsMs, refs))
+        return id
+    }
+
+    /**
+     * Sends a chat `profile` (SPEC 5d.6): [ig] = the normalised handle shared with this friend, or
+     * null. Only on a SECURE link (i.e. after a mutual match or a verified friend reconnect). Returns
+     * the message id: keep it with [InstagramShareState.sent]; the friend's `ack` arrives as
+     * [LinkEvent.Delivered] with this id ([InstagramShareState.onAck]).
+     */
+    fun sendProfile(rev: Int, ig: String?, id: String = newMessageId(), tsMs: Long = System.currentTimeMillis()): String {
+        check(state == LinkState.SECURE) { "profile requires a secure link" }
+        require(rev >= 0) { "profile rev" }
+        require(ig == null || InstagramHandle.isValid(ig)) { "profile ig must be a normalised handle" }
+        sendSecure(ChatPayload.Profile(id, tsMs, rev, ig))
         return id
     }
 
@@ -335,6 +358,11 @@ class P2pLink(
                 recvCtr++
                 val payload = P2pMessages.decodeChatPayload(pt)
                 if (payload is ChatPayload.Unknown) return
+                if (payload is ChatPayload.Profile) {
+                    events += LinkEvent.ProfileReceived(payload)
+                    send(P2pMessage.Ack(payload.id))
+                    return
+                }
                 events += LinkEvent.ChatReceived(payload)
                 if (payload is ChatPayload.Text) send(P2pMessage.Ack(payload.id))
             }

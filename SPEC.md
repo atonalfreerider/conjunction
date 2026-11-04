@@ -151,12 +151,698 @@ placeholder until the owner picks one from `docs/NAMES.md`; keep it in one place
    - **Test peer:** `tools/p2p-sim/` — a Python (bleak + bless on BlueZ) implementation of the
      protocol that runs on this laptop's Bluetooth and acts as a configurable nearby user (e.g.
      "Aurora"), used to test the phones and as the protocol's reference implementation.
+5d. **UX 2.0 (owner requests 2026-11-04).** See section "5d. UX 2.0" below; it overrides every
+   UI detail in 5, 5b, 5c, 6 and 7 where they differ.
 
 6. **Profile.** Display name, profile photo (moderated, stored in backend storage, only served to
    mutual friends), short bio, birth data (birth data stays on device; only derived chart summary —
    signs/degrees needed for compatibility, birth date for twins check — is uploaded when Nearby is on).
 7. **Onboarding:** age gate (18+), legal waiver + terms + privacy acceptance (versioned, stored),
    birth data entry, optional blood type, optional Nearby opt-in, notifications permission.
+
+## 5d. UX 2.0 (owner requests of 2026-11-04 — overrides earlier UI details)
+
+This section overrides every earlier UI detail in this file (Features 5, 5b, 5c UI notes, 6 and 7)
+and the current screens where they differ. The engines, the protocol (except the additive change in
+5d.6), the look ("Celestial Art Nouveau", OrnatePanel / Ornaments / GoldText, art in `art/`) and the
+serverless design stay. Goal: **keep the look, cut the clutter.** Android (Compose) and iOS
+(SwiftUI) MUST build the same screens, in the same order, with the same strings (keys shared, see
+`legal/IN_APP_CONSENT_COPY.md` 2.1 for legal copy and the tables below for the rest).
+
+Owner requests, verbatim:
+
+1. "the legal boxes are overwhelming the design. we should be compliant, but completely minimize this in the UI"
+2. "the Nearby should be the center button in the bottom menu and should be the largest. it should only contain match cards. the toggles should be in the profile settings"
+3. "when a match happens, the user should be able to always see the compatibility chart with that person"
+4. "let's streamline onboarding and use onboard AI to help. getting a profile setup needs to be low friction"
+5. "if it is possible to link instagram if it is already on a person's phone, let's use instagram"
+
+Code paths below: Android `android/app/src/main/java/com/metavirtuoso/conjunction/` (`app/`),
+Android core `android/core/src/main/kotlin/com/metavirtuoso/conjunction/core/` (`core/`), iOS app
+`ios/App/Conjunction/` and iOS core `ios/Sources/ConjunctionCore/`.
+
+### 5d.1 Legal UI, minimized (request 1)
+
+**Principle.** The full documents stay as they are (they are the legal substance). The *UI* shows
+legal material in exactly four places; everything else lives in **Profile › Settings › Privacy &
+legal**. Copy: `legal/IN_APP_CONSENT_COPY.md` version **2.1** (the generated
+`consent_strings.xml` / iOS strings are regenerated from it by `android/app/tools/import_consent_strings.py`
+and `ios/App/tools/import_consent_strings.py`; never hand-edit them).
+
+| # | Where | What | Records |
+|---|---|---|---|
+| L1 | Onboarding screen 2 (birth), directly above the **Begin** button | One **unticked checkbox** line (clickwrap) with links: "I'm 18+ and agree to the Terms, Community Guidelines and Waiver, including a release of claims and individual arbitration." + one "read" line: "See how your data stays on your phone: Privacy Policy". The 18+ age gate is the birth date on the same screen. | `WAIVER`, `TERMS`, `COMMUNITY_GUIDELINES`, each with the SHA-256 of the displayed checkbox line and of the bundled document (`docSha256`); `PRIVACY_NOTICE_SEEN` (read, not agreed) with the SHA-256 of the privacy line and the policy's `docSha256`; `AGE_18_CONFIRMED` |
+| L2 | First time Nearby is turned on (bottom sheet, from the Nearby empty state or the Settings switch) | 4 short points (Bluetooth even while closed, never location; what nearby phones get; what matches get and encryption; no verification / withdraw) + one unticked consent checkbox ("I consent … can reveal my sexual orientation …") + "Details" + "Safety Tips" links + **Turn on** (disabled until ticked) / Not now; the checkbox and the two buttons are pinned under the scrolling points. This one sheet is the GDPR Art. 9 explicit consent for gender/seeking/relationship status **and** the Play/App Store prominent disclosure for Bluetooth. The system Bluetooth ("Nearby devices") prompt follows **Turn on** directly; no separate rationale dialog. | `CONSENT_NEARBY_BLUETOOTH` + `CONSENT_ORIENTATION_DATA`, both with the SHA-256 of the sheet text (title + 4 points + checkbox) |
+| L3 | Blood-type row (Profile › Eastern), only after a type is chosen | One inline **switch**, off by default: "Use in Nearby matching — I consent to sending my blood type (health data) to every nearby phone with Nearby on." | `CONSENT_BLOOD_TYPE_MATCHING` on switch-on; same key with `withdrawn=true` on switch-off |
+| L4 | Re-acceptance (only when a document's **major** version changes) | One compact bottom sheet, not a full screen (5d.1.4) | the documents' keys at the new version |
+
+Plus four one-line FinePrint notes that are **not** consents and not boxed (no OrnatePanel around
+them): `photo_note` under the photo picker, `instagram_note` under the Instagram field,
+`chat_first_open_notice` once per friend at the top of a new chat, `match_card_entertainment_note`
+at the bottom of the Compatibility view. The reading `entertainment_note` stays as one FinePrint line
+at the end of each reading (no panel).
+
+**Removed from the UI** (and their strings retired, see IN_APP_CONSENT_COPY 2.1 "Retired in 2.1"):
+the six-bullet "fine print" page, the separate age checkbox, the `age_gate_body` line, the honesty checkbox (honesty is in
+Terms §5(e),(g) and Waiver §20(5), accepted by L1), the orientation-consent paragraph and checkbox on
+the dating-profile step, the nine-point Nearby panel (now behind "Details"), the Bluetooth rationale
+dialog, the `nearby_body` paragraph and eligibility FinePrint on the Nearby tab, the "Stay safe"
+button on the Nearby tab, the iOS background note on the Nearby tab (moved to Settings › Nearby and
+Details), the driving FinePrint on the notifications step (stays in Safety Tips), the Safety button
+on match cards (moved into the card's ⋯ menu), the three chat-header icons and the two chat
+FinePrints (moved into the ⋯ menu / the one-time notice), the photo_body/photo_tip FinePrints, the
+birth-privacy FinePrint on onboarding (kept once in Profile › Birth), and the full-screen Reaccept
+screen.
+
+#### 5d.1.1 Clickwrap rules (L1) — MUST
+
+- The checkbox line sits directly above **Begin**, visible without scrolling on a 360×640 dp /
+  375×667 pt screen with the keyboard closed; nothing else (no art, no other links) between them.
+- Body text size (not FinePrint), contrast ≥ 4.5:1 (moonstone #EDE6F7 on indigo).
+- Each document name is its own link, gold #D4AF37, **underlined**, ≥ 44 pt / 48 dp touch target
+  (pad the line), opening the full document in the in-app reader (bottom sheet, back returns with
+  state kept). Link labels are separate keys (`legal_link_terms`, `legal_link_guidelines`,
+  `legal_link_waiver`, `legal_link_privacy`) substituted into `legal_accept_checkbox` /
+  `legal_privacy_line` (`%1$s…`), so the recorded hash is of the formatted sentence.
+- The checkbox starts unticked. **Begin** (`legal_begin`) is enabled only when the box is ticked, the
+  birth date is valid and ≥ 18 years before today, and the birth place is resolved.
+- The Privacy Policy is linked as "read", never "agree".
+- Arbitration opt-out (30 days) needs no onboarding UI: it is in the Waiver and in Settings.
+
+#### 5d.1.2 Age gate (folded into birth entry)
+
+- The birth date on onboarding screen 2 **is** the age gate. No date is pre-selected (the field
+  starts empty; the date picker opens at 1995-01-01 but nothing is set until the user picks or the
+  text parser fills it and the user sees the chip).
+- Under 18 on **Begin**: `age_gate_blocked_title` / `age_gate_blocked_body` full screen; store the
+  local `blocked` flag (as today); the date is not stored. Receiving phones keep rejecting peers
+  under 18. Changing the birth date later in Profile re-runs the same check (under 18 → blocked).
+- Keep the existing `AGE_18_CONFIRMED` record (now recorded from L1).
+
+#### 5d.1.3 Profile › Settings › Privacy & legal (everything else)
+
+One screen, plain rows (no OrnatePanel per row; one panel for the whole list), in this order:
+
+1. **Documents** (`settings_legal_docs_title`): Terms · Waiver · Privacy · Community Guidelines ·
+   Safety Tips · Open-source licences, each with its version, each opening the in-app reader.
+2. **Nearby consent** (`settings_nearby_consent`): "Given 4 Nov 2026" / "Not given", and a
+   **Withdraw** button (`settings_withdraw_nearby_consent`) → confirm
+   (`settings_withdraw_nearby_consent_confirm`) → records `CONSENT_ORIENTATION_DATA` and
+   `CONSENT_NEARBY_BLUETOOTH` withdrawn, turns Nearby off, stops sending. Next time Nearby is turned
+   on, L2 is shown again.
+3. **Blood type in Nearby** (`settings_blood_share`): mirror of the L3 switch (shown only when a blood
+   type is set).
+4. **My acceptance records** (`settings_legal_records`).
+5. **Opt out of arbitration** (`settings_arbitration_optout_hint`), prepares the email as today.
+6. **Blocked people** (`settings_blocked`) with Unblock (Android gets the unblock screen iOS has).
+7. **Export my data** (existing behaviour, if present on the platform) and **Delete all my data**
+   (`settings_delete_data`, confirm `settings_delete_data_confirm`).
+8. `settings_no_server_note` (one FinePrint) and `settings_contact`.
+
+Withdrawal is one tap + one confirm in the same app, as easy as giving (GDPR Art. 7(3), Apple
+5.1.1(ii)).
+
+#### 5d.1.4 Versions, re-acceptance and existing users (no re-onboarding)
+
+- Documents move to **2.1**: `WAIVER`, `TERMS` (acceptance wording now "ticking the agreement box and
+  tapping Begin"), `PRIVACY` (Instagram handle, stored match chart positions, compatibility view,
+  on-device onboarding AI, consent placement). `SAFETY_TIPS` 2.1 (gains the no-background-checks
+  line); `COMMUNITY_GUIDELINES` is unchanged at 2.0; `IN_APP_CONSENT_COPY` 2.1. These are **minor**
+  (not material, Waiver §19.3).
+- **Rule:** compare only the **major** version (`2` of `2.1`) of each accepted document
+  (`WAIVER`, `TERMS`, `COMMUNITY_GUIDELINES`) with the bundled one. `PRIVACY` is read, not agreed
+  (GDPR Art. 7(2)): any change to it, major or minor, takes the notice path below, never re-accept.
+  - Major differs (or never accepted while `onboardingComplete`) → **re-accept sheet** (L4): modal
+    bottom sheet over the app, `legal_reaccept_title`, `legal_reaccept_body` with the changed
+    documents as links, one button `legal_reaccept_continue` ("Agree and continue"). Records the new
+    versions. Not dismissible except by the button (back = minimise app; a tap on the scrim does
+    nothing).
+  - Only the minor differs → **notice sheet**, shown once: `legal_notice_title`,
+    `legal_notice_body` (links to the changed docs), button `legal_notice_ok`. Records
+    `<DOC>_NOTICE_SEEN` at the new version (the accepted version of `<DOC>` is unchanged). Dismiss by
+    button, swipe or back.
+  - A user with no `COMMUNITY_GUIDELINES` record but an accepted `TERMS` 2.x counts as accepted (the
+    Guidelines are part of the Terms).
+- **Existing consents stay valid.** `CONSENT_ORIENTATION_DATA` + `CONSENT_NEARBY_BLUETOOTH` both
+  present and not withdrawn = L2 already given (no sheet). `CONSENT_BLOOD_TYPE_MATCHING` = L3 on.
+  Old keys stay readable in `ConsentLedger`; `PROFILE_HONESTY_CONFIRMED` is kept in history but no
+  longer required.
+- **Profile migration** (`app/data/Profile.kt`, iOS `OwnerProfile.swift`): `onboardingComplete`
+  true → never shown onboarding again. `honestyConfirmed` ignored. New
+  `nearbyEligible = birth != null && datingFieldsComplete && nearbyConsentGiven` where
+  `nearbyConsentGiven` = both consent records present and not withdrawn. A user who had Nearby on
+  keeps it on. Users mid-onboarding resume at the new screen that holds their first missing item
+  (old WELCOME → 1; AGE/LEGAL/BIRTH_TIME/BIRTH_PLACE → 2 with known values pre-filled as chips;
+  BLOOD/DATING → 3; NEARBY/NOTIFICATIONS → finish).
+- The saved tab `EASTERN` or `PALM` maps to `READINGS` (with that segment selected).
+
+### 5d.2 Navigation (request 2)
+
+**Five slots: Today · Chart · [Nearby] · Readings · Profile.**
+
+- *Today* — the daily habit (default tab). *Chart* — your natal wheel. *Nearby* — centre, the social
+  heart of the app. *Readings* — Eastern (Chinese zodiac, Four Pillars, blood type reading) and Palm
+  merged under a two-segment control ("Eastern | Palm"); both are occasional deep-dives, so one slot
+  is enough. *Profile* — your card and all settings.
+- **Bar** (`GoldTabBar`, both platforms): height 64 dp/pt + system inset; four side tabs keep the
+  36 dp circle and 22 dp icon with a label. The **Nearby button** is a 68 dp/pt gold-leaf medallion
+  (gradient #D4AF37 → #F5E6A8, 2 dp filigree ring, ☌ glyph 32 dp) centred, **raised** so its centre
+  sits on the bar's top edge (it overlaps the content by 34 dp; content gets matching bottom padding),
+  with the label "Nearby" under it. States: off → medallion desaturated 40%; on → a slow (6 s) gold
+  shimmer sweep; pending matches → badge (rose-copper #C97B63 circle, count, max "9+") at 1 o'clock.
+  **Compose rule:** the shimmer's infinite-transition value is read only inside
+  `drawWithContent`/`graphicsLayer`, never in composition. iOS: `TimelineView`/`phaseAnimator` on the
+  overlay only. Reduced motion → no shimmer.
+- Accessibility: Nearby button content description "Nearby, %d new matches"; side tabs keep labels.
+- Default tab Today. A match notification or the match popup opens Nearby; a message notification
+  opens that chat. Android `ui/Root.kt` `Tab` = `TODAY, CHART, NEARBY, READINGS, PROFILE` (bar
+  order); iOS `AppTab` the same.
+
+### 5d.3 Nearby screen: only match cards (request 2)
+
+Header: title "Nearby" (GoldText) and a 10 dp status dot at the right (gold = on, grey = off or
+paused, rose-copper = Bluetooth off / permission missing). Tapping the dot opens Settings › Nearby.
+No hero image, no switch, no paragraphs, no buttons other than on cards.
+
+Content, top to bottom (one scrolling list of cards, `card_frame` styling):
+
+1. **Status card** — only when Nearby is off, paused or blocked by Bluetooth/permissions *and* the
+   list below is non-empty (otherwise the empty state shows it). One line + one button:
+   off → `nearby_off_line` + "Turn on" (5d.3.1 flow); paused → "Paused until 15:00" + "Resume";
+   Bluetooth off → `nearby_bluetooth_off` + "Turn on Bluetooth" (system enable request); permission
+   denied → `perm_bluetooth_denied` + "Open Settings".
+2. **New matches** — unanswered incoming matches (≤ 24 h), newest first, shown as the existing
+   **swipe card** stack (top card interactive, next one peeking). Card: photo (or zodiac art),
+   first name, age, Sun/Moon/Rising glyphs, Chinese animal, relationship status, looking-for,
+   kind chip (Dating / Friends), score medallion. Buttons Pass / **☌ Chart** / Accept. Swipe
+   right/left as today. ⋯ menu: Snooze 7 days, Block, Report, Safety Tips.
+3. **Waiting** — I swiped right, they have not answered (≤ 24 h): compact card (photo, name, score,
+   "Waiting for Aurora"), buttons ☌ Chart, ⋯.
+4. **Conjunctions** — mutual matches (friends), most recent activity first: card with photo, first
+   name, score medallion, last message preview (or "Say hi"), unread dot, "waiting to deliver" clock
+   when messages are queued, an **Instagram** chip when they shared a handle (5d.6). Tap card → chat.
+   ☌ chip → Compatibility view. ⋯ → Unmatch, Block, Report, Safety code.
+
+**Empty state** (no cards at all): `popup_match_nearby` art (240 dp, faded), one GoldText line and one
+button, depending on state:
+
+| state | line (`strings.xml`) | button |
+|---|---|---|
+| Nearby off | `nearby_empty_off` "Turn on Nearby to meet compatible people close by." | **Turn on Nearby** → 5d.3.1 |
+| on, nobody yet | `nearby_empty_listening` "Listening for conjunctions… We'll let you know." | none |
+| paused | `nearby_empty_paused` "Paused until %1$s." | Resume |
+| Bluetooth off / denied | as the status card | as the status card |
+| dating profile incomplete | (no separate state: the L2 sheet collects it) | Turn on Nearby |
+
+#### 5d.3.1 Turn-on flow (empty state button, status card, Settings switch — one implementation)
+
+1. If L2 consent is not given **or** the dating fields (gender, seeking, relationship status,
+   looking-for) are incomplete → **L2 sheet**. If dating fields are missing, the sheet shows the
+   four chip rows (`dating_profile_*`, `option_*`) above the four points, pre-filled from the
+   profile; Turn on also requires them. If a first name is missing, one text field "First name"
+   is shown too (required: the card needs it).
+2. Turn on → record consents → system Bluetooth / "Nearby devices" permission prompt → Android 13+
+   / iOS: notification permission prompt **only if never asked** (needed for match alerts and the
+   Android foreground-service notification) → Nearby starts. Denied Bluetooth → status card with
+   `perm_bluetooth_denied`.
+3. Not now / back → nothing recorded, Nearby stays off.
+
+#### 5d.3.2 Profile › Settings › Nearby (all toggles)
+
+`nearby_switch_label` switch with `nearby_switch_on_desc`/`nearby_switch_off_desc` (switching on runs
+5d.3.1); pause chips `nearby_pause_1h`, `nearby_pause_tomorrow` (or Resume); "Snoozed people" list
+(unsnooze); **Share my Instagram with new matches** (default on, 5d.6); `settings_blood_share` mirror;
+the **Nearby consent** row with **Withdraw** (same row and behaviour as 5d.1.3 item 2, shown in both
+places so withdrawing sits next to the switch that needed the consent); iOS only
+`nearby_ios_background_note`; `nearby_android_old_version` where applicable.
+
+**Profile › Settings › Notifications:** Daily reading (switch + time, default 08:00), Matches nearby
+(switch), Messages (switch). Each "on" requests the OS permission if needed. Today also shows, once,
+a dismissible card "Get your reading each morning?" (`perm_notifications_title`/`_body`, buttons
+`perm_notifications_button` / "Not now") after the first reading is shown, if never asked.
+
+### 5d.4 Compatibility, always reachable (request 3)
+
+**CompatibilityScreen(peerId)** — one full-screen view (Android `ui/match/CompatibilityScreen.kt`,
+iOS `Screens/CompatibilityScreen.swift`), reachable from:
+
+- the ☌ Chart button on every **swipe card** (New matches) and **Waiting** card;
+- the end of the **match animation** (5b): after the score count-up, the swipe card appears with the
+  same ☌ Chart button;
+- the **ConjunctionPopup** ("It's a Conjunction!"): two buttons, **Say hi** (chat) and **See our
+  chart** (this view);
+- the ☌ chip on every **Conjunctions** card;
+- the **chat header**: tapping the peer's photo/name or the score chip opens it.
+
+It is available **as long as the encounter or friend record exists** (pending ≤ 24 h, waiting
+≤ 24 h, friends until unmatch/block/delete). Layout, top to bottom:
+
+1. Two medallions (my photo left, theirs right, zodiac art if no photo) joined by the ☌ glyph;
+   big total score (count-up on first open only) and kind chip.
+2. **Synastry bi-wheel** (`SynastryWheel`, new component next to `ChartWheel`): zodiac ring;
+   inner ring = **me**, outer ring = **them**, each with the five compatibility points (Sun, Moon,
+   Venus, Mars, Ascendant when known) at their true longitudes; cross-aspect lines for every
+   `Compatibility.PAIRS` pair that is in orb, gold for conjunction/sextile/trine, rose-copper for
+   square/opposition, width by weight. Draws itself (sweep 1.2 s) — animation read only in the draw
+   phase (Canvas lambda / `drawWithContent`). Labels show **sign glyphs only** for their points (no
+   degrees); their birth date and hour are **never displayed** (only "Birthday twins" if true).
+   Legend: "Inner: you · Outer: Aurora".
+3. **Score breakdown**: Western / Chinese / Blood bars (Blood hidden when null) with the weights
+   55/30/15 in FinePrint.
+4. **Highlights** (stored `highlights`) and the **aspect list**: up to 8 rows "Your Venus △ their
+   Mars — trine, 2.1°" from `Compatibility.synastry(me, them)` (new, below), sorted by |score|.
+5. **Eastern**: Chinese relation (`chineseRelation`: SAME, TRINE "San He", HARMONY "Liu He", CLASH,
+   HARM…) and day-master relation (`stemRelation`) as two lines with the two animal arts.
+6. **Reading**: on-device AI paragraph from `HoroscopePrompt.compatibility(a, b, score)` (80–120
+   words) via `ReadingService.compatibility()` (Android exists, now wired; iOS add the same), with
+   the deterministic `FallbackReadings` compatibility text when the model is unavailable. Generated
+   once, cached on the record (`blurb`, `blurbSource` = `model|fallback`, `blurbForHash` = hash of
+   both compat profiles); regenerated only if either profile changes. "Report this reading" in ⋯.
+7. `match_card_entertainment_note` (one FinePrint line).
+
+**Engine addition (shared contract, golden parity):**
+`Compatibility.synastry(a: CompatProfile, b: CompatProfile) -> [SynastryLine(pointA, pointB,
+aspect, orbCentideg, weight, score)]` — one entry per `PAIRS` pair with both longitudes present and
+an in-orb aspect, using `pairScore`; order = by `|score × weight|` descending, then PAIRS order.
+Add `synastry` to each case in `testdata/golden_compat.json` (`testdata/tools/make_golden.py`), and
+document it in `docs/COMPATIBILITY.md`. `CompatResult.chineseRelation` and `.stemRelation` are now
+stored (below).
+
+**Stored peer data** (Android `nearby/P2pStore.kt` `StoredEncounter`/`StoredFriend` + JSON codec
+:209-285; iOS `Nearby/NearbyModels.swift` with `decodeIfPresent`): add, all nullable for migration:
+
+| field | type | source |
+|---|---|---|
+| `peerCompat` | `WireCompat` (sun, moon, venus, mars, asc?, animal, stem, blood?, birthDate, birthHour?) | the peer's `hello.compat`, stored at `onMatch` and copied into the friend at `onFriendEstablished` |
+| `chineseRelation`, `stemRelation` | enum names | from `CompatResult` |
+| `blurb`, `blurbSource`, `blurbForHash` | string | 5d.4 item 6 |
+| `peerIg`, `peerIgRev` | string?, int | 5d.6 |
+
+The view always **recomputes** `Compatibility.score(myCompat, peerCompat)` when `peerCompat` is
+present (so a change of my own birth data is reflected) and falls back to the stored numbers
+otherwise. `HelloReceived` still discards non-matching hellos (nothing kept).
+
+**Migration of existing records** (no `peerCompat`): the view shows medallions, stored total,
+western/chinese/blood and highlights; in place of the wheel a framed placeholder
+`compat_wheel_pending` "Your chart together appears the next time you're near %1$s." **Backfill:**
+when a friend link reaches SECURE (`friend_nearby`, after `kc` verified), store that link's
+`hello.compat` as `peerCompat` (and replace it if it changed, then recompute). Pending encounters
+older than the update simply expire (24 h).
+
+**Privacy:** no new data is sent (the hello already carries these longitudes, birth date and hour
+to every nearby phone). What changes is that the receiving phone **keeps** them with the
+match/friend and **shows** a wheel of them; `PRIVACY.md` 2.1 §3, §4 and §10 say so.
+
+### 5d.5 Onboarding, streamlined with on-device AI (request 4)
+
+**Target:** 4 screens, ≤ 90 s for a typical user (measured: Welcome 3 s, Birth 30 s, About you
+25 s, Photo & bio 25 s). Only birth date, place (time optional) and L1 are required; everything
+else can be skipped and finished in Profile. No permission prompts during onboarding (photo picker
+needs none; notifications and Bluetooth are asked just in time). Screens use `StepPage` with a
+4-dot progress indicator (not a bar) and one primary button at the bottom.
+
+**1. Welcome.** `bg_onboarding_1`, app icon glyph, wordmark, tagline "Your stars, nearby.", button
+"Get started" (`onb_welcome_start`) → 2. No other text. (Not "Begin": that word is reserved for the
+agreement button on screen 2, which the Terms and Waiver name as the acceptance control.)
+
+**2. Your birth** (title "When and where were you born?").
+- One text box, placeholder "e.g. Aug 7 1994, 4:53 pm, Providence RI". As the user types (debounce
+  400 ms) the deterministic **`BirthTextParser`** fills three **confirm chips** below: Date
+  "7 Aug 1994", Time "4:53 PM" (or "Time unknown"), Place "Providence, RI, US". Unfilled chips show
+  "Add date" / "Add time" / "Add place" in outline style.
+- On IME Done / focus loss, if the date or place is still missing and the on-device model is
+  **available now** (Android `GeminiNanoModel` status AVAILABLE, no download started during
+  onboarding; iOS 26+ `SystemLanguageModel.default.isAvailable`), ask it (`OnboardingPrompt.birth`)
+  for JSON `{"date":"YYYY-MM-DD"|null,"time":"HH:MM"|null,"timeUnknown":bool,"place":string|null}`
+  (iOS: `@Generable` struct with guided generation; Android: JSON prompt parsed with `core.json.Json`,
+  one retry). The model only fills chips that are still empty; it never overwrites a parsed or
+  user-edited value. Timeout 4 s → no change.
+- **Validation:** date must exist, be ≥ 1900-01-01 and ≤ today; time 00:00–23:59; place query is
+  resolved by the platform geocoder (as today) → top result shown in the chip with a "Change" list
+  of up to 5 results; "Enter coordinates instead" stays inside the place chip's sheet.
+- Tapping a chip opens the native picker (date, time with "I don't know my birth time" switch) or
+  the place search sheet. A small link "Enter each separately" replaces the text box with the three
+  chips only (for people who prefer pickers).
+- Below the chips: **L1** checkbox line, privacy line and **Begin** (no other text; the old
+  `age_gate_body` line is retired — the "I'm 18+" in L1 says it, and a neutral age screen should not
+  announce the cut-off before the date is entered). Under 18 → blocked screen (5d.1.2).
+- If valid `WAIVER`/`TERMS` 2.x and `AGE_18_CONFIRMED` records already exist (a user who accepted
+  under 2.0 and was migrated mid-onboarding, 5d.1.4), L1 and the privacy line are **not shown**
+  (never pre-ticked) and Begin needs only a valid ≥ 18 date and a resolved place.
+- Begin computes the chart in the background and goes to 3.
+
+**On-device AI rules (all of 5d.5: birth, about-you, bio) — MUST:**
+- The deterministic result (parser / `FallbackReadings`) is computed and shown **first**; the model
+  only refines it. Every model call is asynchronous and cancellable (latest input wins); it never
+  disables or delays a button (Begin, Continue, Skip, Done, Write one for me), never shows a blocking
+  spinner (at most a faint shimmer on the chip or bio field) and never shows an error.
+- Availability is checked, never forced: no model download is started during onboarding (Android
+  `GeminiNanoModel` status must already be AVAILABLE; iOS 26+ `SystemLanguageModel.default`
+  availability `.available`; older iOS → deterministic only).
+- Timeouts: 4 s for birth and about-you extraction, 6 s for a bio; on timeout, error, invalid JSON
+  or a value that fails validation → keep the deterministic result silently. Leaving the screen
+  cancels the call; a late result is dropped.
+- The model only fills chips that are still empty and never overwrites a parsed or user-edited
+  value. No network, no Instagram data, nothing the user typed is stored as typed (PRIVACY 2.1 §2).
+
+**`BirthTextParser`** (core, both platforms, golden `testdata/golden_birth_text.json`):
+`parse(text, region, today) -> {date?, time?, timeUnknown, placeQuery?, ambiguousDate}`.
+- Dates: `Aug 7 1994`, `August 7, 1994`, `7 Aug 1994`, `7th of August 1994`, `1994-08-07`,
+  `8/7/1994` and `8-7-94` (numeric order M/D/Y when the device region is one of US, PH, FM, MH,
+  PW, else D/M/Y; two-digit years → 19xx if > current two-digit year else 20xx;
+  `ambiguousDate` = true when both parts ≤ 12, and the date chip is highlighted for confirmation),
+  `07.08.1994` (D.M.Y). English month names and 3-letter abbreviations (with or without a dot).
+- Times: `4:53pm`, `4:53 pm`, `4.53pm`, `16:53`, `4pm`, `noon`, `midnight`; "time unknown",
+  "don't know", "unknown time" → `timeUnknown`.
+- Place: the remaining text after removing the date and time tokens, the words "born", "in", "at",
+  "on" at the edges, and surrounding commas/whitespace; empty → null.
+
+**3. About you** (title "Tell us about you", optional, "Skip" in the top bar).
+- One multi-line box, placeholder "e.g. I'm Sam, a single guy into hiking and jazz, looking to
+  date women". Below it, always visible, **editable chips**: First name (text), I am (Male /
+  Female), Seeking (Men / Women / Both), Status (Single / In a relationship), Looking for (Dating /
+  Friends / Both), Interests (free text, feeds the bio). Users can ignore the box and tap chips.
+- Extraction: deterministic **`AboutYouParser`** (core, golden `testdata/golden_about_you.json`:
+  "I'm/I am/my name is/call me X" → first name; explicit gender words man/guy/male/woman/girl/
+  female; seeking from "into/looking for/date/seeking" + men/guys/women/girls/both/everyone;
+  single/married/partner/in a relationship; dating/date vs friends/friendship) runs on each pause.
+  Then, if the model is available, `OnboardingPrompt.aboutYou(text)` returns
+  `{"firstName":string|null,"gender":"male"|"female"|null,"seeking":"male"|"female"|"both"|null,
+  "relationship":"single"|"in_a_relationship"|null,"lookingFor":"dating"|"friends"|"both"|null,
+  "interests":string|null}`. The prompt says to fill a field **only if the text states it**,
+  never to guess gender or orientation from a name. Validation: enum values exactly, firstName
+  1..64 UTF-8 bytes of letters/spaces/'-’ (else null), interests ≤ 200 bytes. Model values only
+  fill chips still empty. "In a relationship" sets Looking for = Friends unless the user changes it
+  (as 5b).
+- Nothing on this screen is sent anywhere; these fields leave the phone only after L2. No consent
+  text here. Continue → 4.
+
+**4. Photo & bio** (title "Your card", optional, "Skip").
+- **Choose from your photos** → system photo picker (Android `PickVisualMedia(ImageOnly)`, iOS
+  `PhotosPicker`; no permission; includes photos saved from Instagram). Optional "Take a photo"
+  (camera permission asked then, existing rationale). Then **face-centred crop**: detect the largest
+  face (Android `android.media.FaceDetector` on an RGB_565 copy — no new dependency; iOS Vision
+  `VNDetectFaceRectanglesRequest`), crop 4:5 with the face centre at 40% from the top and face
+  height ≈ 35% of the crop; no face → centre crop. A crop sheet lets the user drag/zoom; output
+  JPEG 512×640, ≤ 60 KB (quality steps 85→40), EXIF stripped. `photo_note` FinePrint under it.
+- **Bio**: one-line field (≤ 140 chars shown; ≤ 280 bytes stored) with **Write one for me**:
+  `BioPrompt.build(sun, moon, rising, chineseAnimal, lookingFor, interests)` → one line, no
+  emojis-only, no contact info; on Android, if Gemini Nano accepts image input, the photo is
+  passed too (to pick up e.g. "outdoorsy"); iOS text only. "Another" re-rolls (temperature 0.9).
+  Fallback when the model is unavailable: `FallbackReadings.bio(chart, interests, seed)` from
+  bundled fragments (deterministic per seed; "Another" increments the seed). Output passes
+  `ReadingCleaner` and the local contact-info filter before it is shown.
+- **Instagram (optional)** field — 5d.6.
+- **Done** → onboarding complete → lands on **Chart** (the wheel draws itself) once; later launches
+  open Today.
+
+Blood type is **not** in onboarding: Profile › Eastern › Blood type (with L3). The dating profile,
+photo, bio and Instagram can all be completed later in Profile (same components).
+
+**Prompts** live in core (`core/prompt/OnboardingPrompt.kt`, `BioPrompt.kt`; Swift mirrors) with
+identical wording; add them to `testdata/golden_prompts.json`. The model never fetches anything
+from the network and never sees Instagram data.
+
+### 5d.6 Instagram (request 5)
+
+**What is not possible (research, Nov 2026).** There is no serverless way to "link" Instagram: the
+Basic Display API (the only consumer-account API) was shut down on 2024-12-04; the Instagram API
+serves only Business/Creator accounts, needs an app secret for the token exchange ("must be made in
+server-side code") and Meta App Review; the installed Instagram app offers no on-device login or
+profile-read for third parties; scraping breaks Meta's terms. So **no Instagram sign-in, no
+auto-import of handle, photo or posts.**
+
+**What we build (no server, no Meta registration):**
+
+1. **Handle field** (onboarding screen 4 and Profile › Your card): "Instagram (optional)" with
+   `instagram_note` "Shared only with your mutual matches, encrypted. Never with strangers nearby."
+   Input normalisation (`InstagramHandle.normalize`, core, golden `testdata/golden_instagram.json`),
+   in this order:
+   1. If the text contains `instagram.com/` (case-insensitive; any subdomain such as `www.` or
+      `m.`, any scheme or none), take the characters after the **first** `instagram.com/` up to the
+      first `/`, `?`, `#` or whitespace — that is the first path segment; if it is `_u`, take the
+      next segment instead. A first segment in `p reel reels stories explore accounts direct tv
+      about developer legal web oauth` → invalid (a post or app page, not a profile). This also
+      handles shared text such as "See Aurora's profile https://www.instagram.com/aurora.stars?igsh=…".
+   2. Otherwise trim whitespace and strip one leading `@`.
+   3. Lowercase (ASCII).
+   Valid = `^[a-z0-9._]{1,30}$` with at least one letter or digit. (Deliberately no stricter dot
+   rules: rejecting a real username is worse than a dead link, and Meta does not publish the
+   rules.) Invalid → inline error `instagram_invalid`, not saved.
+2. **Getting it from the installed app** (the "already on the phone" path):
+   - **Paste:** a Paste button next to the field (iOS `PasteButton`, no paste prompt; Android reads
+     the clipboard on tap) accepting a handle or a profile link copied from Instagram's "Share
+     profile → Copy link".
+   - **Android share target:** `MainActivity` gets an `ACTION_SEND` `text/plain` intent filter. A
+     shared text containing an `instagram.com/<handle>` profile URL (Instagram → Share profile →
+     Conjunction) opens a small sheet `instagram_from_share_title` "Use @%1$s as your Instagram?" →
+     "Use it" saves it (if onboarding is not finished, it pre-fills screen 4). Any other shared
+     text → ignored with a toast "Conjunction can only use an Instagram profile link here."
+   - iOS: no share extension in this release (sideload build has no App Group); Paste covers it.
+3. **Who receives it:** never in the BLE advertisement, `hello` or `card`. Only friends (after
+   mutual match), inside the end-to-end-encrypted channel, via the `profile` plaintext (below).
+   Per-friend switch on the friend's ⋯ menu and in chat ⋯: "Share my Instagram with %1$s"
+   (`instagram_share_with_match`), default = Settings › Nearby "Share my Instagram with new
+   matches" (default on).
+4. **Showing it:** an **Instagram** chip on the friend's Conjunctions card, in the chat ⋯ menu and
+   in the Compatibility view header. Tap opens `https://www.instagram.com/<handle>/`: Android
+   `Intent.ACTION_VIEW` (Instagram's verified app links open the app, else the browser; no
+   `<queries>` needed because the label does not change); iOS `openURL` (universal link → app, else
+   Safari; no `LSApplicationQueriesSchemes`). Not `instagram://`.
+5. **Unmatch / block / delete** removes the stored `peerIg`.
+6. **Share to Stories: not in this release.** It needs a Meta App ID (a Meta developer app the owner
+   must create). Open item for the owner; with an App ID it can be added without a server
+   (`com.instagram.share.ADD_TO_STORY` / `instagram-stories://share`).
+7. Photos: the system photo picker already shows photos saved from Instagram (5d.5 screen 4).
+
+**Protocol change (additive, `pv` stays 1) — to be written into `docs/P2P_PROTOCOL.md` §5.3 (chat
+plaintexts), §6, §10, §11, §13 together with `tools/p2p-sim`, Kotlin `core/p2p` and Swift core:**
+
+- New **chat plaintext kind `profile`** (inside the `chat` envelope, encrypted as §8.4), canonical
+  member order:
+  ```json
+  {"id":"…msgid…","ts":1762171200000,"kind":"profile","rev":3,"ig":"aurora.stars"}
+  ```
+  | field | type | rule |
+  |---|---|---|
+  | `id` | msgid | fresh per send |
+  | `ts` | int | as `text` |
+  | `kind` | `"profile"` | |
+  | `rev` | int 0..2147483647 | sender's profile revision **for this friend**; increases by 1 whenever the handle or the per-friend share switch changes |
+  | `ig` | string or null | normalised handle (1..30 bytes, the "Valid" rule above) or `null` = not shared / removed; always present |
+- Canonical member order is exactly `id`, `ts`, `kind`, `rev`, `ig` (§5.1: every member always
+  present, `ig` written as `null` when not shared). Plaintext size ≤ 160 bytes.
+- **Never before a mutual match:** a `profile` is only ever built and sent inside a `chat` envelope,
+  i.e. only in state SECURE, which is reached only after mutual right swipes + `keyx`/`kc` (new
+  friend) or after a verified friend tag + `kc` (friend reconnect). It is never queued for, or sent
+  to, a pending or waiting encounter. A blocked friend gets `bye done` before SECURE, so never a
+  `profile`.
+- **Sender state per friend:** `profileRev` (int, starts at 0 when the friendship is created),
+  `profileAckedRev` (int, initial −1), `profileInFlightId` (msgid or null). The **effective value**
+  for a friend = the handle if one is set **and** that friend's share switch is on, else `null`.
+  `profileRev` increases by 1 only when the effective value for that friend changes (handle edited
+  or removed, per-friend switch flipped).
+- **When sent:** on entering SECURE with a friend (new friend or `friend_nearby`), as the **first**
+  `chat` (before queued `text`/`read`), if `profileAckedRev < profileRev`; also immediately on an
+  open SECURE link when `profileRev` changes. Each send uses a fresh `id` and the current
+  `profileRev`/effective value, and sets `profileInFlightId`. A new friendship therefore sends exactly
+  one `profile` (rev 0, possibly `ig:null`) per side.
+- **Receiver:** wrong types, `rev` outside 0..2147483647 or `id` not a msgid → `error malformed`
+  (as §5.1). `ig` that is a string failing the "Valid" rule → treated as `null` (lenient, so a
+  future change of Instagram's rules cannot break links). If `rev` > stored `peerIgRev` (initial −1)
+  → store `peerIg` (null clears the chip) and `peerIgRev = rev`; else ignore. In every case reply
+  `ack {id}` (the §6 rule "for `text` send `ack`" becomes "for `text` and `profile`"). A `profile`
+  is not a chat message: it is not shown, not stored in the chat history, not de-duplicated by `id`
+  (by `rev` instead) and never listed in `read.refs`.
+- **Sender on `ack`:** if `id` == `profileInFlightId` → `profileAckedRev = ` the rev of that send,
+  `profileInFlightId = null`; an `ack` for any other id is handled as today.
+- Old receivers ignore the unknown kind and send no ack; the sender then re-sends on each SECURE
+  link (one small message), which is acceptable. It counts toward the `chat` rate bucket (§10.3).
+- Unmatch / block / delete removes `peerIg`, `peerIgRev` and the sender state. No message is sent
+  for that (the protocol has no unmatch message).
+- §10.1 Size limits gains "`profile.ig` | 1..30 bytes, `[a-z0-9._]`".
+- §11 Privacy table gains: "`profile` (Instagram handle, if shared) | that friend only, encrypted |
+  after mutual match and when it changes".
+- **Vectors** (`testdata/tools/make_p2p_wire.py` → `p2p_wire.json`): `plaintexts[]` with the
+  canonical JSON of a `profile` with a handle and with `null`; an AES-GCM vector whose plaintext is
+  that `profile`; `profileValidation[]` (received `ig` → stored value: wire values must already be
+  normalised, so `"Aurora.Stars"`, `"@aurora"`, `""`, `"..."`, a 31-char string and `"a b"` →
+  `null`; `"a_b.c9"`, `"a..b"`, `"a."` → unchanged); `profileMalformed[]` (`rev` −1, `rev`
+  2147483648, `rev` `"3"`, `ig` `5` → `error malformed`); `normalize[]` for
+  `InstagramHandle.normalize` (`"@Aurora.Stars"` → `"aurora.stars"`,
+  `"https://www.instagram.com/aurora.stars/?igsh=xyz"` → `"aurora.stars"`,
+  `"See my profile https://instagram.com/_u/Aurora.Stars"` → `"aurora.stars"`,
+  `"instagram.com/p/abc"` → invalid, `"  aurora "` → `"aurora"`, `"@@a"` → invalid); and a new `profileTranscript` (friend
+  reconnect: hello with friend tag → keyx → kc → `profile` → `ack` → `bye done`) at ATT_MTU 185 with
+  fixed keys. All three implementations MUST produce byte-identical output.
+
+### 5d.7 Profile tab
+
+Top to bottom: **Your card** (live preview of the match card as others see it: photo, first name,
+age, signs, kind; tap a part to edit: photo/crop, first name, bio with Write one for me, dating chips,
+Instagram); **Birth** (date/time/place chips, `birth_privacy_note` once; changing the date re-runs
+the age check); **Eastern** (blood type chips + L3 switch, `blood_type_note`); then **Settings**
+rows: Nearby (5d.3.2), Notifications, Privacy & legal (5d.1.3). One OrnatePanel per group; no
+FinePrint paragraphs other than those named.
+
+### 5d.8 Chat header
+
+Back · photo + first name (tap → Compatibility) · score chip "87 ☌" (tap → Compatibility) · ⋯
+(Instagram if shared, Share my Instagram switch, Safety code, Safety Tips, Unmatch, Block, Report).
+`chat_first_open_notice` shows once per friend as a centred FinePrint at the top of an empty chat;
+queued messages show `chat_queued` under the bubble.
+
+### 5d.9 Acceptance criteria (testable)
+
+**Legal (5d.1)**
+- L-1 A fresh install shows exactly one checkbox before the main app (L1); no "fine print" page,
+  honesty or separate age checkbox exists in either app (grep: retired keys absent from code).
+- L-2 Begin is disabled until L1 is ticked, date valid and ≥ 18, place resolved; under-18 shows the
+  blocked screen and sets the blocked flag; relaunch stays blocked.
+- L-3 After Begin, the ledger holds WAIVER, TERMS, PRIVACY (2.1), COMMUNITY_GUIDELINES (2.0) and
+  AGE_18_CONFIRMED with one hash equal to SHA-256 of the formatted `legal_accept_checkbox` text.
+- L-4 The L1 line uses body size, underlined gold links, each opening the right document; it is fully
+  visible above Begin at 360×640 dp without scrolling (screenshot test).
+- L-5 First Nearby turn-on shows the L2 sheet; Turn on is disabled until the checkbox is ticked; the
+  system Bluetooth prompt appears only after Turn on; Not now records nothing.
+- L-6 L2 records CONSENT_NEARBY_BLUETOOTH and CONSENT_ORIENTATION_DATA with the same sheet hash;
+  Withdraw in Privacy & legal records both withdrawn, turns Nearby off, and the next turn-on shows L2.
+- L-7 The blood switch appears only when a type is set, starts off, records consent/withdrawal, and
+  blood is absent from `hello.compat` while off.
+- L-8 Existing user (2.0 records, orientation + nearby consent, Nearby on) upgrades: no onboarding,
+  no L1/L2, Nearby still on, one notice sheet (minor bump) shown once; a simulated major bump shows
+  the re-accept sheet instead.
+- L-9 Privacy & legal contains every row in 5d.1.3 in order; Android has Blocked people with Unblock.
+
+**Navigation & Nearby (5d.2, 5d.3)**
+- N-1 Bar order Today, Chart, Nearby, Readings, Profile; Nearby button 68 dp/pt, centred, raised,
+  larger than every other tab target; badge shows pending count.
+- N-2 The Nearby screen contains no switch, pause button, paragraph, hero image or Safety button;
+  only the header, status dot, cards and (when needed) the single status card or empty state.
+- N-3 Empty-state "Turn on Nearby" runs the same flow as the Settings switch.
+- N-4 Settings › Nearby holds the switch, pause chips, snoozed list, Instagram default, blood mirror
+  and the Nearby consent row with Withdraw.
+- N-5 Readings shows Eastern | Palm segments; old saved tab EASTERN/PALM opens Readings.
+- N-6 Shimmer: no recomposition per frame (Compose test: recomposition count of the bar stays
+  constant over 2 s with Nearby on); taps on all tabs work while it animates.
+
+**Compatibility (5d.4)**
+- C-1 The view opens from swipe card, waiting card, ConjunctionPopup "See our chart", Conjunctions ☌
+  chip and chat header, for pending, waiting and friend records.
+- C-2 New matches store `peerCompat`, `chineseRelation`, `stemRelation`; the friend inherits them;
+  unmatch/block deletes them.
+- C-3 Wheel shows both sets of points and in-orb lines matching `Compatibility.synastry` golden
+  vectors; their points show sign glyphs without degrees; no birth date/hour text anywhere.
+- C-4 Old friend without `peerCompat` shows the placeholder; after a `friend_nearby` link with
+  verified `kc`, the wheel appears and the score is recomputed.
+- C-5 Blurb comes from the model when available, else fallback; cached and not regenerated on reopen.
+- C-6 Kotlin and Swift `synastry` agree with `golden_compat.json`.
+
+**Onboarding (5d.5)**
+- O-1 Four screens; a scripted happy path (text "Aug 7 1994, 4:53pm, Providence RI", tick L1, Begin,
+  type an about-you sentence, Continue, Skip photo, Done) completes in ≤ 25 taps/keystroke groups and
+  lands on Chart.
+- O-2 `BirthTextParser` and `AboutYouParser` pass their golden files on both platforms; model output
+  never overwrites a parsed or edited chip; invalid model JSON is ignored.
+- O-3 With the model unavailable (forced), every screen works with deterministic results only. With
+  a fake model that never returns, every button stays enabled, the deterministic chips/bio show at
+  once, and the happy path of O-1 completes in the same number of taps.
+- O-7 A user migrated mid-onboarding with 2.0 acceptance records sees no L1 on screen 2 and is
+  never asked to accept again; a user with `onboardingComplete` never sees any onboarding screen.
+- O-4 No runtime permission prompt during onboarding (photo picker only).
+- O-5 Photo crop centres a detected face (fixture image) and outputs ≤ 60 KB, ≤ 640 px, no EXIF.
+- O-6 Skipping screens 3 and 4 still completes onboarding; Nearby turn-on later collects the dating
+  fields in L2.
+
+**Instagram (5d.6)**
+- I-1 `InstagramHandle.normalize` passes `golden_instagram.json` on both platforms.
+- I-2 The handle never appears in `hello`, `card`, logs or advertisements (wire test on p2p-sim).
+- I-3 After mutual match, both peers exchange `profile` (rev 0) and `ack`; changing the handle sends
+  rev+1 on the next SECURE link; turning the per-friend switch off sends `ig:null` and the peer's chip
+  disappears.
+- I-4 Kotlin, Swift and Python produce byte-identical `profile` plaintexts, envelopes and
+  `profileTranscript` frames.
+- I-5 Tapping the chip opens `https://www.instagram.com/<handle>/` (intent/URL asserted in tests).
+- I-6 Android: sharing an Instagram profile URL to Conjunction offers "Use @handle"; other text is
+  ignored.
+
+### 5d.10 Robolectric screenshots (`ScreenCaptureTest.kt`, 1233×2742, also at 360×640 dp for L-4)
+
+Render screens **inside the app scaffold with the tab bar** where they have one. Fix the fixture
+highlight to the real core format ("Sun–Venus trine"). Files:
+
+1. `onb_1_welcome` 2. `onb_2_birth_empty` 3. `onb_2_birth_parsed` (chips filled, L1 unticked)
+4. `onb_2_birth_ready` (L1 ticked, Begin enabled) 5. `onb_2_birth_small_screen` (360×640 dp)
+6. `onb_blocked_under18` 7. `onb_3_about_you` (chips from parser) 8. `onb_4_photo_bio` (photo, bio,
+Instagram) 9. `tabbar_nearby_off` 10. `tabbar_nearby_on_badge` 11. `nearby_empty_off`
+12. `nearby_empty_listening` 13. `nearby_cards` (status card + swipe card + waiting + 2 friends,
+one with Instagram chip) 14. `nearby_consent_sheet` (L2, with dating chips) 15. `nearby_details`
+16. `match_popup_conjunction` (Say hi / See our chart) 17. `compat_full` 18. `compat_pending_wheel`
+(migrated friend) 19. `chat_header` 20. `profile_tab` 21. `settings_nearby` 22. `settings_privacy_legal`
+23. `legal_notice_sheet` 24. `legal_reaccept_sheet` 25. `readings_eastern` 26. `readings_palm`
+27. `today` 28. `chart`.
+
+### 5d.11 New UI strings (not legal; Android `strings.xml`, iOS `Localizable.xcstrings`, same keys)
+
+| Key | Text |
+|---|---|
+| `tab_today` / `tab_chart` / `tab_nearby` / `tab_readings` / `tab_profile` | Today / Chart / Nearby / Readings / Profile |
+| `tab_nearby_badge_desc` | Nearby, %1$d new matches |
+| `readings_segment_eastern` / `readings_segment_palm` | Eastern / Palm |
+| `nearby_off_line` | Nearby is off. |
+| `nearby_paused_line` | Paused until %1$s. |
+| `nearby_empty_off` | Turn on Nearby to meet compatible people close by. |
+| `nearby_empty_listening` | Listening for conjunctions… We'll let you know. |
+| `nearby_empty_paused` | Paused until %1$s. |
+| `nearby_turn_on_button` | Turn on Nearby |
+| `nearby_resume` | Resume |
+| `nearby_turn_on_bluetooth` | Turn on Bluetooth |
+| `nearby_open_settings` | Open Settings |
+| `nearby_section_new` / `nearby_section_waiting` / `nearby_section_conjunctions` | New matches / Waiting / Conjunctions |
+| `nearby_waiting_for` | Waiting for %1$s |
+| `nearby_say_hi` | Say hi |
+| `match_card_chart` | Chart |
+| `match_popup_say_hi` / `match_popup_see_chart` | Say hi / See our chart |
+| `compat_title` | You & %1$s |
+| `compat_legend` | Inner: you · Outer: %1$s |
+| `compat_western` / `compat_chinese` / `compat_blood` | Western / Chinese / Blood type |
+| `compat_aspects_title` / `compat_eastern_title` / `compat_reading_title` | Aspects / Eastern / Reading |
+| `compat_wheel_pending` | Your chart together appears the next time you're near %1$s. |
+| `onb_welcome_start` | Get started |
+| `onb_birth_title` | When and where were you born? |
+| `onb_birth_hint` | e.g. Aug 7 1994, 4:53 pm, Providence RI |
+| `onb_chip_add_date` / `onb_chip_add_time` / `onb_chip_add_place` | Add date / Add time / Add place |
+| `onb_chip_time_unknown` | Time unknown |
+| `onb_birth_separately` | Enter each separately |
+| `onb_about_title` | Tell us about you |
+| `onb_about_hint` | e.g. I'm Sam, a single guy into hiking and jazz, looking to date women |
+| `onb_first_name` / `onb_interests` | First name / Interests |
+| `onb_card_title` | Your card |
+| `onb_skip` / `onb_continue` / `onb_done` | Skip / Continue / Done |
+| `photo_take` | Take a photo |
+| `bio_label` / `bio_write_for_me` / `bio_another` | Bio / Write one for me / Another |
+| `instagram_paste` | Paste |
+| `instagram_invalid` | That doesn't look like an Instagram username. |
+| `instagram_chip` | Instagram |
+| `instagram_from_share_title` | Use @%1$s as your Instagram? |
+| `instagram_from_share_use` | Use it |
+| `instagram_share_not_profile` | Conjunction can only use an Instagram profile link here. |
+| `settings_title` / `settings_nearby` / `settings_notifications` | Settings / Nearby / Notifications |
+| `settings_notif_daily` / `settings_notif_matches` / `settings_notif_messages` | Daily reading / Matches nearby / Messages |
+| `settings_snoozed` | Snoozed people |
+| `menu_snooze` / `menu_block` / `menu_report` / `menu_safety_tips` / `menu_safety_code` / `menu_unmatch` | Snooze 7 days / Block / Report / Safety Tips / Safety code / Unmatch |
+| `not_now` | Not now |
+
+### 5d.12 Docs to update in the implementation step (outside SPEC/legal)
+
+`docs/P2P_PROTOCOL.md` (5d.6), `docs/COMPATIBILITY.md` (`synastry`), `testdata/*` generators,
+`store/play/POLICY.md` §2 (acceptance now on the birth screen), `store/play/DATA_SAFETY.md` and
+`store/appstore/APP_PRIVACY.md` (Instagram handle: user-entered, sent only to matches end-to-end
+encrypted, never to the developer — still "not collected" by the developer; confirm wording),
+`store/appstore/REVIEW_NOTES.md` §5.1.1 (new copy locations). **Website** (owner): the legal page
+at [WEBSITE URL]/legal must carry "CONJUNCTION DOES NOT CONDUCT CRIMINAL BACKGROUND CHECKS ON ITS
+USERS." in bold capitals, ≥ 12 pt (Texas Bus. & Com. Code §106.004; counsel to confirm applicability,
+`legal/README.md` item 6) — the in-app copies are in Details and Safety Tips only.
 
 ## Look and feel — heavily stylized
 
@@ -233,6 +919,11 @@ and MC within 0.1°.
   fingerRatios, mounts }` → `PalmReadingPrompt.build(features)`.
 - `HoroscopePrompt.daily(chart, transitsNow, date)`, `.natal(chart, section)`, `.eastern(...)`,
   `.compatibility(a, b, score)` — prompt strings with identical wording on both platforms.
+- UX 2.0 (5d) additions, same golden-parity rule: `Compatibility.synastry(a, b)`
+  (`golden_compat.json`), `BirthTextParser.parse(text, region, today)` (`golden_birth_text.json`),
+  `AboutYouParser.parse(text)` (`golden_about_you.json`), `InstagramHandle.normalize/isValid`
+  (`golden_instagram.json`), `OnboardingPrompt.birth/.aboutYou` and `BioPrompt.build`
+  (`golden_prompts.json`), `FallbackReadings.bio`.
 
 The **backend** re-implements only `Compatibility.score` (TypeScript) and must match the same
 golden vectors (`testdata/golden_compat.json`).

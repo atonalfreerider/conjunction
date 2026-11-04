@@ -94,7 +94,12 @@ public enum LinkEvent: Equatable, Sendable {
                            card: Card?, photo: [UInt8]?, peer: Hello)
     /// A known friend is nearby and the link is secure: send queued chats now.
     case friendNearby(FriendRecord)
+    /// Text or read receipt (never `.profile`: that arrives as `profileReceived`).
     case chatReceived(ChatPayload)
+    /// SPEC 5d.6: the friend's Instagram handle (`ig` already validated; nil = not shared). Store it as
+    /// peerIg/peerIgRev only when `InstagramShareState.acceptReceived` (rev > stored peerIgRev). The
+    /// link has already sent the `ack`.
+    case profileReceived(id: String, ts: Int64, rev: Int, ig: String?)
     case delivered(id: String)
     case protocolError(code: String, detail: String?, byPeer: Bool)
     case closed(reason: String, byPeer: Bool)
@@ -248,6 +253,20 @@ public final class P2PLink {
         }
         let mid = id ?? newMessageId()
         try sendSecure(.read(id: mid, ts: tsMs ?? P2PLink.nowMs(), refs: refs))
+        return mid
+    }
+
+    /// Sends a chat `profile` (SPEC 5d.6): `ig` = the normalised handle shared with this friend, or nil.
+    /// Only on a SECURE link (after a mutual match or a verified friend reconnect). Returns the message
+    /// id: keep it with `InstagramShareState.sent`; the friend's `ack` arrives as `.delivered(id:)`.
+    @discardableResult
+    public func sendProfile(rev: Int, ig: String?, id: String? = nil, tsMs: Int64? = nil) throws -> String {
+        guard state == .secure else { throw P2PUsageError("profile requires a secure link") }
+        guard (0...P2PConstants.maxProfileRev).contains(rev) else { throw P2PUsageError("profile rev") }
+        if let ig, !InstagramHandle.isValid(ig) { throw P2PUsageError("profile ig must be a normalised handle") }
+        let mid = id ?? newMessageId()
+        guard P2PMessages.isHex(mid, 32) else { throw P2PUsageError("bad message id") }
+        try sendSecure(.profile(id: mid, ts: tsMs ?? P2PLink.nowMs(), rev: rev, ig: ig))
         return mid
     }
 
@@ -407,6 +426,11 @@ public final class P2PLink {
             recvCtr += 1
             let payload = try P2PMessages.decodeChatPayload(pt)
             if case .unknown = payload { return }
+            if case .profile(let id, let ts, let rev, let ig) = payload {
+                events.append(.profileReceived(id: id, ts: ts, rev: rev, ig: ig))
+                try send(.ack(id: id))
+                return
+            }
             events.append(.chatReceived(payload))
             if case .text(let id, _, _) = payload { try send(.ack(id: id)) }
         case .ack(let id):

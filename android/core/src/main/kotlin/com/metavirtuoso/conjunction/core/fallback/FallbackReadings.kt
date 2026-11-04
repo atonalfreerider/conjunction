@@ -25,6 +25,39 @@ import java.time.LocalDate
 object FallbackReadings {
     private fun pick(list: List<String>, seed: Long): String = list[Math.floorMod(seed, list.size.toLong()).toInt()]
 
+    /** Opening fragments for [bio], by the sun sign's element (FIRE, EARTH, AIR, WATER). */
+    val BIO_OPENERS: List<List<String>> = listOf(
+        listOf("{sun} sun with a spark to match", "Bold {sun} heart, warm laugh", "{sun} fire, always up for an adventure"),
+        listOf("Grounded {sun} with a soft side", "{sun} sun, steady and loyal", "Earthy {sun} with slow-burn charm"),
+        listOf("Curious {sun}, quick to laugh", "{sun} sun with my head in the stars", "Chatty {sun} full of big ideas"),
+        listOf("Dreamy {sun} with a deep heart", "{sun} sun, all intuition", "Tender {sun}, tide-pulled and true"),
+    )
+    val BIO_CLOSERS: List<String> = listOf(
+        "Let's compare charts.", "Ask me about my moon.", "Here for good talks under the stars.",
+        "Bring your best stargazing spot.",
+    )
+
+    /**
+     * Deterministic "Write one for me" bio (SPEC 5d.5) when the model is unavailable: one line of at
+     * most [com.metavirtuoso.conjunction.core.prompt.BioPrompt.MAX_CHARS] characters from the big three
+     * and the user's interests; "Another" increments [seed].
+     */
+    fun bio(chart: NatalChart, interests: String?, seed: Long): String {
+        val sun = chart.sunSign
+        val opener = pick(BIO_OPENERS[sun.element.ordinal], seed + sun.ordinal).replace("{sun}", sun.displayName)
+        val signs = "$opener. ${chart.moonSign.displayName} moon" + (chart.risingSign?.let { ", ${it.displayName} rising" } ?: "") + "."
+        val closer = pick(BIO_CLOSERS, seed / 3 + chart.moonSign.ordinal)
+        val likes = interests?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }?.take(2)?.joinToString(" and ")?.takeIf { it.isNotEmpty() }
+        val max = com.metavirtuoso.conjunction.core.prompt.BioPrompt.MAX_CHARS
+        val candidates = buildList {
+            if (likes != null) add("$signs Into $likes. $closer")
+            if (likes != null) add("$signs Into $likes.")
+            add("$signs $closer")
+            add(signs)
+        }
+        return candidates.firstOrNull { it.codePointCount(0, it.length) <= max } ?: signs.take(max)
+    }
+
     private fun fill(template: String, vararg pairs: Pair<String, String>): String =
         pairs.fold(template) { acc, (k, v) -> acc.replace("{$k}", v) }
 

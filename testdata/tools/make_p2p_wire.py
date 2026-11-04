@@ -16,11 +16,11 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "p2p-sim"))
 
-from conjunction_p2p import canonjson, compat, crypto  # noqa: E402
+from conjunction_p2p import canonjson, compat, crypto, instagram  # noqa: E402
 from conjunction_p2p import consts as C  # noqa: E402
 from conjunction_p2p import messages as M  # noqa: E402
 from conjunction_p2p.frames import encode_frames, max_frame_len  # noqa: E402
-from conjunction_p2p.link import CENTRAL, PERIPHERAL, Link, LocalProfile, Policy  # noqa: E402
+from conjunction_p2p.link import CENTRAL, PERIPHERAL, Friend, Link, LocalProfile, Policy  # noqa: E402
 
 TODAY = datetime.date(2026, 11, 3)
 NOW = 1_000
@@ -147,6 +147,16 @@ def main():
         gcm.append({"sender": side, "key": hx(s.send_key), "ctr": ctr, "nonce": hx(crypto.nonce(ctr)),
                     "aadHex": hx(crypto.LBL_CHAT_AAD), "plaintext": pt.decode(), "ciphertextHex": hx(ct),
                     "envelope": canonjson.dumps(env), "framesByMtu": frames_at(env, msg_id=3)})
+    # SPEC 5d.6: a chat `profile` (Instagram handle) travels in the same envelope.
+    s, ctr = sa, 2
+    inner = M.chat_profile(hashlib.sha256(b"A2").hexdigest()[:32], 1762171320000, 3, "aurora.stars")
+    pt = canonjson.dumpb(inner)
+    ct = crypto.seal(s.send_key, ctr, pt)
+    env = M.chat(ctr, ct)
+    assert M.decode_chat_plaintext(crypto.open_(sb.recv_key, ctr, ct)) == inner
+    gcm.append({"sender": "A", "key": hx(s.send_key), "ctr": ctr, "nonce": hx(crypto.nonce(ctr)),
+                "aadHex": hx(crypto.LBL_CHAT_AAD), "plaintext": pt.decode(), "ciphertextHex": hx(ct),
+                "envelope": canonjson.dumps(env), "framesByMtu": frames_at(env, msg_id=3)})
     # A tampered envelope must fail.
     bad = bytearray(bytes.fromhex(gcm[0]["ciphertextHex"])); bad[-1] ^= 0x80
     try:
@@ -243,6 +253,82 @@ def main():
         link.send_chat(text, msg_id=mid, ts=ts); pump()
     transcript.append({"action": "close", "side": "central", "reason": "done"}); a.close("done"); pump()
 
+    # --- SPEC 5d.6: chat `profile` plaintexts, receiver rules, handle normalisation
+    plaintexts = []
+    for name, rev, ig in (("profile_handle", 3, "aurora.stars"), ("profile_null", 0, None)):
+        inner = M.chat_profile("e" * 32 if ig else "f" * 32, 1762171200000, rev, ig)
+        j = canonjson.dumps(inner)
+        assert M.decode_chat_plaintext(j.encode()) == inner and len(j.encode()) <= 160
+        plaintexts.append({"name": name, "json": j, "id": inner["id"], "ts": inner["ts"], "rev": rev, "ig": ig})
+
+    def profile_pt(ig, rev=1):
+        return canonjson.dumps({"id": "e" * 32, "ts": 1762171200000, "kind": "profile", "rev": rev, "ig": ig})
+
+    profile_validation = []
+    for ig in ("Aurora.Stars", "@aurora", "", "...", "a" * 31, "a b", "a_b.c9", "a..b", "a.", "aurora.stars", None,
+               "_", "a" * 30, "zoë", "café.ig"):
+        got = M.decode_chat_plaintext(profile_pt(ig).encode())["ig"]
+        profile_validation.append({"ig": ig, "plaintext": profile_pt(ig), "stored": got})
+    expect = {"Aurora.Stars": None, "@aurora": None, "": None, "...": None, "a" * 31: None, "a b": None,
+              "a_b.c9": "a_b.c9", "a..b": "a..b", "a.": "a."}
+    for v in profile_validation:
+        if v["ig"] in expect:
+            assert v["stored"] == expect[v["ig"]], v
+
+    malformed_cases = [
+        ("rev -1", '{"id":"%s","ts":1762171200000,"kind":"profile","rev":-1,"ig":"aurora"}' % ("e" * 32)),
+        ("rev 2147483648", '{"id":"%s","ts":1762171200000,"kind":"profile","rev":2147483648,"ig":"aurora"}' % ("e" * 32)),
+        ("rev string", '{"id":"%s","ts":1762171200000,"kind":"profile","rev":"3","ig":"aurora"}' % ("e" * 32)),
+        ("ig number", '{"id":"%s","ts":1762171200000,"kind":"profile","rev":3,"ig":5}' % ("e" * 32)),
+        ("rev missing", '{"id":"%s","ts":1762171200000,"kind":"profile","ig":"aurora"}' % ("e" * 32)),
+        ("rev float", '{"id":"%s","ts":1762171200000,"kind":"profile","rev":3.0,"ig":"aurora"}' % ("e" * 32)),
+        ("bad id", '{"id":"E","ts":1762171200000,"kind":"profile","rev":3,"ig":"aurora"}'),
+    ]
+    profile_malformed = []
+    for name, j in malformed_cases:
+        try:
+            M.decode_chat_plaintext(j.encode())
+            raise AssertionError(f"accepted malformed profile: {name}")
+        except M.FrameError as e:
+            assert e.code == "malformed", (name, e.code)
+        profile_malformed.append({"name": name, "plaintext": j, "code": "malformed"})
+
+    normalize_cases = [
+        ("@Aurora.Stars", "aurora.stars"),
+        ("https://www.instagram.com/aurora.stars/?igsh=xyz", "aurora.stars"),
+        ("See my profile https://instagram.com/_u/Aurora.Stars", "aurora.stars"),
+        ("instagram.com/p/abc", None),
+        ("  aurora ", "aurora"),
+        ("@@a", None),
+    ]
+    normalize_v = []
+    for text, want in normalize_cases:
+        got = instagram.normalize(text)
+        assert got == want, (text, got)
+        normalize_v.append({"input": text, "handle": got})
+
+    # --- profile transcript: friend reconnect (A = Aurora central, B = Orion peripheral), ATT_MTU 185.
+    fs = crypto.friend_secret(ik_a, ik_b.public)
+    pa = Link(CENTRAL, AURORA, ik_a, Policy(friends=lambda: [Friend(ik_b.public, fs, "Orion")], today=lambda: TODAY), 0,
+              ephemeral=ek_a, rng=random.Random(3))
+    pb = Link(PERIPHERAL, ORION, ik_b, Policy(friends=lambda: [Friend(ik_a.public, fs, "Aurora")], today=lambda: TODAY), 0,
+              ephemeral=ek_b, rng=random.Random(4))
+    pa.set_att_mtu(185); pb.set_att_mtu(185)
+    a, b = pa, pb
+    transcript_main, transcript = transcript, []
+    a.start(); pump()
+    assert a.state == "secure" and b.state == "secure", (a.state, b.state)
+    pid, pts = "9" * 32, 1762171400000
+    transcript.append({"action": "profile", "side": "central", "id": pid, "ts": pts, "rev": 1, "ig": "aurora.stars"})
+    a.send_profile(1, "aurora.stars", msg_id=pid, ts=pts); pump()
+    evb = b.take_events()
+    assert any(e["type"] == "profile" and e["message"]["ig"] == "aurora.stars" for e in evb), evb
+    assert any(e["type"] == "delivered" and e["id"] == pid for e in a.take_events())
+    transcript.append({"action": "close", "side": "central", "reason": "done"}); a.close("done"); pump()
+    assert [s["type"] for s in transcript if "type" in s] == \
+        ["hello", "hello", "keyx", "keyx", "kc", "kc", "chat", "ack", "bye"], [s.get("type") for s in transcript]
+    profile_transcript, transcript = transcript, transcript_main
+
     out = {
         "description": "Conjunction P2P wire golden vectors (docs/P2P_PROTOCOL.md). Generated by the Python "
                        "reference (tools/p2p-sim) with testdata/tools/make_p2p_wire.py; do not edit by hand.",
@@ -261,6 +347,20 @@ def main():
                        "peripheral": {"profile": "hello_unknown_time", "firstName": ORION.first_name, "bio": ORION.bio,
                                       "photoHex": "", "identity": "identityB", "ephemeral": "ephemeralB"},
                        "steps": transcript},
+        "plaintexts": plaintexts,
+        "profileValidation": profile_validation,
+        "profileMalformed": profile_malformed,
+        "normalize": normalize_v,
+        "profileTranscript": {"attMtu": 185, "today": TODAY.isoformat(), "nowMs": NOW,
+                              "note": "friend reconnect: both sides hold the other as a friend (friend secret from "
+                                      "identityA/identityB); the central sends profile rev 1",
+                              "central": {"profile": "hello", "firstName": AURORA.first_name, "bio": AURORA.bio,
+                                          "photoHex": hx(PHOTO), "photoW": 480, "photoH": 640,
+                                          "identity": "identityA", "ephemeral": "ephemeralA", "friend": "identityB"},
+                              "peripheral": {"profile": "hello_unknown_time", "firstName": ORION.first_name, "bio": ORION.bio,
+                                             "photoHex": "", "identity": "identityB", "ephemeral": "ephemeralB",
+                                             "friend": "identityA"},
+                              "steps": profile_transcript},
     }
     path = os.path.join(ROOT, "testdata", "p2p_wire.json")
     with open(path, "w", encoding="utf-8") as f:

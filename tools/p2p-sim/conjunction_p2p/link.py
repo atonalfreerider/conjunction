@@ -10,7 +10,7 @@ import random as _random
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 
-from . import canonjson, compat, crypto
+from . import canonjson, compat, crypto, instagram
 from . import consts as C
 from . import messages as M
 from .frames import FrameError, Reassembler, encode_frames, max_frame_len
@@ -189,6 +189,21 @@ class Link:
         self._send_secure(M.chat_read(msg_id, ts, refs))
         return msg_id
 
+    def send_profile(self, rev: int, ig, msg_id: Optional[str] = None, ts: Optional[int] = None) -> str:
+        """Sends a chat `profile` (SPEC 5d.6): `ig` is the normalised handle shared with this friend, or
+        None. Only ever on a SECURE link, i.e. after a mutual match. Returns the message id; the app
+        keeps it as profileInFlightId and marks `rev` acked when `delivered` reports that id."""
+        if self.state != SECURE:
+            raise RuntimeError("profile requires a secure link")
+        if not (0 <= rev <= C.MAX_PROFILE_REV):
+            raise ValueError("profile rev")
+        if ig is not None and not instagram.is_valid(ig):
+            raise ValueError("profile ig")
+        msg_id = msg_id or crypto.new_msg_id()
+        ts = ts if ts is not None else int(datetime.datetime.now().timestamp() * 1000)
+        self._send_secure(M.chat_profile(msg_id, ts, rev, ig))
+        return msg_id
+
     def close(self, reason: str = "done"):
         if self.state == CLOSED:
             return
@@ -311,6 +326,11 @@ class Link:
             self.recv_ctr += 1
             inner = M.decode_chat_plaintext(pt)
             if inner["kind"] is None:
+                return
+            if inner["kind"] == "profile":
+                # Not a chat message: never shown or stored in the history; the app keeps peerIg/peerIgRev.
+                self._emit("profile", message=inner)
+                self._send(M.ack(inner["id"]))
                 return
             self._emit("chat", message=inner)
             if inner["kind"] == "text":

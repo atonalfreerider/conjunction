@@ -16,7 +16,7 @@ import java.time.ZoneId
 
 /**
  * Optional morning reminder ("Today's reading is ready"). The reading itself is written on device
- * when the app opens; this only posts a notification. Inexact repeating alarm at 08:00 local,
+ * when the app opens; this only posts a notification. Inexact repeating alarm at the chosen time (08:00 by default),
  * rescheduled after reboot by [DailyReminderReceiver]. No exact-alarm permission is needed.
  */
 object DailyReminder {
@@ -30,7 +30,9 @@ object DailyReminder {
     fun schedule(context: Context) {
         val alarm = context.getSystemService(AlarmManager::class.java) ?: return
         val zone = ZoneId.systemDefault()
-        var next = LocalDate.now(zone).atTime(LocalTime.of(8, 0)).atZone(zone)
+        val prefs = context.getSharedPreferences("reminder", Context.MODE_PRIVATE)
+        val at = LocalTime.of(prefs.getInt("hour", 8).coerceIn(0, 23), prefs.getInt("minute", 0).coerceIn(0, 59))
+        var next = LocalDate.now(zone).atTime(at).atZone(zone)
         if (!next.toInstant().isAfter(java.time.Instant.now())) next = next.plusDays(1)
         alarm.setInexactRepeating(AlarmManager.RTC, next.toInstant().toEpochMilli(), AlarmManager.INTERVAL_DAY, intent(context))
     }
@@ -72,5 +74,11 @@ class DailyReminderReceiver : BroadcastReceiver() {
         }
 
         fun isEnabled(context: Context) = context.getSharedPreferences("reminder", Context.MODE_PRIVATE).getBoolean("enabled", false)
+
+        /** Settings › Notifications › Daily reading time (default 08:00); reschedules when on. */
+        fun setTime(context: Context, time: LocalTime) {
+            context.getSharedPreferences("reminder", Context.MODE_PRIVATE).edit().putInt("hour", time.hour).putInt("minute", time.minute).apply()
+            if (isEnabled(context)) DailyReminder.schedule(context)
+        }
     }
 }

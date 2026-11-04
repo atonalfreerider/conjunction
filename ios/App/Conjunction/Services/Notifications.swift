@@ -63,8 +63,8 @@ enum Notifications {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [event.notificationId])
     }
 
-    /// The morning reminder ("Today's reading is ready") at 08:00 local, repeating.
-    static func setDailyReminder(_ on: Bool) {
+    /// The morning reminder ("Today's reading is ready") at [time] local (default 08:00), repeating.
+    static func setDailyReminder(_ on: Bool, at time: LocalTime = LocalTime(8, 0)) {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [dailyId])
         guard on else { return }
@@ -72,7 +72,7 @@ enum Notifications {
         content.title = AppText.dailyReminderTitle
         content.body = AppText.dailyReminderBody.replacingOccurrences(of: AppText.appName, with: AppInfo.name)
         content.sound = .default
-        let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: 8, minute: 0), repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: time.hour, minute: time.minute), repeats: true)
         center.add(UNNotificationRequest(identifier: dailyId, content: content, trigger: trigger))
     }
 }

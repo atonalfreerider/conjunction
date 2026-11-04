@@ -57,6 +57,11 @@ class NearbyRepository(
     /** Nearby is switched on in the profile (the Bluetooth node is only touched then). */
     @Volatile private var profileStoreSaysNearbyMayRun = false
 
+    /** Settings › Notifications switches (read on the engine thread). */
+    @Volatile private var notifyMatches = true
+    @Volatile private var notifyMessages = true
+    private var lastInstagram: Pair<String?, Boolean>? = null
+
     private val screener = ContentScreener(model) { foreground }
 
     /** Nearby needs Android 12+ (no location permission for BLE scans) and Bluetooth LE hardware. */
@@ -67,6 +72,12 @@ class NearbyRepository(
     val node: P2pNode? by lazy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) P2pNode(context, store, KeystoreIdentity.DEFAULT_ALIAS, this, screener) else null
     }
+
+    /** The last turn-on found the Bluetooth ("Nearby devices") permission denied (status card). */
+    val permissionDenied = MutableStateFlow(false)
+
+    /** Compatibility views already opened in this run (the score counts up on first open only). */
+    val compatOpened: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
 
     private val _events = MutableSharedFlow<NearbyEvent>(extraBufferCapacity = 8)
     /** Matches / twins / mutual matches to show full-screen while the app is open. */
@@ -81,7 +92,13 @@ class NearbyRepository(
         scope.launch {
             profileStore.profile.map { it.nearbyEnabled to it }.distinctUntilChanged().collect { (on, p) ->
                 profileStoreSaysNearbyMayRun = on
+                notifyMatches = p.notifyMatches
+                notifyMessages = p.notifyMessages
                 local.set(if (on) runCatching { buildLocal(p) }.getOrNull() else null)
+                // A new handle or share default: open friend links get the new `profile` now.
+                val ig = p.instagram to p.instagramShareDefault
+                if (lastInstagram != null && lastInstagram != ig && on) engine { refreshProfiles() }
+                lastInstagram = ig
             }
         }
     }
@@ -93,9 +110,9 @@ class NearbyRepository(
     override fun announce(event: NearbyEvent, peerName: String?, peerSun: String?) {
         val fg = foreground
         when {
-            event.kind == NearbyEventKind.MESSAGE -> if (!(fg && openChatFriendId == event.friendId)) Notifications.show(context, event, peerName, peerSun)
+            event.kind == NearbyEventKind.MESSAGE -> if (!(fg && openChatFriendId == event.friendId) && notifyMessages) Notifications.show(context, event, peerName, peerSun)
             fg -> _events.tryEmit(event)
-            else -> Notifications.show(context, event, peerName, peerSun)
+            notifyMatches -> Notifications.show(context, event, peerName, peerSun)
         }
     }
 
@@ -128,8 +145,8 @@ class NearbyRepository(
     suspend fun enable() {
         val p = profileStore.current()
         check(supported) { "Nearby needs Android 12 or later." }
-        check(p.nearbyEligible) { "Finish your dating & friends profile first." }
-        check(p.nearbyConsent) { "Turn on Nearby from the Nearby screen first." }
+        check(p.birth != null && p.datingFieldsComplete) { "Finish your dating & friends profile first." }
+        check(p.nearbyConsentGiven) { "Turn on Nearby from the Nearby screen first." }
         check(NearbyPermissions.granted(context)) { "Allow Nearby devices first." }
         profileStore.update { it.copy(nearbyEnabled = true, nearbyPausedUntil = 0L) }
         refreshLocalProfile()
@@ -155,7 +172,7 @@ class NearbyRepository(
     /** App came to the foreground: restart the service if Nearby is on but it is not running. */
     suspend fun resumeServiceIfNeeded() {
         val p = profileStore.current()
-        if (supported && p.nearbyEnabled && p.nearbyConsent && NearbyPermissions.granted(context) && !serviceState.value.running) {
+        if (supported && p.nearbyEnabled && p.nearbyConsentGiven && NearbyPermissions.granted(context) && !serviceState.value.running) {
             NearbyBluetoothService.start(context)
         }
     }
@@ -179,6 +196,21 @@ class NearbyRepository(
 
     fun encounter(fingerprint: String): Flow<EncounterCard?> = store.state.map { it.encounter(fingerprint)?.toCard() }.distinctUntilChanged()
 
+    /** Number of unanswered match cards (the Nearby tab badge). */
+    fun pendingCount(): Flow<Int> = inbox().map { it.size }.distinctUntilChanged()
+
+    /** The Compatibility view's subject: a pending / waiting card or a friend, while the record exists. */
+    fun compatSubject(key: String): Flow<CompatSubject?> = store.state.map { s -> compatSubjectOf(s, key) }.distinctUntilChanged()
+
+    /** Blocked former friends (Settings › Privacy & legal › Blocked people). */
+    fun blockedFriends(): Flow<List<StoredFriend>> = store.state.map { s -> s.friends.filter { it.blocked } }.distinctUntilChanged()
+
+    /** Strangers hidden for good (blocked from a match card) or for 7 days (snoozed). */
+    fun hiddenStrangers(reason: String): Flow<List<HiddenPeer>> = store.state.map { s ->
+        val now = System.currentTimeMillis()
+        s.hidden.filter { it.reason == reason && it.until > now }
+    }.distinctUntilChanged()
+
     fun friends(): Flow<List<FriendSummary>> = combine(store.state, engineStatus) { s, st ->
         s.friends.filter { !it.blocked }.map { summarize(s, it, st) }.sortedByDescending { maxOf(it.lastSeen, s.messagesWith(it.id).lastOrNull()?.ts ?: 0L) }
     }.distinctUntilChanged()
@@ -197,7 +229,64 @@ class NearbyRepository(
             since = f.since, lastSeen = f.lastSeen, inRange = f.id in st.friendsInRange,
             unread = msgs.count { !it.mine && !it.seen }, queued = msgs.count { it.mine && (it.status == ChatStatus.QUEUED || it.status == ChatStatus.SENT) },
             lastMessage = msgs.lastOrNull { it.mine || it.screening == Screening.SAFE }?.text,
+            peerIg = f.peerIg, total = (f.score ?: s.encounters.firstOrNull { it.friendId == f.id }?.storedScore())?.total,
+            igShareOn = f.igShareOn ?: (lastInstagram?.second ?: true),
         )
+    }
+
+    private fun compatSubjectOf(s: P2pState, key: String): CompatSubject? {
+        val now = System.currentTimeMillis()
+        s.friend(key)?.takeIf { !it.blocked }?.let { f ->
+            val enc = s.encounters.firstOrNull { it.friendId == f.id }
+            val score = f.score ?: enc?.storedScore() ?: return null
+            return CompatSubject(
+                key = f.id, friendId = f.id, fingerprint = enc?.fingerprint, name = f.firstName, kind = f.kind,
+                photoPath = f.photoPath, photoScreening = f.photoScreening, sun = f.sun, animal = f.chineseAnimal,
+                peerCompat = f.peerCompat, score = score, blurb = f.blurb ?: enc?.blurb, peerIg = f.peerIg,
+            )
+        }
+        val e = s.encounter(key)?.takeIf { it.friendId == null && it.expiresAt > now && it.mySwipe != SwipeDirection.LEFT.wire } ?: return null
+        return CompatSubject(
+            key = e.fingerprint, friendId = null, fingerprint = e.fingerprint, name = e.firstName ?: "Someone nearby", kind = e.kind,
+            photoPath = e.photoPath, photoScreening = e.photoScreening, sun = e.sun, animal = e.chineseAnimal,
+            peerCompat = e.peerCompat, score = e.storedScore(), blurb = e.blurb, peerIg = null,
+        )
+    }
+
+    /** Caches the Compatibility view's reading on the record (generated once per pair of profiles). */
+    suspend fun saveBlurb(key: String, blurb: StoredBlurb) {
+        store.load()
+        store.update { s ->
+            s.copy(
+                friends = s.friends.map { if (it.id == key) it.copy(blurb = blurb) else it },
+                encounters = s.encounters.map { if (it.fingerprint == key) it.copy(blurb = blurb) else it },
+            )
+        }
+    }
+
+    /** "Share my Instagram with <name>" for one friend; an open secure link sends the change at once. */
+    suspend fun setInstagramShare(friendId: String, on: Boolean) {
+        store.load()
+        store.update { s -> s.copy(friends = s.friends.map { if (it.id == friendId) it.copy(igShareOn = on) else it }) }
+        engine { refreshProfiles() }
+    }
+
+    /** Settings › Blocked people: forget a blocked former friend (they could match again later). */
+    suspend fun unblockFriend(friendId: String) {
+        store.load()
+        store.update { s -> s.copy(friends = s.friends.filterNot { it.id == friendId && it.blocked }) }
+    }
+
+    /** A stranger blocked from a match card may match again. */
+    suspend fun unblockStranger(fingerprint: String) {
+        store.load()
+        store.update { s -> s.copy(hidden = s.hidden.filterNot { it.fingerprint == fingerprint && it.reason == "block" }) }
+    }
+
+    /** Settings › Nearby › Snoozed people: show their card again when next nearby. */
+    suspend fun unsnooze(fingerprint: String) {
+        store.load()
+        store.update { s -> s.copy(hidden = s.hidden.filterNot { it.fingerprint == fingerprint && it.reason == "snooze" }) }
     }
 
     // ------------------------------------------------------------------ actions
@@ -302,7 +391,7 @@ class NearbyRepository(
 
     private fun buildLocal(p: Profile): LocalPeerProfile? {
         val birth = p.birth ?: return null
-        val dating = p.dating?.takeIf { p.orientationConsent } ?: return null
+        val dating = p.dating?.takeIf { p.nearbyConsentGiven } ?: return null
         val charts = Charts.compute(birth, p.bloodType)
         val compat = WireCompat.from(charts.compatProfile(includeBlood = p.bloodForMatching))
         val photo = p.localPhotoPath?.let { PhotoCodec.cardPhoto(File(it)) }
@@ -312,6 +401,8 @@ class NearbyRepository(
             firstName = cardName(p.firstName, charts.natal.sunSign),
             bio = p.bio.lineSequence().firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.let { trimUtf8(it, P2pConstants.MAX_BIO_BYTES) },
             photo = photo?.jpeg, photoW = photo?.width ?: 0, photoH = photo?.height ?: 0,
+            instagram = p.instagram?.let { com.metavirtuoso.conjunction.core.profile.InstagramHandle.normalize(it) },
+            shareInstagramByDefault = p.instagramShareDefault,
         )
     }
 

@@ -70,6 +70,24 @@ enum CompatFixtures {
 }
 
 final class CompatibilityTests: XCTestCase {
+    /// SPEC 5d.4 synastry lines, identical to Kotlin (golden `synastry` of every case).
+    func testSynastryGolden() throws {
+        let cases = try Golden.load("golden_compat.json").list("cases")
+        var total = 0
+        for c in cases {
+            let a = try CompatWire.profile(c.obj("a")), b = try CompatWire.profile(c.obj("b"))
+            let got = Compatibility.synastry(a, b).map {
+                ["\($0.pointA)".uppercased(), "\($0.pointB)".uppercased(), $0.aspect.name, String($0.orbCentideg), String($0.weight), String($0.score)]
+            }
+            let expected = c.list("synastry").map {
+                [$0.str("pointA"), $0.str("pointB"), $0.str("aspect"), String($0.int("orbCentideg")), String($0.int("weight")), String($0.int("score"))]
+            }
+            XCTAssertEqual(got, expected, c.str("id"))
+            total += got.count
+        }
+        XCTAssertGreaterThan(total, 50)
+    }
+
     /// Bit-identical with Kotlin: every field of every golden case must match exactly.
     func testGoldenVectors() throws {
         guard Golden.exists("golden_compat.json") else {

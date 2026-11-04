@@ -11,6 +11,7 @@ import com.metavirtuoso.conjunction.core.match.MatchKind
 import com.metavirtuoso.conjunction.core.match.MatchProfile
 import com.metavirtuoso.conjunction.core.match.RelationshipStatus
 import com.metavirtuoso.conjunction.core.match.Seeking
+import com.metavirtuoso.conjunction.core.profile.InstagramHandle
 import java.time.DateTimeException
 import java.time.LocalDate
 import java.util.Base64
@@ -169,6 +170,14 @@ sealed class ChatPayload {
         override fun toWire() = linkedMapOf<String, Any?>("id" to id, "ts" to ts, "kind" to "read", "refs" to refs)
     }
 
+    /**
+     * SPEC 5d.6: the sender's Instagram handle for this friend ([ig] = null: not shared / removed).
+     * Not a chat message: never shown, never stored in the history, never listed in `read.refs`.
+     */
+    data class Profile(override val id: String, override val ts: Long, val rev: Int, val ig: String?) : ChatPayload() {
+        override fun toWire() = linkedMapOf<String, Any?>("id" to id, "ts" to ts, "kind" to "profile", "rev" to rev, "ig" to ig)
+    }
+
     data class Unknown(override val id: String, override val ts: Long, val kind: String) : ChatPayload() {
         override fun toWire() = linkedMapOf<String, Any?>("id" to id, "ts" to ts, "kind" to kind)
     }
@@ -285,6 +294,16 @@ object P2pMessages {
                 ChatPayload.Read(id, ts, refs.map { r ->
                     (r as? String)?.takeIf { HEX32.matches(it) } ?: malformed("refs[]: bad id")
                 })
+            }
+            "profile" -> {
+                val rev = int(o, "rev", 0, P2pConstants.MAX_PROFILE_REV.toLong())
+                val ig = when (val v = o["ig"]) {
+                    null -> null
+                    is String -> v
+                    else -> malformed("ig: expected a string or null")
+                }
+                // Lenient: a string failing the handle rule is treated as null (SPEC 5d.6).
+                ChatPayload.Profile(id, ts, rev, InstagramHandle.received(ig))
             }
             is String -> ChatPayload.Unknown(id, ts, kind)
             else -> malformed("chat kind missing")

@@ -376,10 +376,56 @@ immediately after `hello` evaluation when the peer was recognised as a friend.
 `id`: msgid chosen once when the user composes the message (stays the same when a queued message
 is re-sent on a later link; the receiver de-duplicates by `id`). `ts`: int, sender's clock, ms since
 the Unix epoch, 0..2^53. `text`: 1..4000 UTF-8 bytes. `refs`: 1..64 msgids the sender has displayed
-(read receipts). Unknown `kind` values MUST be ignored after decryption.
+(read receipts). Unknown `kind` values MUST be ignored after decryption; a `kind` that is not a
+string is `error malformed`.
 
-**`ack`** — delivery receipt, sent by the receiver of a `chat` of kind `text` after it decrypted
-and stored it.
+**Chat plaintext kind `profile`** (SPEC 5d.6, additive; `pv` stays 1) — the sender's Instagram
+handle for this friend:
+
+```json
+{"id":"…msgid…","ts":1762171200000,"kind":"profile","rev":3,"ig":"aurora.stars"}
+```
+
+| field | type | rule |
+|---|---|---|
+| `id` | msgid | fresh per send |
+| `ts` | int | as `text` |
+| `kind` | `"profile"` | |
+| `rev` | int 0..2147483647 | sender's profile revision **for this friend**; +1 whenever the effective value changes |
+| `ig` | string or null | normalised handle (1..30 bytes of `[a-z0-9._]` with at least one letter or digit) or `null` = not shared / removed; always written |
+
+Member order exactly `id`, `ts`, `kind`, `rev`, `ig`; plaintext ≤ 160 bytes.
+
+- **Never before a mutual match.** A `profile` only ever travels inside a `chat` envelope, i.e. in
+  state SECURE, which is reached only after mutual right swipes + `keyx`/`kc` (new friend) or a
+  verified friend tag + `kc` (friend reconnect). It is never queued for a pending or waiting
+  encounter, and a blocked friend gets `bye done` before SECURE. The handle is never in the
+  advertisement, `hello` or `card`.
+- **Sender state per friend** (persisted with the friend; Kotlin/Swift `InstagramShareState`, Python
+  `instagram.ShareState`): `rev` (0 when the friendship is created), `ackedRev` (initially −1),
+  `inFlightId`/`inFlightRev`, and the effective value = the handle if one is set **and** that
+  friend's share switch is on, else `null`. `rev` increases by 1 only when the effective value
+  changes (handle edited or removed, per-friend switch flipped).
+- **When sent:** on entering SECURE with a friend (`friend_new` or `friend_nearby`) as the **first**
+  `chat` (before queued `text`/`read`) if `ackedRev < rev`, and immediately on an open SECURE link
+  when `rev` changes. Each send uses a fresh `id` and the current `rev`/value and sets `inFlightId`.
+  A new friendship therefore sends exactly one `profile` (rev 0, possibly `ig:null`) per side.
+- **Receiver:** wrong types, `rev` outside 0..2147483647, a missing `rev` or `id` not a msgid →
+  `error malformed`. An `ig` string failing the handle rule is treated as `null` (lenient, so a
+  future change of Instagram's rules cannot break links). If `rev` > the stored `peerIgRev`
+  (initially −1) store `peerIg` (null clears the chip) and `peerIgRev = rev`, else ignore. In every
+  case reply `ack {id}`. A `profile` is not a chat message: it is not shown, not stored in the chat
+  history, not de-duplicated by `id` (by `rev` instead) and never listed in `read.refs`. The link
+  reports it as its own event (`ProfileReceived` / `.profileReceived` / `profile`), never as *chat*.
+- **Sender on `ack`:** if `id` = `inFlightId` → `ackedRev = inFlightRev`, `inFlightId = null`; any
+  other `ack` is a text delivery receipt as before.
+- Old receivers ignore the unknown kind and send no `ack`; the sender then re-sends on each SECURE
+  link (one small message). It counts toward the `chat` rate bucket (10.3).
+- Unmatch / block / delete removes `peerIg`, `peerIgRev` and the sender state. No message is sent
+  for that (the protocol has no unmatch message).
+
+**`ack`** — delivery receipt, sent by the receiver of a `chat` of kind `text` or `profile` after it
+decrypted and stored it.
 
 ```json
 {"t":"ack","id":"…msgid…"}
@@ -422,8 +468,8 @@ States: `AWAIT_HELLO` → (`MATCHED` | `KEYX`) → `KEYX` → `SECURE`; any → 
 | MATCHED | local swipe (once) | send `swipe`; resolve |
 | — | resolve | mine = left → `bye done`, CLOSED. Mine = right and peer = right → send `keyx`, go KEYX (new-friend mode). Peer = left, mine = right → wait (the peer closes). |
 | KEYX | `keyx` (after we sent ours) | friend mode: `ik` MUST equal the recognised friend's key, else `error crypto`. Derive session (8.3), send `kc`. |
-| KEYX | `kc` | verify (constant-time) else `error crypto`. Go SECURE. Event *friend_new* (ik, friend secret, safety code, card, photo) or *friend_nearby*. App then sends queued chats. |
-| SECURE | `chat` | `ctr` MUST equal the next expected counter (starts at 0) else `error crypto`; decrypt (failure → `error crypto`); event *chat*; for `text` send `ack`. |
+| KEYX | `kc` | verify (constant-time) else `error crypto`. Go SECURE. Event *friend_new* (ik, friend secret, safety code, card, photo) or *friend_nearby*. App then sends its `profile` if not yet acked (5.3), then queued chats. On *friend_nearby* the app may store the link's verified `peerHello.compat` as the friend's `peerCompat` (SPEC 5d.4 backfill). |
+| SECURE | `chat` | `ctr` MUST equal the next expected counter (starts at 0) else `error crypto`; decrypt (failure → `error crypto`); `profile` → event *profile* + send `ack`; otherwise event *chat*, and for `text` send `ack`. |
 | SECURE | `ack` | event *delivered* |
 | any | `bye` | CLOSED (event *closed by peer*) |
 | any | `error` | CLOSED (event *protocol_error* + *closed*) |
@@ -604,6 +650,7 @@ Kotlin: `P2pMatching.evaluate(myHello, peerHello, today)`. Python: `compat.evalu
 | concurrent partial messages per direction | 4 |
 | `ft` tags | 64 (56 real) |
 | `firstName` / `bio` / chat `text` | 64 / 280 / 4000 UTF-8 bytes |
+| `profile.ig` | 1..30 bytes, `[a-z0-9._]` |
 | open links per phone | 4 |
 
 ### 10.2 Timeouts
@@ -622,7 +669,7 @@ Kotlin: `P2pMatching.evaluate(myHello, peerHello, today)`. Python: `compat.evalu
 |---|---|---|
 | frames | 300 | 150 / s |
 | decoded messages | 30 | 5 / s |
-| `chat` messages | 10 | 1 / s |
+| `chat` messages (any kind, `profile` included) | 10 | 1 / s |
 
 Exceeding any bucket → `error rate` and close. Senders stay well below: a 60 KB photo at MTU 517
 is ~155 frames, at MTU 185 ~ 445 frames, paced by ATT flow control (write responses /
@@ -645,6 +692,7 @@ with `error` SHOULD NOT be retried to the same advertiser address for 120 s.
 | `photo` | same | after `card`, if ATT_MTU ≥ 185 |
 | `swipe` | the matched peer | user action |
 | identity public key, chat (encrypted) | mutual matches (friends) only | after mutual right |
+| `profile` (Instagram handle, if shared) | that friend only, encrypted | after mutual match and when it changes |
 
 Never sent: birth place, birth minutes, exact time zone, exact location (the app has no location
 permission), device name, phone number, account ids, Rh factor.
@@ -724,6 +772,13 @@ device (section 7.2).
   keys: hello, card, photo, swipes, keyx, kc, chat, ack, bye, as exact frames. An implementation
   playing either side, fed the other side's frames and the listed actions, MUST emit the same
   messages (byte-identical, except the random `ft` decoys in its own `hello`).
+- SPEC 5d.6 `profile`: `plaintexts[]` (canonical `profile` with a handle and with `null`; build from
+  the listed fields → identical `json`), an `aesGcm` entry whose plaintext is a `profile`,
+  `profileValidation[]` (received `ig` → stored value), `profileMalformed[]` (→ `error malformed`),
+  `normalize[]` (`InstagramHandle.normalize`; full set in `testdata/golden_instagram.json`) and
+  `profileTranscript`: a friend reconnect at ATT_MTU 185 with fixed keys (both sides hold the other
+  as a friend; friend secret from `identityA`/`identityB`): hello (friend tag) → keyx → kc →
+  `profile` (central, rev 1) → `ack` → `bye done`.
 
 ## 14. Changing the protocol
 

@@ -4,16 +4,19 @@ import ConjunctionCore
 /// Chat with a friend (mutual match), SPEC 5c: end-to-end encrypted over Bluetooth, stored only on
 /// the two phones. Messages to a friend who is out of range are queued and delivered the next time
 /// the phones are near each other, and the bubble says so. Incoming messages are screened on this
-/// phone and hidden behind "Show anyway" when they look harmful. Unmatch / block / report from the
-/// shield; the check-mark shield shows the safety code to compare in person.
+/// phone and hidden behind "Show anyway" when they look harmful. Header (SPEC 5d.8): Back · photo
+/// + first name (-> Compatibility) · score chip (-> Compatibility) · ⋯ (Instagram, share switch,
+/// safety code, Safety Tips, unmatch, block, report).
 struct ChatScreen: View {
+    @EnvironmentObject var app: AppModel
     @ObservedObject private var repo = AppModel.shared.nearby
     let target: ChatTarget
     let onClose: () -> Void
     @State private var draft = ""
-    @State private var safety = false
+    @State private var safety: String?
     @State private var tips = false
     @State private var verify = false
+    @State private var compat: CompatTarget?
 
     var body: some View {
         let summary = repo.friend(target.friendId)
@@ -27,8 +30,12 @@ struct ChatScreen: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 8) {
-                            FinePrint(L10n.chatFirstOpenNotice)
-                            FinePrint(L10n.format(L10n.chatKeepNote, name)).padding(.bottom, 8)
+                            // One centred line at the top of a new chat (SPEC 5d.8).
+                            if messages.isEmpty {
+                                Text(L10n.chatFirstOpenNotice).typeStyle(.bodySmall, italic: true).foregroundStyle(Palette.moonstoneDim)
+                                    .multilineTextAlignment(.center).padding(.vertical, 12).padding(.horizontal, 24)
+                                    .frame(maxWidth: .infinity)
+                            }
                             ForEach(messages) { m in bubble(m, name: name).id(m.id) }
                         }
                         .padding(16)
@@ -61,45 +68,63 @@ struct ChatScreen: View {
         }
         .onAppear { repo.openChatFriendId = target.friendId }
         .onDisappear { if repo.openChatFriendId == target.friendId { repo.openChatFriendId = nil } }
-        .sheet(isPresented: $safety) {
+        .sheet(item: Binding(get: { safety.map { CompatTarget(key: $0) } }, set: { safety = $0?.key })) { mode in
             if let f {
-                SafetyActionsSheet(target: .friend(f), messages: messages) { closed in if closed { onClose() } }
+                SafetyActionsSheet(target: .friend(f), messages: messages, initialMode: mode.key) { closed in if closed { onClose() } }
             }
         }
-        .sheet(isPresented: $tips) { LegalDocSheet(doc: .safety) }
-        .sheet(isPresented: $verify) {
-            OrnateSheet(title: "Safety code", onClose: { verify = false }) {
-                Text(f?.safetyCode ?? "").typeStyle(.headlineSmall).foregroundStyle(Palette.goldPale)
-                FinePrint("When you meet, check that \(name)'s phone shows the same digits. If they differ, someone may have interfered when you matched: block and report.")
-            }
-            .presentationDetents([.medium])
-        }
+        .sheet(isPresented: $tips) { SafetyTipsSheet() }
+        .sheet(isPresented: $verify) { SafetyCodeSheet(name: name, code: f?.safetyCode ?? "") }
+        .fullScreenCover(item: $compat) { t in CompatibilityScreen(key: t.key, onClose: { compat = nil }) }
     }
 
     private func canSend(_ f: StoredFriend?) -> Bool { f != nil && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     private func header(_ s: FriendSummary?, name: String) -> some View {
         let f = s?.friend
-        return HStack(spacing: 10) {
+        let shareDefault = app.profile.instagramShareDefault
+        return HStack(spacing: 8) {
             Button(action: onClose) {
                 Image(systemName: "chevron.left").font(.system(size: 18, weight: .semibold)).foregroundStyle(Palette.goldPale).frame(width: 44, height: 44)
             }
             .accessibilityLabel("Back")
-            ScreenedPhoto(url: repo.photoURL(f?.photoFile), screening: f?.photoScreening ?? .safe, placeholder: Art.signKey(f?.sun), compact: true)
-                .frame(width: 44, height: 44).clipShape(Circle()).overlay(Circle().stroke(GoldBrush.leaf, lineWidth: 1))
-            VStack(alignment: .leading, spacing: 0) {
-                GoldText(name, style: .titleMedium, alignment: .leading)
-                Text(s?.inRange == true ? "Nearby now" : CardText.signsLine(sun: f?.sun, moon: f?.moon, rising: nil))
-                    .typeStyle(.bodySmall).foregroundStyle(s?.inRange == true ? Palette.gold : Palette.moonstoneDim)
+            Button { compat = CompatTarget(key: target.friendId) } label: {
+                HStack(spacing: 10) {
+                    ScreenedPhoto(url: repo.photoURL(f?.photoFile), screening: f?.photoScreening ?? .safe, placeholder: Art.signKey(f?.sun), compact: true)
+                        .frame(width: 44, height: 44).clipShape(Circle()).overlay(Circle().stroke(GoldBrush.leaf, lineWidth: 1))
+                    VStack(alignment: .leading, spacing: 0) {
+                        GoldText(name, style: .titleMedium, alignment: .leading)
+                        Text(s?.inRange == true ? "Nearby now" : CardText.signsLine(sun: f?.sun, moon: f?.moon, rising: nil))
+                            .typeStyle(.bodySmall).foregroundStyle(s?.inRange == true ? Palette.gold : Palette.moonstoneDim)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
             }
-            Spacer()
-            Button { verify = true } label: { Image(systemName: "checkmark.shield").foregroundStyle(Palette.goldPale).frame(width: 40, height: 44) }
-                .accessibilityLabel("Safety code")
-            Button { tips = true } label: { Text("?").typeStyle(.titleLarge).foregroundStyle(Palette.goldPale).frame(width: 40, height: 44) }
-                .accessibilityLabel(L10n.safetyTipTitle)
-            Button { safety = true } label: { Image(systemName: "shield").foregroundStyle(Palette.roseCopper).frame(width: 40, height: 44) }
-                .disabled(f == nil)
-                .accessibilityLabel(L10n.chatBlockReport)
+            .buttonStyle(.plain)
+            .accessibilityHint("Compatibility chart")
+            if let total = s?.total {
+                Button { compat = CompatTarget(key: target.friendId) } label: {
+                    Text("\(total) " + ChartWheelGeometry.textGlyph("☌")).typeStyle(.titleSmall).foregroundStyle(Palette.midnight)
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(GoldBrush.leaf))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(total) percent, compatibility chart")
+            }
+            if let s {
+                FriendMenu(friend: s, shareOn: s.igShareOn(default: shareDefault), showInstagram: true, showTips: true) { a in
+                    switch a {
+                    case .instagram: if let h = s.peerIg { Instagram.open(h) }
+                    case .shareInstagram: repo.setInstagramShare(s.id, on: !s.igShareOn(default: shareDefault))
+                    case .safetyCode: verify = true
+                    case .tips: tips = true
+                    case .unmatch: safety = "unmatch"
+                    case .block: safety = "block"
+                    case .report: safety = "report"
+                    }
+                }
+            }
         }
         .padding(8)
     }

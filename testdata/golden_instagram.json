@@ -1,0 +1,321 @@
+{
+ "description": "InstagramHandle.normalize / isValid (SPEC 5d.6). normalize(input) -> handle (null = invalid). Hand-written expectations; checked by Kotlin, Swift and the Python reference (tools/p2p-sim).",
+ "normalize": [
+  {
+   "input": "aurora",
+   "handle": "aurora",
+   "note": "plain"
+  },
+  {
+   "input": "  aurora ",
+   "handle": "aurora",
+   "note": "trimmed"
+  },
+  {
+   "input": " aurora.stars　",
+   "handle": "aurora.stars",
+   "note": "Unicode spaces trimmed"
+  },
+  {
+   "input": "@Aurora.Stars",
+   "handle": "aurora.stars",
+   "note": "one @ stripped, lowercased"
+  },
+  {
+   "input": "@@a",
+   "handle": null,
+   "note": "only one @ is stripped"
+  },
+  {
+   "input": "@",
+   "handle": null,
+   "note": "empty after @"
+  },
+  {
+   "input": "",
+   "handle": null,
+   "note": "empty"
+  },
+  {
+   "input": "   ",
+   "handle": null,
+   "note": "blank"
+  },
+  {
+   "input": "a_b.c9",
+   "handle": "a_b.c9",
+   "note": "underscore, dot, digit"
+  },
+  {
+   "input": "a..b",
+   "handle": "a..b",
+   "note": "consecutive dots allowed"
+  },
+  {
+   "input": "a.",
+   "handle": "a.",
+   "note": "trailing dot allowed"
+  },
+  {
+   "input": ".a",
+   "handle": ".a",
+   "note": "leading dot allowed"
+  },
+  {
+   "input": "...",
+   "handle": null,
+   "note": "no letter or digit"
+  },
+  {
+   "input": "___",
+   "handle": null,
+   "note": "no letter or digit"
+  },
+  {
+   "input": "1234",
+   "handle": "1234",
+   "note": "digits only"
+  },
+  {
+   "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "note": "30 chars"
+  },
+  {
+   "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "handle": null,
+   "note": "31 chars"
+  },
+  {
+   "input": "a b",
+   "handle": null,
+   "note": "space inside"
+  },
+  {
+   "input": "zoë",
+   "handle": null,
+   "note": "non-ASCII"
+  },
+  {
+   "input": "aurora!",
+   "handle": null,
+   "note": "punctuation"
+  },
+  {
+   "input": "AURORA_STARS",
+   "handle": "aurora_stars",
+   "note": "uppercase"
+  },
+  {
+   "input": "https://www.instagram.com/aurora.stars/?igsh=xyz",
+   "handle": "aurora.stars",
+   "note": "profile link with query"
+  },
+  {
+   "input": "https://instagram.com/aurora.stars",
+   "handle": "aurora.stars",
+   "note": "no www, no slash"
+  },
+  {
+   "input": "http://m.instagram.com/Aurora.Stars#top",
+   "handle": "aurora.stars",
+   "note": "m. subdomain, fragment"
+  },
+  {
+   "input": "instagram.com/aurora",
+   "handle": "aurora",
+   "note": "no scheme"
+  },
+  {
+   "input": "HTTPS://WWW.INSTAGRAM.COM/AURORA/",
+   "handle": "aurora",
+   "note": "uppercase URL"
+  },
+  {
+   "input": "See my profile https://instagram.com/_u/Aurora.Stars",
+   "handle": "aurora.stars",
+   "note": "_u redirect segment"
+  },
+  {
+   "input": "instagram.com/_u/",
+   "handle": null,
+   "note": "_u without handle"
+  },
+  {
+   "input": "instagram.com/_u",
+   "handle": null,
+   "note": "_u alone"
+  },
+  {
+   "input": "See Aurora's profile https://www.instagram.com/aurora.stars?igsh=MTc4bmFvZ2E= and say hi",
+   "handle": "aurora.stars",
+   "note": "shared text"
+  },
+  {
+   "input": "Check https://www.instagram.com/aurora.stars\nposted",
+   "handle": "aurora.stars",
+   "note": "segment ends at newline"
+  },
+  {
+   "input": "instagram.com/p/abc",
+   "handle": null,
+   "note": "post"
+  },
+  {
+   "input": "https://www.instagram.com/reel/C0abc/",
+   "handle": null,
+   "note": "reel"
+  },
+  {
+   "input": "https://www.instagram.com/reels/C0abc/",
+   "handle": null,
+   "note": "reels"
+  },
+  {
+   "input": "https://www.instagram.com/stories/aurora.stars/123/",
+   "handle": null,
+   "note": "story"
+  },
+  {
+   "input": "https://www.instagram.com/explore/tags/stars/",
+   "handle": null,
+   "note": "explore"
+  },
+  {
+   "input": "https://www.instagram.com/accounts/login/",
+   "handle": null,
+   "note": "accounts"
+  },
+  {
+   "input": "https://www.instagram.com/direct/inbox/",
+   "handle": null,
+   "note": "direct"
+  },
+  {
+   "input": "https://www.instagram.com/tv/abc",
+   "handle": null,
+   "note": "tv"
+  },
+  {
+   "input": "https://www.instagram.com/about/",
+   "handle": null,
+   "note": "about"
+  },
+  {
+   "input": "https://www.instagram.com/developer/",
+   "handle": null,
+   "note": "developer"
+  },
+  {
+   "input": "https://www.instagram.com/legal/privacy/",
+   "handle": null,
+   "note": "legal"
+  },
+  {
+   "input": "https://www.instagram.com/web/",
+   "handle": null,
+   "note": "web"
+  },
+  {
+   "input": "https://www.instagram.com/oauth/authorize",
+   "handle": null,
+   "note": "oauth"
+  },
+  {
+   "input": "https://www.instagram.com/P/abc",
+   "handle": null,
+   "note": "reserved segment, any case"
+  },
+  {
+   "input": "https://www.instagram.com/",
+   "handle": null,
+   "note": "no path"
+  },
+  {
+   "input": "https://www.instagram.com//aurora",
+   "handle": null,
+   "note": "empty first segment"
+  },
+  {
+   "input": "https://www.instagram.com/aurora.stars/ https://instagram.com/other",
+   "handle": "aurora.stars",
+   "note": "first instagram.com/ wins"
+  },
+  {
+   "input": "instagram.com/aurora%20x",
+   "handle": null,
+   "note": "percent-encoding is not a username"
+  },
+  {
+   "input": "@aurora.stars on instagram",
+   "handle": null,
+   "note": "not a link and has spaces"
+  }
+ ],
+ "isValid": [
+  {
+   "handle": "aurora",
+   "valid": true
+  },
+  {
+   "handle": "a_b.c9",
+   "valid": true
+  },
+  {
+   "handle": "a..b",
+   "valid": true
+  },
+  {
+   "handle": "a.",
+   "valid": true
+  },
+  {
+   "handle": "_a",
+   "valid": true
+  },
+  {
+   "handle": "9",
+   "valid": true
+  },
+  {
+   "handle": "...",
+   "valid": false
+  },
+  {
+   "handle": "_",
+   "valid": false
+  },
+  {
+   "handle": "",
+   "valid": false
+  },
+  {
+   "handle": "Aurora",
+   "valid": false
+  },
+  {
+   "handle": "@aurora",
+   "valid": false
+  },
+  {
+   "handle": "a b",
+   "valid": false
+  },
+  {
+   "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "valid": true
+  },
+  {
+   "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "valid": false
+  },
+  {
+   "handle": "zoë",
+   "valid": false
+  },
+  {
+   "handle": "a-b",
+   "valid": false
+  }
+ ]
+}

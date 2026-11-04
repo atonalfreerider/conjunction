@@ -104,6 +104,13 @@ final class ReadingService {
         return cleaned
     }
 
+    /// The Compatibility view's reading (SPEC 5d.4 item 6, 80-120 words): on-device model when
+    /// available, else the deterministic fallback. The caller caches it on the match / friend.
+    func compatibility(_ a: CompatProfile, _ b: CompatProfile, _ score: CompatResult, kind: MatchKind) async -> Reading {
+        await generateOrFallback(HoroscopePrompt.compatibility(a, b, score),
+                                 fallback: { FallbackReadings.compatibility(a, b, score, kind) }, onStatus: { _ in })
+    }
+
     /// Drops daily entries older than two weeks.
     private func prune(today: LocalDate) {
         let cutoff = today.minusDays(14)

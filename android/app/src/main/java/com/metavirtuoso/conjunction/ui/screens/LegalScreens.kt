@@ -97,26 +97,50 @@ fun LegalDocDialog(doc: LegalDoc, onDismiss: () -> Unit, onAcknowledge: ((LegalT
 @Composable
 private fun stringOrDefault(id: Int): String = androidx.compose.ui.res.stringResource(id)
 
-/** Shown when the bundled document versions are newer than what was accepted. */
+/** Link label for a document in sentences ("Terms", "Waiver", ...). */
 @Composable
-fun ReacceptScreen(changed: List<LegalDoc>, onAccept: () -> Unit) {
+fun docLinkLabel(doc: LegalDoc): String = when (doc) {
+    LegalDoc.TERMS -> androidx.compose.ui.res.stringResource(R.string.legal_link_terms)
+    LegalDoc.WAIVER -> androidx.compose.ui.res.stringResource(R.string.legal_link_waiver)
+    LegalDoc.PRIVACY -> androidx.compose.ui.res.stringResource(R.string.legal_link_privacy)
+    LegalDoc.COMMUNITY -> androidx.compose.ui.res.stringResource(R.string.legal_link_guidelines)
+    LegalDoc.SAFETY -> androidx.compose.ui.res.stringResource(R.string.safety_tip_title)
+}
+
+/** "%1$s, %2$s and %3$s" for [n] links (the list a legal_*_body sentence takes). */
+fun listTemplate(n: Int): String = when (n) {
+    0 -> ""
+    1 -> "%1\$s"
+    else -> (1 until n).joinToString(", ") { "%$it\$s" } + " and %$n\$s"
+}
+
+/**
+ * SPEC 5d.1.4 L4: a compact sheet when bundled documents changed. [reaccept] = a major version
+ * changed: only "Agree and continue" closes it (back minimises the app); otherwise the one-time
+ * notice (OK, swipe or back).
+ */
+@Composable
+fun LegalUpdateSheet(docs: List<LegalDoc>, reaccept: Boolean, onAgree: (formattedBody: String) -> Unit) {
     var open by remember { mutableStateOf<LegalDoc?>(null) }
-    StarfieldBackground {
-        Column(
-            Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(24.dp).verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            GoldText(androidx.compose.ui.res.stringResource(R.string.legal_reaccept_title), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, heading = true)
-            Text(
-                androidx.compose.ui.res.stringResource(R.string.legal_reaccept_body, androidx.compose.ui.res.stringResource(R.string.app_name)),
-                style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center,
-            )
-            changed.forEach { doc ->
-                com.metavirtuoso.conjunction.ui.components.GhostButton("Read the ${doc.title}", onClick = { open = doc }, modifier = Modifier.fillMaxWidth())
-            }
-            GoldButton(androidx.compose.ui.res.stringResource(R.string.legal_continue), onClick = onAccept, modifier = Modifier.fillMaxWidth())
-        }
+    val labels = docs.map { docLinkLabel(it) }
+    val bodyTemplate = androidx.compose.ui.res.stringResource(if (reaccept) R.string.legal_reaccept_body else R.string.legal_notice_body)
+        .replace("%1\$s", listTemplate(docs.size))
+    val formatted = com.metavirtuoso.conjunction.ui.components.formatLinked(bodyTemplate, labels)
+    val activity = androidx.activity.compose.LocalActivity.current
+    com.metavirtuoso.conjunction.ui.components.CelestialSheet(
+        // Re-accept: Back minimises the app; a stray tap on the scrim does nothing.
+        onDismiss = if (reaccept) ({ activity?.moveTaskToBack(true) }) else ({ onAgree(formatted) }),
+        scrimDismisses = !reaccept,
+    ) {
+        GoldText(
+            androidx.compose.ui.res.stringResource(if (reaccept) R.string.legal_reaccept_title else R.string.legal_notice_title),
+            style = MaterialTheme.typography.headlineSmall, heading = true,
+        )
+        com.metavirtuoso.conjunction.ui.components.LinkedText(bodyTemplate, docs.mapIndexed { i, d -> labels[i] to { open = d } })
+        GoldButton(
+            androidx.compose.ui.res.stringResource(if (reaccept) R.string.legal_reaccept_continue else R.string.legal_notice_ok),
+            onClick = { onAgree(formatted) }, modifier = Modifier.fillMaxWidth(),
+        )
     }
     open?.let { LegalDocDialog(it, onDismiss = { open = null }) }
 }

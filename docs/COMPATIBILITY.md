@@ -236,6 +236,25 @@ pick localized copy.
  "chineseRelation": "SAME_SELF_PUNISHMENT", "stemRelation": "SAME_STEM"}
 ```
 
+## 8a. Synastry lines for the bi-wheel (SPEC 5d.4)
+
+`Compatibility.synastry(a, b) -> [SynastryLine(pointA, pointB, aspect, orbCentideg, weight, score)]`
+(Kotlin and Swift; golden `synastry` array of every case in `testdata/golden_compat.json`):
+
+- one line per `PAIRS` entry (section 2, both directions, so Sun(a)–Moon(b) and Moon(a)–Sun(b) are
+  separate lines) whose two longitudes are present and whose `pairScore` found an in-orb aspect;
+- `pointA` is a point of `a` ("me", inner ring), `pointB` a point of `b` ("them", outer ring);
+- `aspect` = the `ASPECTS` entry chosen by `pairScore`; `orbCentideg` = |separation − exact angle| in
+  centidegrees (0..orb), from the same centidegree longitudes; `weight` = the PAIRS weight;
+  `score` = `pairScore(...).score` (permille, sign part + aspect part, clamped to ±1000);
+- order: `|score × weight|` descending, ties in PAIRS order.
+
+Golden encoding: `{"pointA":"SUN","pointB":"MOON","aspect":"trine","orbCentideg":210,"weight":5,"score":650}`
+(point enum names). The app draws gold lines for conjunction/sextile/trine and rose-copper lines for
+square/opposition (`isHarmonious`), and lists up to 8 rows such as "Your Venus △ their Mars — trine,
+2.1°" (`orbCentideg / 100`). Unlike `score`, `synastry(a, b)` is not symmetric: swapping the
+profiles swaps the rings.
+
 ## 9. Explanatory blurb (on device)
 
 The number never comes from a model. Each phone writes its own one-line blurb on device with

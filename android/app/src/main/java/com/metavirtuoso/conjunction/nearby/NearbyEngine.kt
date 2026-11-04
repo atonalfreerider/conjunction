@@ -1,5 +1,7 @@
 package com.metavirtuoso.conjunction.nearby
 
+import com.metavirtuoso.conjunction.core.compat.CompatResult
+import com.metavirtuoso.conjunction.core.compat.Compatibility
 import com.metavirtuoso.conjunction.core.match.MatchProfile
 import com.metavirtuoso.conjunction.core.p2p.ChatPayload
 import com.metavirtuoso.conjunction.core.p2p.EphemeralIdSource
@@ -16,6 +18,8 @@ import com.metavirtuoso.conjunction.core.p2p.P2pLink
 import com.metavirtuoso.conjunction.core.p2p.P2pMatching
 import com.metavirtuoso.conjunction.core.p2p.SwipeDirection
 import com.metavirtuoso.conjunction.core.p2p.WireCompat
+import com.metavirtuoso.conjunction.core.profile.InstagramHandle
+import com.metavirtuoso.conjunction.core.profile.InstagramShareState
 import java.security.SecureRandom
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +38,10 @@ class LocalPeerProfile(
     val photo: ByteArray?,
     val photoW: Int,
     val photoH: Int,
+    /** Normalised Instagram handle, sent only to friends inside the encrypted chat (SPEC 5d.6). */
+    val instagram: String? = null,
+    /** Settings › Nearby "Share my Instagram with new matches": the per-friend switch's default. */
+    val shareInstagramByDefault: Boolean = true,
 )
 
 /** One Bluetooth connection as the engine sees it; implemented by the BLE transport (and by tests). */
@@ -110,6 +118,8 @@ class NearbyEngine(
         var suppressed = false
         var portClosed = false
         val inflight = LinkedHashSet<String>()
+        /** Rev of the `profile` already written on this link (not re-sent on the same link). */
+        var profileSentRev = -1
         var chatTokens = CHAT_BURST.toDouble()
         var chatTokensAt = lastActivity
     }
@@ -244,6 +254,19 @@ class NearbyEngine(
         }
     }
 
+    /**
+     * The owner's Instagram handle or a per-friend share switch changed (SPEC 5d.6): send the new
+     * `profile` now on every open secure friend link whose effective value changed.
+     */
+    fun refreshProfiles() {
+        for (rec in links.values.toList()) {
+            if (rec.friendId != null && rec.link.state == LinkState.SECURE) {
+                sendProfileIfNeeded(rec)
+                flush(rec)
+            }
+        }
+    }
+
     /** Block a friend (same store change as the app's Block): their links close now and later ones are refused. */
     fun blockFriend(friendId: String) {
         store.update { it.withFriendBlocked(friendId) }
@@ -341,16 +364,30 @@ class NearbyEngine(
             is LinkEvent.FriendEstablished -> onFriendEstablished(rec, e, now)
             is LinkEvent.FriendNearby -> {
                 rec.friendId = e.friend.id
-                store.update { s -> s.copy(friends = s.friends.map { if (it.id == e.friend.id) it.copy(lastSeen = now) else it }) }
+                // SPEC 5d.4 backfill: the friend's hello (kc already verified) gives their chart
+                // positions; keep them (replace and re-score when they changed).
+                val peer = rec.link.peerHello?.compat
+                store.update { s ->
+                    s.copy(friends = s.friends.map { f ->
+                        if (f.id != e.friend.id) f
+                        else if (peer != null && peer != f.peerCompat) f.copy(lastSeen = now, peerCompat = peer, score = rescore(peer) ?: f.score)
+                        else f.copy(lastSeen = now)
+                    })
+                }
                 host.log("link ${rec.id}: friend ${e.friend.id.take(8)} nearby, secure")
+                sendProfileIfNeeded(rec)
                 deliverQueued(rec)
                 publishStatus()
             }
             is LinkEvent.ChatReceived -> onChat(rec, e.payload)
+            is LinkEvent.ProfileReceived -> onProfile(rec, e.profile)
             is LinkEvent.Delivered -> {
                 rec.inflight.remove(e.id)
                 store.update { s ->
-                    s.copy(messages = s.messages.map { if (it.id == e.id && it.mine && it.status != ChatStatus.READ) it.copy(status = ChatStatus.DELIVERED) else it })
+                    s.copy(
+                        messages = s.messages.map { if (it.id == e.id && it.mine && it.status != ChatStatus.READ) it.copy(status = ChatStatus.DELIVERED) else it },
+                        friends = s.friends.map { f -> if (f.id == rec.friendId && f.igState?.inFlightId == e.id) f.copy(igState = f.igState.onAck(e.id)) else f },
+                    )
                 }
             }
             is LinkEvent.ProtocolError -> host.log("link ${rec.id}: protocol error ${e.code} (${if (e.byPeer) "peer" else "us"}): ${e.detail}")
@@ -394,6 +431,8 @@ class NearbyEngine(
                 mySwipe = old?.mySwipe, peerSwipe = null, friendId = null,
                 createdAt = old?.createdAt ?: now, expiresAt = old?.expiresAt ?: (now + INBOX_TTL_MS),
                 notifiedAt = old?.notifiedAt ?: 0L,
+                peerCompat = peer.compat, chineseRelation = m.score.chineseRelation.name, stemRelation = m.score.stemRelation.name,
+                blurb = old?.blurb?.takeIf { old.peerCompat == peer.compat },
             )
             announce = now - enc.notifiedAt > RENOTIFY_MS
             val updated = if (announce) enc.copy(notifiedAt = now) else enc
@@ -431,6 +470,9 @@ class NearbyEngine(
         val enc = rec.fingerprint?.let { store.state.value.encounter(it) }
         val c = e.peer.compat
         val name = e.card?.firstName ?: enc?.firstName ?: "Your match"
+        val me = host.localProfile()
+        val shareOn = me?.shareInstagramByDefault ?: true
+        val score = enc?.takeIf { it.peerCompat == null || it.peerCompat == c }?.storedScore() ?: rescore(c)
         store.update { s ->
             val friend = StoredFriend(
                 id = id, identityKey = b64(e.peerIdentityKey), friendSecret = b64(e.friendSecret), safetyCode = e.safetyCode,
@@ -440,6 +482,8 @@ class NearbyEngine(
                 rising = c.asc?.let { P2pMatching.sign(it).name.lowercase() }, chineseAnimal = c.animal.key,
                 photoPath = enc?.photoPath, photoScreening = if (enc?.photoPath != null) enc.photoScreening else Screening.SAFE,
                 since = now, lastSeen = now,
+                peerCompat = c, score = score, blurb = enc?.blurb,
+                igShareOn = shareOn, igState = InstagramShareState.initial(me?.instagram, shareOn),
             )
             s.copy(
                 friends = s.friends.filterNot { it.id == id } + friend,
@@ -448,6 +492,8 @@ class NearbyEngine(
         }
         host.log("link ${rec.id}: new friend ${id.take(8)} (safety code ${e.safetyCode})")
         host.announce(NearbyEvent(NearbyEventKind.CONJUNCTION, rec.fingerprint, id, enc?.kind, enc?.total), name, enc?.sun)
+        // The `profile` is the first chat on a new secure link (SPEC 5d.6), then queued messages.
+        sendProfileIfNeeded(rec)
         deliverQueued(rec)
         publishStatus()
     }
@@ -472,8 +518,56 @@ class NearbyEngine(
                 val refs = payload.refs.toSet()
                 st.copy(messages = st.messages.map { if (it.mine && it.friendId == fid && it.id in refs) it.copy(status = ChatStatus.READ) else it })
             }
-            is ChatPayload.Unknown -> Unit
+            is ChatPayload.Profile, is ChatPayload.Unknown -> Unit
         }
+    }
+
+    /** Receiver side of `profile` (SPEC 5d.6): keep the newest rev only. The link already sent the ack. */
+    private fun onProfile(rec: Rec, p: ChatPayload.Profile) {
+        val fid = rec.friendId ?: return
+        store.update { s ->
+            s.copy(friends = s.friends.map { f ->
+                if (f.id == fid && !f.blocked && InstagramShareState.acceptReceived(f.peerIgRev, p.rev)) {
+                    f.copy(peerIg = InstagramHandle.received(p.ig), peerIgRev = p.rev)
+                } else f
+            })
+        }
+        host.log("link ${rec.id}: profile rev ${p.rev} (${if (p.ig == null) "no handle" else "handle"})")
+    }
+
+    /**
+     * Sender side of `profile` (SPEC 5d.6): applies the current effective value (the handle when
+     * set and this friend's switch is on) and sends it when the friend has not acknowledged the
+     * current rev. One send per rev per link; a new link re-sends with a fresh id.
+     */
+    private fun sendProfileIfNeeded(rec: Rec) {
+        val fid = rec.friendId ?: return
+        if (rec.link.state != LinkState.SECURE) return
+        val f = store.state.value.friend(fid) ?: return
+        if (f.blocked) return
+        val me = host.localProfile()
+        val on = f.igShareOn ?: me?.shareInstagramByDefault ?: true
+        var st = (f.igState ?: InstagramShareState.initial(me?.instagram, on)).withEffective(InstagramShareState.effective(me?.instagram, on))
+        if (st.needsSend && rec.profileSentRev != st.rev) {
+            val id = try {
+                rec.link.sendProfile(st.rev, st.value)
+            } catch (e: IllegalStateException) {
+                null
+            }
+            if (id != null) {
+                st = st.sent(id)
+                rec.profileSentRev = st.rev
+                rec.chatTokens -= 1
+                rec.lastActivity = clock()
+            }
+        }
+        if (st != f.igState) store.update { s -> s.copy(friends = s.friends.map { if (it.id == fid) it.copy(igState = st) else it }) }
+    }
+
+    /** Compatibility of the owner with [peer] (the friend backfill and friends made without a card). */
+    private fun rescore(peer: WireCompat): StoredScore? {
+        val me = host.localProfile()?.compat ?: return null
+        return runCatching { Compatibility.score(me.toCompatProfile(), peer.toCompatProfile()) }.getOrNull()?.let(::storedScoreOf)
     }
 
     private fun trim(messages: List<ChatLine>, friendId: String): List<ChatLine> {
@@ -616,5 +710,9 @@ class NearbyEngine(
         fun hexOf(b: ByteArray): String = buildString(b.size * 2) { for (x in b) append("%02x".format(x.toInt() and 0xFF)) }
 
         fun newMessageId(random: SecureRandom = SecureRandom()): String = hexOf(ByteArray(16).also(random::nextBytes))
+
+        fun storedScoreOf(r: CompatResult) = StoredScore(
+            r.total, r.western, r.chinese, r.blood, r.highlights, r.isBirthdayTwin, r.isExactTwin, r.chineseRelation.name, r.stemRelation.name,
+        )
     }
 }

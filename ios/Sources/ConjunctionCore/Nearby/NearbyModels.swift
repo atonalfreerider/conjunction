@@ -99,10 +99,24 @@ public struct StoredFriend: Codable, Hashable, Sendable, Identifiable {
     public var lastSeen: Int64
     /// Blocked friends are kept (so a recognised blocked friend gets `bye done`), with no chat.
     public var blocked: Bool
+    /// SPEC 5d.4: the friend's `hello.compat` (nil for friends made before UX 2.0 until the backfill).
+    public var peerCompat: WireCompat?
+    /// Compatibility numbers (copied from the match card; recomputed when `peerCompat` changes).
+    public var score: StoredScore?
+    public var blurb: StoredBlurb?
+    /// SPEC 5d.6: the friend's Instagram handle (validated) and the rev it came with (-1 = none yet).
+    public var peerIg: String?
+    public var peerIgRev: Int
+    /// Per-friend "Share my Instagram with ..." switch; nil = the Settings default.
+    public var igShareOn: Bool?
+    /// Sender state of our `profile` toward this friend; nil = not started (rev 0 on first use).
+    public var igState: InstagramShareState?
 
     public init(id: String, identityKey: String, friendSecret: String, safetyCode: String, kind: String, firstName: String,
                 bio: String?, sun: String?, moon: String?, rising: String?, chineseAnimal: String?, photoFile: String?,
-                photoScreening: Screening, since: Int64, lastSeen: Int64, blocked: Bool = false) {
+                photoScreening: Screening, since: Int64, lastSeen: Int64, blocked: Bool = false, peerCompat: WireCompat? = nil,
+                score: StoredScore? = nil, blurb: StoredBlurb? = nil, peerIg: String? = nil, peerIgRev: Int = -1,
+                igShareOn: Bool? = nil, igState: InstagramShareState? = nil) {
         self.id = id
         self.identityKey = identityKey
         self.friendSecret = friendSecret
@@ -119,11 +133,19 @@ public struct StoredFriend: Codable, Hashable, Sendable, Identifiable {
         self.since = since
         self.lastSeen = lastSeen
         self.blocked = blocked
+        self.peerCompat = peerCompat
+        self.score = score
+        self.blurb = blurb
+        self.peerIg = peerIg
+        self.peerIgRev = peerIgRev
+        self.igShareOn = igShareOn
+        self.igState = igState
     }
 
     enum CodingKeys: String, CodingKey {
         case id, identityKey = "ik", friendSecret = "fs", safetyCode = "safety", kind, firstName = "name", bio, sun, moon,
-             rising, chineseAnimal = "animal", photoFile = "photo", photoScreening = "photoScreen", since, lastSeen, blocked
+             rising, chineseAnimal = "animal", photoFile = "photo", photoScreening = "photoScreen", since, lastSeen, blocked,
+             peerCompat, score, blurb, peerIg, peerIgRev, igShareOn = "igShare", igState
     }
 
     public init(from decoder: Decoder) throws {
@@ -144,6 +166,23 @@ public struct StoredFriend: Codable, Hashable, Sendable, Identifiable {
         since = try c.decodeIfPresent(Int64.self, forKey: .since) ?? 0
         lastSeen = try c.decodeIfPresent(Int64.self, forKey: .lastSeen) ?? 0
         blocked = try c.decodeIfPresent(Bool.self, forKey: .blocked) ?? false
+        // UX 2.0 fields: a part that does not parse is dropped, never the friend.
+        peerCompat = (try? c.decodeIfPresent(WireCompat.self, forKey: .peerCompat)) ?? nil
+        score = (try? c.decodeIfPresent(StoredScore.self, forKey: .score)) ?? nil
+        blurb = (try? c.decodeIfPresent(StoredBlurb.self, forKey: .blurb)) ?? nil
+        peerIg = InstagramHandle.received((try? c.decodeIfPresent(String.self, forKey: .peerIg)) ?? nil)
+        peerIgRev = (try? c.decodeIfPresent(Int.self, forKey: .peerIgRev)) ?? -1
+        igShareOn = (try? c.decodeIfPresent(Bool.self, forKey: .igShareOn)) ?? nil
+        igState = (try? c.decodeIfPresent(InstagramShareState.self, forKey: .igState)) ?? nil
+    }
+
+    /// Unmatch / block / delete removes what this phone kept of them (SPEC 5d.4, 5d.6).
+    public mutating func clearPeerData() {
+        peerCompat = nil
+        blurb = nil
+        peerIg = nil
+        peerIgRev = -1
+        igState = nil
     }
 }
 
@@ -178,6 +217,12 @@ public struct StoredEncounter: Codable, Hashable, Sendable, Identifiable {
     public var createdAt: Int64
     public var expiresAt: Int64
     public var notifiedAt: Int64
+    /// SPEC 5d.4: the peer's `hello.compat`, kept with the match (copied into the friend).
+    public var peerCompat: WireCompat?
+    /// `ChineseRelation` / `StemRelation` names; nil for cards made before UX 2.0.
+    public var chineseRelation: String?
+    public var stemRelation: String?
+    public var blurb: StoredBlurb?
 
     public var id: String { fingerprint }
 
@@ -185,7 +230,9 @@ public struct StoredEncounter: Codable, Hashable, Sendable, Identifiable {
                 birthdayTwin: Bool, exactTwin: Bool, age: Int, sun: String, moon: String, rising: String?,
                 chineseAnimal: String, relationship: String, lookingFor: String, firstName: String? = nil,
                 bio: String? = nil, photoFile: String? = nil, photoScreening: Screening = .pending, mySwipe: String? = nil,
-                peerSwipe: String? = nil, friendId: String? = nil, createdAt: Int64, expiresAt: Int64, notifiedAt: Int64 = 0) {
+                peerSwipe: String? = nil, friendId: String? = nil, createdAt: Int64, expiresAt: Int64, notifiedAt: Int64 = 0,
+                peerCompat: WireCompat? = nil, chineseRelation: String? = nil, stemRelation: String? = nil,
+                blurb: StoredBlurb? = nil) {
         self.fingerprint = fingerprint
         self.kind = kind
         self.total = total
@@ -212,13 +259,18 @@ public struct StoredEncounter: Codable, Hashable, Sendable, Identifiable {
         self.createdAt = createdAt
         self.expiresAt = expiresAt
         self.notifiedAt = notifiedAt
+        self.peerCompat = peerCompat
+        self.chineseRelation = chineseRelation
+        self.stemRelation = stemRelation
+        self.blurb = blurb
     }
 
     enum CodingKeys: String, CodingKey {
         case fingerprint = "fp", kind, total, western, chinese, blood, highlights, birthdayTwin = "twin", exactTwin, age, sun,
              moon, rising, chineseAnimal = "animal", relationship, lookingFor, firstName = "name", bio, photoFile = "photo",
              photoScreening = "photoScreen", mySwipe, peerSwipe, friendId = "friend", createdAt = "created",
-             expiresAt = "expires", notifiedAt = "notified"
+             expiresAt = "expires", notifiedAt = "notified", peerCompat, chineseRelation = "chineseRel",
+             stemRelation = "stemRel", blurb
     }
 
     public init(from decoder: Decoder) throws {
@@ -249,9 +301,119 @@ public struct StoredEncounter: Codable, Hashable, Sendable, Identifiable {
         createdAt = try c.decodeIfPresent(Int64.self, forKey: .createdAt) ?? 0
         expiresAt = try c.decodeIfPresent(Int64.self, forKey: .expiresAt) ?? 0
         notifiedAt = try c.decodeIfPresent(Int64.self, forKey: .notifiedAt) ?? 0
+        peerCompat = (try? c.decodeIfPresent(WireCompat.self, forKey: .peerCompat)) ?? nil
+        chineseRelation = (try? c.decodeIfPresent(String.self, forKey: .chineseRelation)) ?? nil
+        stemRelation = (try? c.decodeIfPresent(String.self, forKey: .stemRelation)) ?? nil
+        blurb = (try? c.decodeIfPresent(StoredBlurb.self, forKey: .blurb)) ?? nil
     }
 
     public var isTwin: Bool { birthdayTwin || exactTwin }
+
+    public func storedScore() -> StoredScore {
+        StoredScore(total: total, western: western, chinese: chinese, blood: blood, highlights: highlights,
+                    birthdayTwin: birthdayTwin, exactTwin: exactTwin, chineseRelation: chineseRelation, stemRelation: stemRelation)
+    }
+}
+
+/// Compatibility numbers kept with a match or friend (SPEC 5d.4 "falls back to the stored numbers").
+public struct StoredScore: Codable, Hashable, Sendable {
+    public var total: Int
+    public var western: Int
+    public var chinese: Int
+    public var blood: Int?
+    public var highlights: [String]
+    public var birthdayTwin: Bool
+    public var exactTwin: Bool
+    /// `ChineseRelation` / `StemRelation` names, nil for records made before UX 2.0.
+    public var chineseRelation: String?
+    public var stemRelation: String?
+
+    public init(total: Int, western: Int, chinese: Int, blood: Int?, highlights: [String], birthdayTwin: Bool, exactTwin: Bool,
+                chineseRelation: String? = nil, stemRelation: String? = nil) {
+        self.total = total
+        self.western = western
+        self.chinese = chinese
+        self.blood = blood
+        self.highlights = highlights
+        self.birthdayTwin = birthdayTwin
+        self.exactTwin = exactTwin
+        self.chineseRelation = chineseRelation
+        self.stemRelation = stemRelation
+    }
+
+    public init(_ r: CompatResult) {
+        self.init(total: r.total, western: r.western, chinese: r.chinese, blood: r.blood, highlights: r.highlights,
+                  birthdayTwin: r.isBirthdayTwin, exactTwin: r.isExactTwin, chineseRelation: r.chineseRelation.name,
+                  stemRelation: r.stemRelation.name)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case total, western, chinese, blood, highlights, birthdayTwin = "twin", exactTwin, chineseRelation = "chineseRel",
+             stemRelation = "stemRel"
+    }
+}
+
+/// The Compatibility view's reading, generated once (SPEC 5d.4 item 6). `source` = "model" | "fallback".
+public struct StoredBlurb: Codable, Hashable, Sendable {
+    public var text: String
+    public var source: String
+    public var forHash: String
+
+    public init(text: String, source: String, forHash: String) {
+        self.text = text
+        self.source = source
+        self.forHash = forHash
+    }
+
+    enum CodingKeys: String, CodingKey { case text, source, forHash = "for" }
+}
+
+/// The store form of a peer's `hello.compat` (stem and blood type by enum name).
+extension WireCompat: Codable {
+    enum CodingKeys: String, CodingKey { case sun, moon, venus, mars, asc, animal, stem, blood, birthDate, birthHour }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let animalKey = try c.decode(String.self, forKey: .animal)
+        let stemName = try c.decode(String.self, forKey: .stem)
+        let bloodName = try c.decodeIfPresent(String.self, forKey: .blood)
+        guard let animal = ChineseAnimal.fromKey(animalKey),
+              let stem = HeavenlyStem.allCases.first(where: { $0.name.lowercased() == stemName.lowercased() }),
+              let date = LocalDate.parse(try c.decode(String.self, forKey: .birthDate)) else {
+            throw DecodingError.dataCorruptedError(forKey: .animal, in: c, debugDescription: "bad compat")
+        }
+        var blood: BloodType?
+        if let bloodName {
+            guard let b = BloodType(rawValue: bloodName.uppercased()) else {
+                throw DecodingError.dataCorruptedError(forKey: .blood, in: c, debugDescription: "bad blood type")
+            }
+            blood = b
+        }
+        do {
+            try self.init(sun: c.decode(Int.self, forKey: .sun), moon: c.decode(Int.self, forKey: .moon),
+                          venus: c.decode(Int.self, forKey: .venus), mars: c.decode(Int.self, forKey: .mars),
+                          asc: c.decodeIfPresent(Int.self, forKey: .asc), animal: animal, stem: stem, blood: blood,
+                          birthDate: date, birthHour: c.decodeIfPresent(Int.self, forKey: .birthHour))
+        } catch let e as DecodingError {
+            throw e
+        } catch {
+            throw DecodingError.dataCorruptedError(forKey: .sun, in: c, debugDescription: "\(error)")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(sun, forKey: .sun)
+        try c.encode(moon, forKey: .moon)
+        try c.encode(venus, forKey: .venus)
+        try c.encode(mars, forKey: .mars)
+        try c.encodeIfPresent(asc, forKey: .asc)
+        try c.encode(animal.key, forKey: .animal)
+        try c.encode(stem.name, forKey: .stem)
+        try c.encodeIfPresent(blood?.name, forKey: .blood)
+        try c.encode(birthDate.description, forKey: .birthDate)
+        try c.encodeIfPresent(birthHour, forKey: .birthHour)
+    }
 }
 
 /// A stranger hidden by fingerprint: left swipe (30 days), snooze (7 days), unmatch (30 days) or block (forever).
@@ -308,6 +470,51 @@ public struct P2PState: Codable, Hashable, Sendable {
     public func isHidden(_ fp: String, now: Int64) -> Bool { hidden.contains { $0.fingerprint == fp && $0.until > now } }
     public func messagesWith(_ friendId: String) -> [ChatLine] { messages.filter { $0.friendId == friendId } }
 
+    // ------------------------------------------------------------------ safety changes
+
+    /// Block a friend: kept as a blocked record (recognised and refused), their chat, cards and
+    /// everything this phone kept of them (chart, reading, Instagram) deleted.
+    public mutating func blockFriend(_ friendId: String) {
+        let fps = encounters.filter { $0.friendId == friendId }.map(\.fingerprint)
+        for i in friends.indices where friends[i].id == friendId {
+            friends[i].blocked = true
+            friends[i].clearPeerData()
+        }
+        messages.removeAll { $0.friendId == friendId }
+        encounters.removeAll { $0.friendId == friendId }
+        hidden += fps.map { HiddenPeer(fingerprint: $0, until: Int64.max, reason: "block") }
+    }
+
+    /// Unmatch: the friendship, chat and kept data deleted here; their card stays hidden until [hiddenUntil].
+    public mutating func unmatch(_ friendId: String, hiddenUntil: Int64) {
+        let fps = encounters.filter { $0.friendId == friendId }.map(\.fingerprint)
+        friends.removeAll { $0.id == friendId }
+        messages.removeAll { $0.friendId == friendId }
+        encounters.removeAll { $0.friendId == friendId }
+        hidden += fps.map { HiddenPeer(fingerprint: $0, until: hiddenUntil, reason: "unmatch") }
+    }
+
+    /// Hide a stranger's card (block from a card, snooze): the card and its kept chart go.
+    public mutating func hideStranger(_ fingerprint: String, until: Int64, reason: String) {
+        encounters.removeAll { $0.fingerprint == fingerprint }
+        hidden.removeAll { $0.fingerprint == fingerprint }
+        hidden.append(HiddenPeer(fingerprint: fingerprint, until: until, reason: reason))
+    }
+
+    /// Settings › Nearby › Snoozed people: the snoozed cards still hidden.
+    public func snoozed(now: Int64) -> [HiddenPeer] { hidden.filter { $0.reason == "snooze" && $0.until > now } }
+
+    /// "Share my Instagram with <name>" for one friend.
+    public mutating func setInstagramShare(_ friendId: String, on: Bool) {
+        for i in friends.indices where friends[i].id == friendId { friends[i].igShareOn = on }
+    }
+
+    /// Stores the Compatibility view's reading on the record it is about (encounter or friend).
+    public mutating func saveBlurb(_ key: String, _ blurb: StoredBlurb) {
+        for i in friends.indices where friends[i].id == key { friends[i].blurb = blurb }
+        for i in encounters.indices where encounters[i].fingerprint == key { encounters[i].blurb = blurb }
+    }
+
     // ------------------------------------------------------------------ what the Nearby screen lists
 
     /// Unanswered match cards from the last 24 h, newest first.
@@ -318,7 +525,32 @@ public struct P2PState: Codable, Hashable, Sendable {
 
     /// Cards I said yes to that are waiting for the other person.
     public func waiting(now: Int64) -> [StoredEncounter] {
-        encounters.filter { $0.friendId == nil && $0.expiresAt > now && $0.mySwipe == SwipeDirection.right.wire }
+        encounters.filter { $0.friendId == nil && $0.expiresAt > now && $0.mySwipe == SwipeDirection.right.wire && !isHidden($0.fingerprint, now: now) }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// The Nearby badge: unanswered new matches.
+    public func pendingCount(now: Int64) -> Int { inbox(now: now).count }
+
+    /// Who the Compatibility view is about: a friend id or an encounter fingerprint (pending or
+    /// waiting, <= 24 h). Nil once the record is gone (expired, unmatched, blocked).
+    public func compatSubject(_ key: String, now: Int64) -> CompatSubject? {
+        if let f = friend(key), !f.blocked {
+            let enc = encounters.first { $0.friendId == f.id }
+            let score = f.score ?? enc?.storedScore() ?? StoredScore(total: 0, western: 0, chinese: 0, blood: nil, highlights: [],
+                                                                    birthdayTwin: false, exactTwin: false)
+            return CompatSubject(key: key, friendId: f.id, fingerprint: enc?.fingerprint, name: f.firstName, kind: f.kind,
+                                 photoFile: f.photoFile, photoScreening: f.photoScreening, sun: f.sun, animal: f.chineseAnimal,
+                                 peerCompat: f.peerCompat ?? enc?.peerCompat, score: score, blurb: f.blurb ?? enc?.blurb,
+                                 peerIg: f.peerIg, hasScore: f.score != nil || enc != nil || f.peerCompat != nil)
+        }
+        if let e = encounter(key), e.expiresAt > now, !isHidden(key, now: now) {
+            if let fid = e.friendId { return compatSubject(fid, now: now) }
+            return CompatSubject(key: key, friendId: nil, fingerprint: key, name: e.firstName ?? "Someone nearby", kind: e.kind,
+                                 photoFile: e.photoFile, photoScreening: e.photoScreening, sun: e.sun, animal: e.chineseAnimal,
+                                 peerCompat: e.peerCompat, score: e.storedScore(), blurb: e.blurb, peerIg: nil, hasScore: true)
+        }
+        return nil
     }
 
     /// Non-blocked friends, most recent activity first.
@@ -338,8 +570,31 @@ public struct P2PState: Codable, Hashable, Sendable {
             unread: msgs.filter { !$0.mine && !$0.seen }.count,
             queued: msgs.filter { $0.mine && ($0.status == .queued || $0.status == .sent) }.count,
             lastMessage: msgs.last { $0.mine || $0.screening == .safe }?.text,
-            lastMessageTs: msgs.last?.ts ?? 0)
+            lastMessageTs: msgs.last?.ts ?? 0,
+            total: f.score?.total ?? encounters.first { $0.friendId == f.id }?.total)
     }
+}
+
+/// Who the Compatibility view is about (SPEC 5d.4): a pending or waiting card (by fingerprint) or
+/// a friend (by id), with what this phone kept of them. Their birth date and hour are inside
+/// `peerCompat` only for the computation; the UI never shows them.
+public struct CompatSubject: Hashable, Sendable {
+    /// Encounter fingerprint or friend id.
+    public let key: String
+    public let friendId: String?
+    public let fingerprint: String?
+    public let name: String
+    public let kind: String
+    public let photoFile: String?
+    public let photoScreening: Screening
+    public let sun: String?
+    public let animal: String?
+    public let peerCompat: WireCompat?
+    public let score: StoredScore
+    public let blurb: StoredBlurb?
+    public let peerIg: String?
+    /// False for a friend made before UX 2.0 without any stored numbers.
+    public let hasScore: Bool
 }
 
 /// A friend (mutual match) as the UI shows it.
@@ -351,8 +606,25 @@ public struct FriendSummary: Hashable, Sendable, Identifiable {
     public let queued: Int
     public let lastMessage: String?
     public let lastMessageTs: Int64
+    /// Compatibility total (stored with the friend, or from their old match card); nil when unknown.
+    public let total: Int?
+
+    public init(friend: StoredFriend, inRange: Bool, unread: Int, queued: Int, lastMessage: String?, lastMessageTs: Int64,
+                total: Int? = nil) {
+        self.friend = friend
+        self.inRange = inRange
+        self.unread = unread
+        self.queued = queued
+        self.lastMessage = lastMessage
+        self.lastMessageTs = lastMessageTs
+        self.total = total
+    }
 
     public var id: String { friend.id }
+    /// Their Instagram handle when they shared one (SPEC 5d.6).
+    public var peerIg: String? { friend.peerIg }
+    /// "Share my Instagram with <name>" for this friend, given the Settings default.
+    public func igShareOn(default value: Bool) -> Bool { friend.igShareOn ?? value }
     public var firstName: String { friend.firstName }
     public var lastSeen: Int64 { friend.lastSeen }
 }

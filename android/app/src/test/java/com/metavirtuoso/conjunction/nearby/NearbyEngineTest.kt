@@ -47,7 +47,7 @@ class NearbyEngineTest {
         override fun close() = Unit
     }
 
-    private class Host(val profile: LocalPeerProfile) : NearbyHost {
+    private class Host(var profile: LocalPeerProfile) : NearbyHost {
         val announced = ArrayList<NearbyEvent>()
         val logs = ArrayList<String>()
         override fun localProfile() = profile
@@ -103,11 +103,12 @@ class NearbyEngineTest {
     private lateinit var hostA: Host
     private lateinit var hostB: Host
 
-    private val aurora = LocalPeerProfile(
+    private fun auroraWith(ig: String?) = LocalPeerProfile(
         MatchProfile(Gender.FEMALE, Seeking.BOTH, RelationshipStatus.SINGLE, LookingFor.BOTH),
         WireCompat(35193, 25565, 3680, 35030, 32195, ChineseAnimal.RAT, HeavenlyStem.WU, BloodType.O, LocalDate.of(1996, 3, 12), 6),
-        "Aurora", "Stargazer.", ByteArray(3000) { (it % 251).toByte() }, 480, 640,
+        "Aurora", "Stargazer.", ByteArray(3000) { (it % 251).toByte() }, 480, 640, instagram = ig,
     )
+    private val aurora = auroraWith("aurora.stars")
     private val vega = LocalPeerProfile(
         MatchProfile(Gender.MALE, Seeking.FEMALE, RelationshipStatus.SINGLE, LookingFor.BOTH),
         WireCompat(6020, 14000, 7200, 9000, 12000, ChineseAnimal.MONKEY, HeavenlyStem.REN, null, LocalDate.of(1992, 5, 21), 9),
@@ -405,6 +406,118 @@ class NearbyEngineTest {
         )
         assertEquals(s, P2pStore.StateSerializer.decode(P2pStore.StateSerializer.encode(s)))
         assertNull(P2pStore.StateSerializer.decode("").friends.firstOrNull())
+    }
+
+    private fun befriend(): Pair<StoredFriend, StoredFriend> {
+        val net = Net()
+        val (cId, pId) = connect(net, a, b)
+        net.pump()
+        a.swipe(storeA.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        b.swipe(storeB.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        net.pump()
+        drop(a, cId, b, pId())
+        return storeA.state.value.friends.single() to storeB.state.value.friends.single()
+    }
+
+    /** C-2: the match keeps the peer's chart and relations; the friend inherits them; block deletes them. */
+    @Test
+    fun matchKeepsPeerChartAndFriendInheritsIt() {
+        val net = Net()
+        connect(net, a, b)
+        net.pump()
+        val encA = storeA.state.value.encounters.single()
+        assertEquals(vega.compat, encA.peerCompat)
+        assertNotNull(encA.chineseRelation)
+        assertNotNull(encA.stemRelation)
+        a.swipe(encA.fingerprint, SwipeDirection.RIGHT)
+        b.swipe(storeB.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        net.pump()
+        val fA = storeA.state.value.friends.single()
+        assertEquals(vega.compat, fA.peerCompat)
+        assertEquals(encA.total, fA.score!!.total)
+        assertEquals(encA.chineseRelation, fA.score!!.chineseRelation)
+        a.blockFriend(fA.id)
+        val blocked = storeA.state.value.friends.single()
+        assertNull(blocked.peerCompat)
+        assertNull(blocked.peerIg)
+    }
+
+    /** I-2 / I-3: no handle before the mutual match; then each side sends one `profile` (rev 0) and it is acked. */
+    @Test
+    fun instagramIsExchangedOnlyAfterTheMutualMatch() {
+        val net = Net()
+        connect(net, a, b)
+        net.pump()
+        val plain = messagesIn(lastPorts.first.sent) + messagesIn(lastPorts.second.sent)
+        assertTrue(plain.none { it.toWire().toString().contains("aurora.stars") })
+        a.swipe(storeA.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        b.swipe(storeB.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        net.pump()
+        val fA = storeA.state.value.friends.single()
+        val fB = storeB.state.value.friends.single()
+        assertEquals("aurora.stars", fB.peerIg)
+        assertEquals(0, fB.peerIgRev)
+        assertNull(fA.peerIg)
+        assertEquals(0, fA.peerIgRev)
+        assertEquals(0, fA.igState!!.ackedRev)
+        assertEquals(0, fB.igState!!.ackedRev)
+        assertTrue("profile is not a chat message", storeA.state.value.messages.isEmpty() && storeB.state.value.messages.isEmpty())
+    }
+
+    /** I-3: a new handle goes out as rev 1 on the next secure link; switching the friend off sends ig:null now. */
+    @Test
+    fun handleChangesAndTheFriendSwitchAreSent() {
+        befriend()
+        hostA.profile = auroraWith("aurora.night")
+        now += 16 * 60_000L
+        val net = Net()
+        connect(net, b, a)
+        net.pump()
+        var fB = storeB.state.value.friends.single()
+        assertEquals("aurora.night", fB.peerIg)
+        assertEquals(1, fB.peerIgRev)
+        // Per-friend switch off while the link is open: rev 2 with ig null, the chip disappears.
+        storeA.update { s -> s.copy(friends = s.friends.map { it.copy(igShareOn = false) }) }
+        a.refreshProfiles()
+        net.pump()
+        fB = storeB.state.value.friends.single()
+        assertNull(fB.peerIg)
+        assertEquals(2, fB.peerIgRev)
+    }
+
+    /** C-4: a friend from before UX 2.0 (no stored chart) gets it from the next verified friend link. */
+    @Test
+    fun friendNearbyBackfillsThePeerChart() {
+        val (fA, _) = befriend()
+        storeA.update { s -> s.copy(friends = s.friends.map { it.copy(peerCompat = null, score = null) }) }
+        now += 16 * 60_000L
+        val net = Net()
+        connect(net, b, a)
+        net.pump()
+        val f = storeA.state.value.friend(fA.id)!!
+        assertEquals(vega.compat, f.peerCompat)
+        assertEquals(
+            com.metavirtuoso.conjunction.core.compat.Compatibility.score(aurora.compat.toCompatProfile(), vega.compat.toCompatProfile()).total,
+            f.score!!.total,
+        )
+    }
+
+    /** Old store files (no UX 2.0 fields) decode, and the new fields round-trip. */
+    @Test
+    fun storeMigratesAndRoundTripsNewFields() {
+        val old = """{"v":1,"friends":[{"id":"f1","ik":"AA==","fs":"AA==","safety":"1","kind":"dating","name":"Lyra","photoScreen":"safe","since":1,"lastSeen":2,"blocked":false}],
+            "encounters":[{"fp":"e1","kind":"friends","total":80,"western":70,"chinese":90,"highlights":["Sun–Venus trine"],"twin":false,"exactTwin":false,"age":30,"sun":"leo","moon":"aries","animal":"rat","relationship":"single","lookingFor":"both","created":1,"expires":2}]}"""
+        val decoded = P2pStore.StateSerializer.decode(old)
+        val f = decoded.friends.single()
+        assertNull(f.peerCompat); assertNull(f.score); assertNull(f.peerIg); assertEquals(-1, f.peerIgRev); assertNull(f.igShareOn); assertNull(f.igState)
+        assertNull(decoded.encounters.single().peerCompat)
+        val rich = decoded.copy(
+            friends = listOf(f.copy(peerCompat = vega.compat, score = StoredScore(1, 2, 3, null, listOf("x"), true, false, "TRINE", "COMBINATION"),
+                blurb = StoredBlurb("t", "model", "h"), peerIg = "lyra", peerIgRev = 3, igShareOn = false,
+                igState = com.metavirtuoso.conjunction.core.profile.InstagramShareState("me", 2, 1, "ab".repeat(16), 2))),
+            encounters = listOf(decoded.encounters.single().copy(peerCompat = aurora.compat, chineseRelation = "CLASH", stemRelation = "SAME_STEM", blurb = StoredBlurb("b", "fallback", "k"))),
+        )
+        assertEquals(rich, P2pStore.StateSerializer.decode(P2pStore.StateSerializer.encode(rich)))
     }
 
     private fun queue(store: P2pStore, friendId: String, text: String) {

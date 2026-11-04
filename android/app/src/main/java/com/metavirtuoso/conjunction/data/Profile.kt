@@ -23,7 +23,7 @@ data class BirthInput(
     fun toBirthData(): BirthData = BirthData(date, time, latitude, longitude, zoneId, placeName)
 }
 
-/** The dating/friends fields from SPEC 5b, plus the separate explicit consents they need. */
+/** The four dating/friends fields from SPEC 5b, all set. */
 data class DatingProfile(
     val gender: Gender,
     val seeking: Seeking,
@@ -33,41 +33,75 @@ data class DatingProfile(
     fun toMatchProfile() = MatchProfile(gender, seeking, relationshipStatus, lookingFor)
 }
 
-/** Everything the app remembers about its owner. Lives in the "profile" DataStore (excluded from backup). */
+/**
+ * Everything the app remembers about its owner. Lives in the "profile" DataStore (excluded from backup).
+ *
+ * UX 2.0 (SPEC 5d): the dating fields are kept one by one (onboarding screen 3 may fill only some of
+ * them; the Nearby sheet collects the rest), [dating] is the complete set. `honestyConfirmed` and
+ * `legalAccepted` are kept for old records but no longer gate anything.
+ */
 data class Profile(
     val ageGateBirthDate: LocalDate? = null,
-    /** Set when the age gate saw an under-18 date: onboarding stays blocked on this install. */
+    /** Set when an under-18 birth date was entered: the app stays blocked on this install. */
     val ageBlocked: Boolean = false,
     val legalAccepted: Boolean = false,
     val birth: BirthInput? = null,
     val bloodType: BloodType? = null,
     /** Optional Rh factor; null = not given. Shown only in the owner's own reading. */
     val rh: RhFactor? = null,
-    /** CONSENT_BLOOD_TYPE_MATCHING: blood type may be sent to nearby phones for compatibility. */
+    /** CONSENT_BLOOD_TYPE_MATCHING (L3 switch): blood type may be sent to nearby phones. */
     val bloodForMatching: Boolean = false,
-    val dating: DatingProfile? = null,
-    /** CONSENT_ORIENTATION_DATA: required before any dating field leaves the phone (in a Nearby hello). */
+    val gender: Gender? = null,
+    val seeking: Seeking? = null,
+    val relationshipStatus: RelationshipStatus? = null,
+    val lookingFor: LookingFor? = null,
+    /** CONSENT_ORIENTATION_DATA recorded and not withdrawn (half of the L2 Nearby consent). */
     val orientationConsent: Boolean = false,
     val honestyConfirmed: Boolean = false,
     val displayName: String = "",
     val bio: String = "",
-    /** The owner's profile photo (JPEG in app storage). Sent only to Nearby matches, downscaled to 640 px. */
+    /** Free-text interests from onboarding screen 3 (feeds "Write one for me"); stays on the phone. */
+    val interests: String = "",
+    /** The owner's profile photo (JPEG in app storage). Sent only to Nearby matches. */
     val localPhotoPath: String? = null,
-    /**
-     * CONSENT_NEARBY_BLUETOOTH recorded (consent copy 2.0). The server build's location consent
-     * (key "nearby_consent") is deliberately not carried over: Nearby needs the new consent.
-     */
+    /** Normalised Instagram username (InstagramHandle.normalize) or null. Sent only to friends, encrypted. */
+    val instagram: String? = null,
+    /** Settings › Nearby "Share my Instagram with new matches" (the per-friend switch's default). */
+    val instagramShareDefault: Boolean = true,
+    /** CONSENT_NEARBY_BLUETOOTH recorded and not withdrawn (the other half of the L2 consent). */
     val nearbyConsent: Boolean = false,
     val nearbyEnabled: Boolean = false,
     val nearbyPausedUntil: Long = 0L,
+    /** The notification permission was asked once (never ask again; Today's card stops showing). */
     val notificationsPrompted: Boolean = false,
+    val notifyMatches: Boolean = true,
+    val notifyMessages: Boolean = true,
+    /** Daily reading time (local), default 08:00. */
+    val dailyReadingTime: LocalTime = LocalTime.of(8, 0),
     val onboardingComplete: Boolean = false,
+    /** UX 2.0 onboarding screen to resume at ("BIRTH", "ABOUT", "CARD"); null = legacy mapping. */
+    val onboardingStep: String? = null,
+    /** Set by onboarding's Done: the first main screen is Chart (the wheel draws itself) once. */
+    val landOnChart: Boolean = false,
     val safetyTipsSeen: Boolean = false,
 ) {
     val firstName: String get() = displayName.trim().substringBefore(' ')
 
-    /** Whether Nearby can be used at all: dating consent + profile, honesty and birth data (Nearby consent is separate). */
-    val nearbyEligible: Boolean get() = dating != null && orientationConsent && honestyConfirmed && birth != null
+    val dating: DatingProfile?
+        get() = if (gender != null && seeking != null && relationshipStatus != null && lookingFor != null) {
+            DatingProfile(gender, seeking, relationshipStatus, lookingFor)
+        } else null
+
+    val datingFieldsComplete: Boolean get() = dating != null
+
+    fun withDating(d: DatingProfile?): Profile =
+        copy(gender = d?.gender, seeking = d?.seeking, relationshipStatus = d?.relationshipStatus, lookingFor = d?.lookingFor)
+
+    /** L2 given: both Nearby consent records present and not withdrawn (SPEC 5d.1.4). */
+    val nearbyConsentGiven: Boolean get() = orientationConsent && nearbyConsent
+
+    /** SPEC 5d.1.4: birth data, the four dating fields and the L2 consent. */
+    val nearbyEligible: Boolean get() = birth != null && datingFieldsComplete && nearbyConsentGiven
 
     fun isPaused(nowMillis: Long): Boolean = nearbyPausedUntil > nowMillis
 }

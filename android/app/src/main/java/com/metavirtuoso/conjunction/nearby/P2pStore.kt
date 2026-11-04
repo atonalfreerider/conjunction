@@ -19,6 +19,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import com.metavirtuoso.conjunction.core.blood.BloodType
+import com.metavirtuoso.conjunction.core.chinese.ChineseAnimal
+import com.metavirtuoso.conjunction.core.chinese.HeavenlyStem
+import com.metavirtuoso.conjunction.core.p2p.WireCompat
+import com.metavirtuoso.conjunction.core.profile.InstagramShareState
+import java.time.LocalDate
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -44,7 +50,36 @@ data class StoredFriend(
     val lastSeen: Long,
     /** Blocked friends are kept (so a recognised blocked friend gets `bye done`), with no chat. */
     val blocked: Boolean = false,
+    /** SPEC 5d.4: the friend's `hello.compat` (null for friends made before UX 2.0 until the backfill). */
+    val peerCompat: WireCompat? = null,
+    /** Stored compatibility numbers (copied from the match card; recomputed when [peerCompat] changes). */
+    val score: StoredScore? = null,
+    val blurb: StoredBlurb? = null,
+    /** SPEC 5d.6: the friend's Instagram handle (validated) and the rev it came with (-1 = none yet). */
+    val peerIg: String? = null,
+    val peerIgRev: Int = -1,
+    /** Per-friend "Share my Instagram with ..." switch; null = the Settings default at the time. */
+    val igShareOn: Boolean? = null,
+    /** Sender state for our `profile` toward this friend; null = not started (rev 0 on first use). */
+    val igState: InstagramShareState? = null,
 )
+
+/** Compatibility numbers kept with a match or friend (SPEC 5d.4 "falls back to the stored numbers"). */
+data class StoredScore(
+    val total: Int,
+    val western: Int,
+    val chinese: Int,
+    val blood: Int?,
+    val highlights: List<String>,
+    val birthdayTwin: Boolean,
+    val exactTwin: Boolean,
+    /** `ChineseRelation` / `StemRelation` enum names, null for records made before UX 2.0. */
+    val chineseRelation: String? = null,
+    val stemRelation: String? = null,
+)
+
+/** The Compatibility view's reading, generated once (SPEC 5d.4 item 6). [source] = "model" | "fallback". */
+data class StoredBlurb(val text: String, val source: String, val forHash: String)
 
 /** A match card in the 24-h Matches inbox, keyed by profile fingerprint. */
 data class StoredEncounter(
@@ -74,7 +109,14 @@ data class StoredEncounter(
     val createdAt: Long,
     val expiresAt: Long,
     val notifiedAt: Long = 0L,
+    /** SPEC 5d.4: the peer's `hello.compat`, kept with the match (copied into the friend). */
+    val peerCompat: WireCompat? = null,
+    val chineseRelation: String? = null,
+    val stemRelation: String? = null,
+    val blurb: StoredBlurb? = null,
 ) {
+    fun storedScore() = StoredScore(total, western, chinese, blood, highlights, birthdayTwin, exactTwin, chineseRelation, stemRelation)
+
     fun toCard(): EncounterCard = EncounterCard(
         encounterId = fingerprint, kind = kind, status = if (friendId != null) "matched" else "pending",
         total = total, western = western, chinese = chinese, blood = blood, highlights = highlights,
@@ -107,7 +149,9 @@ data class P2pState(
     fun withFriendBlocked(friendId: String): P2pState {
         val fps = encounters.filter { it.friendId == friendId }.map { it.fingerprint }
         return copy(
-            friends = friends.map { if (it.id == friendId) it.copy(blocked = true) else it },
+            friends = friends.map {
+                if (it.id == friendId) it.copy(blocked = true, peerCompat = null, blurb = null, peerIg = null, peerIgRev = -1, igState = null) else it
+            },
             messages = messages.filterNot { it.friendId == friendId },
             encounters = encounters.filterNot { it.friendId == friendId },
             hidden = hidden + fps.map { HiddenPeer(it, Long.MAX_VALUE, "block") },
@@ -226,6 +270,9 @@ class P2pStore(
                     .put("kind", f.kind).put("name", f.firstName).putOpt("bio", f.bio).putOpt("sun", f.sun).putOpt("moon", f.moon)
                     .putOpt("rising", f.rising).putOpt("animal", f.chineseAnimal).putOpt("photo", f.photoPath)
                     .put("photoScreen", f.photoScreening.wire).put("since", f.since).put("lastSeen", f.lastSeen).put("blocked", f.blocked)
+                    .putOpt("peerCompat", f.peerCompat?.let(::compatJson)).putOpt("score", f.score?.let(::scoreJson))
+                    .putOpt("blurb", f.blurb?.let(::blurbJson)).putOpt("peerIg", f.peerIg).put("peerIgRev", f.peerIgRev)
+                    .putOpt("igShare", f.igShareOn).putOpt("igState", f.igState?.let(::igJson))
             }))
             put("messages", JSONArray(s.messages.map { m ->
                 JSONObject().put("id", m.id).put("friend", m.friendId).put("mine", m.mine).put("text", m.text).put("ts", m.ts)
@@ -239,6 +286,8 @@ class P2pStore(
                     .put("lookingFor", e.lookingFor).putOpt("name", e.firstName).putOpt("bio", e.bio).putOpt("photo", e.photoPath)
                     .put("photoScreen", e.photoScreening.wire).putOpt("mySwipe", e.mySwipe).putOpt("peerSwipe", e.peerSwipe)
                     .putOpt("friend", e.friendId).put("created", e.createdAt).put("expires", e.expiresAt).put("notified", e.notifiedAt)
+                    .putOpt("peerCompat", e.peerCompat?.let(::compatJson)).putOpt("chineseRel", e.chineseRelation).putOpt("stemRel", e.stemRelation)
+                    .putOpt("blurb", e.blurb?.let(::blurbJson))
             }))
             put("hidden", JSONArray(s.hidden.map { h -> JSONObject().put("fp", h.fingerprint).put("until", h.until).put("reason", h.reason) }))
         }.toString()
@@ -256,6 +305,10 @@ class P2pStore(
                         bio = f.str("bio"), sun = f.str("sun"), moon = f.str("moon"), rising = f.str("rising"), chineseAnimal = f.str("animal"),
                         photoPath = f.str("photo"), photoScreening = Screening.fromWire(f.str("photoScreen")),
                         since = f.optLong("since"), lastSeen = f.optLong("lastSeen"), blocked = f.optBoolean("blocked"),
+                        peerCompat = f.optJSONObject("peerCompat")?.let(::compatOf), score = f.optJSONObject("score")?.let(::scoreOf),
+                        blurb = f.optJSONObject("blurb")?.let(::blurbOf), peerIg = f.str("peerIg"), peerIgRev = f.optInt("peerIgRev", -1),
+                        igShareOn = if (f.has("igShare") && !f.isNull("igShare")) f.getBoolean("igShare") else null,
+                        igState = f.optJSONObject("igState")?.let(::igOf),
                     )
                 },
                 messages = o.optJSONArray("messages").objects().map { m ->
@@ -276,10 +329,54 @@ class P2pStore(
                         firstName = e.str("name"), bio = e.str("bio"), photoPath = e.str("photo"), photoScreening = Screening.fromWire(e.str("photoScreen")),
                         mySwipe = e.str("mySwipe"), peerSwipe = e.str("peerSwipe"), friendId = e.str("friend"),
                         createdAt = e.optLong("created"), expiresAt = e.optLong("expires"), notifiedAt = e.optLong("notified"),
+                        peerCompat = e.optJSONObject("peerCompat")?.let(::compatOf), chineseRelation = e.str("chineseRel"),
+                        stemRelation = e.str("stemRel"), blurb = e.optJSONObject("blurb")?.let(::blurbOf),
                     )
                 },
                 hidden = o.optJSONArray("hidden").objects().map { h -> HiddenPeer(h.getString("fp"), h.getLong("until"), h.optString("reason")) },
             )
         }
+
+        private fun JSONObject.strOrNull(k: String): String? = if (!has(k) || isNull(k)) null else optString(k)
+
+        fun compatJson(c: WireCompat): JSONObject = JSONObject().put("sun", c.sun).put("moon", c.moon).put("venus", c.venus).put("mars", c.mars)
+            .putOpt("asc", c.asc).put("animal", c.animal.key).put("stem", c.stem.name).putOpt("blood", c.blood?.name)
+            .put("birthDate", c.birthDate.toString()).putOpt("birthHour", c.birthHour)
+
+        /** Null (the record is kept without the chart) when anything does not parse. */
+        fun compatOf(o: JSONObject): WireCompat? = runCatching {
+            WireCompat(
+                sun = o.getInt("sun"), moon = o.getInt("moon"), venus = o.getInt("venus"), mars = o.getInt("mars"),
+                asc = if (o.has("asc") && !o.isNull("asc")) o.getInt("asc") else null,
+                animal = ChineseAnimal.entries.first { it.key == o.getString("animal") },
+                stem = HeavenlyStem.valueOf(o.getString("stem")),
+                blood = o.strOrNull("blood")?.let { BloodType.valueOf(it) },
+                birthDate = LocalDate.parse(o.getString("birthDate")),
+                birthHour = if (o.has("birthHour") && !o.isNull("birthHour")) o.getInt("birthHour") else null,
+            )
+        }.getOrNull()
+
+        fun scoreJson(s: StoredScore): JSONObject = JSONObject().put("total", s.total).put("western", s.western).put("chinese", s.chinese)
+            .putOpt("blood", s.blood).put("highlights", JSONArray(s.highlights)).put("twin", s.birthdayTwin).put("exactTwin", s.exactTwin)
+            .putOpt("chineseRel", s.chineseRelation).putOpt("stemRel", s.stemRelation)
+
+        fun scoreOf(o: JSONObject): StoredScore = StoredScore(
+            total = o.optInt("total"), western = o.optInt("western"), chinese = o.optInt("chinese"),
+            blood = if (o.has("blood") && !o.isNull("blood")) o.getInt("blood") else null,
+            highlights = o.optJSONArray("highlights")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty(),
+            birthdayTwin = o.optBoolean("twin"), exactTwin = o.optBoolean("exactTwin"),
+            chineseRelation = o.strOrNull("chineseRel"), stemRelation = o.strOrNull("stemRel"),
+        )
+
+        fun blurbJson(b: StoredBlurb): JSONObject = JSONObject().put("text", b.text).put("source", b.source).put("for", b.forHash)
+        fun blurbOf(o: JSONObject): StoredBlurb? = runCatching { StoredBlurb(o.getString("text"), o.getString("source"), o.getString("for")) }.getOrNull()
+
+        fun igJson(s: InstagramShareState): JSONObject = JSONObject().putOpt("value", s.value).put("rev", s.rev).put("acked", s.ackedRev)
+            .putOpt("inFlight", s.inFlightId).put("inFlightRev", s.inFlightRev)
+
+        fun igOf(o: JSONObject): InstagramShareState = InstagramShareState(
+            value = o.strOrNull("value"), rev = o.optInt("rev"), ackedRev = o.optInt("acked", -1),
+            inFlightId = o.strOrNull("inFlight"), inFlightRev = o.optInt("inFlightRev", -1),
+        )
     }
 }

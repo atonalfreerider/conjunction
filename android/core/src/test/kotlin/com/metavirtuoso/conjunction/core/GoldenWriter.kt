@@ -24,6 +24,7 @@ class GoldenWriter {
                 "a" to CompatWire.profileToMap(a),
                 "b" to CompatWire.profileToMap(b),
                 "expected" to CompatWire.resultToMap(Compatibility.score(a, b)),
+                "synastry" to CompatWire.synastryToList(Compatibility.synastry(a, b)),
             )
         }
         val compat = linkedMapOf(

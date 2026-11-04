@@ -11,18 +11,24 @@ end-to-end encrypted chats directly over Bluetooth Low Energy.
 
 | File | Purpose | Shown in app |
 |---|---|---|
-| `WAIVER.md` | Release, Waiver of Liability, Assumption of Risk and Indemnity: entertainment-only readings, AI content, meeting strangers / dating, Bluetooth and data sent to other phones, driving, camera, 18+, release (incl. Cal. Civ. Code §1542), indemnity, no warranty, limitation of liability, US arbitration + class waiver + 30-day opt-out, non-waivable rights, clickwrap record | Onboarding (accept), Settings → Legal |
-| `TERMS.md` | Terms of Service: no account, Nearby / matching / chat over Bluetooth, acceptable use, content licence, safety tools and reports without a server, termination, IP, DMCA, Apple minimum EULA terms, Google Play, changes | Onboarding (accept), Settings → Legal |
-| `PRIVACY.md` | Privacy Policy: what stays on the phone, what is sent to nearby phones before and after a match, what reaches us (emails only), on-device screening, sensitive-data consents, retention on phones, deletion, rights | Onboarding (read), Settings → Legal, store listing URL |
-| `COMMUNITY_GUIDELINES.md` | Rules of conduct, child-safety section (`#child-safety` anchor for Play), enforcement without a server | Onboarding (accept), Settings → Legal |
-| `SAFETY_TIPS.md` | Meeting safely | Before first Nearby opt-in, from chat, Settings → Safety |
-| `IN_APP_CONSENT_COPY.md` | Exact short strings (keys shared by Android and iOS): age gate, acceptance, dating-data and blood-type consents, Nearby / Bluetooth disclosure, permission rationales and Info.plist strings, block / report, settings | Everywhere |
+| `WAIVER.md` | Release, Waiver of Liability, Assumption of Risk and Indemnity: entertainment-only readings, AI content, meeting strangers / dating, Bluetooth and data sent to other phones, driving, camera, 18+, release (incl. Cal. Civ. Code §1542), indemnity, no warranty, limitation of liability, US arbitration + class waiver + 30-day opt-out, non-waivable rights, clickwrap record | Onboarding (accept, birth-date screen), Settings → Privacy & legal |
+| `TERMS.md` | Terms of Service: no account, Nearby / matching / chat over Bluetooth, acceptable use, content licence, safety tools and reports without a server, termination, IP, DMCA, Apple minimum EULA terms, Google Play, changes | Onboarding (accept, birth-date screen), Settings → Privacy & legal |
+| `PRIVACY.md` | Privacy Policy: what stays on the phone, what is sent to nearby phones before and after a match, what reaches us (emails only), on-device screening, sensitive-data consents, retention on phones, deletion, rights | Onboarding (read link, birth-date screen), Settings → Privacy & legal, store listing URL |
+| `COMMUNITY_GUIDELINES.md` | Rules of conduct, child-safety section (`#child-safety` anchor for Play), enforcement without a server | Onboarding (accept, birth-date screen; part of the Terms), Settings → Privacy & legal |
+| `SAFETY_TIPS.md` | Meeting safely | Linked from the Nearby consent sheet, chat and match-card ⋯ menus, Settings → Privacy & legal |
+| `IN_APP_CONSENT_COPY.md` | Exact short strings (keys shared by Android and iOS): one clickwrap line on the birth-date screen, the Nearby consent sheet (orientation consent + Bluetooth disclosure), the blood-type switch, one-line notices, permission rationales and Info.plist strings, block / report, Privacy & legal settings, update sheets. Version 2.1 lists the retired keys. | Everywhere |
 | `archive/` | Superseded texts: `v1.0-server/` (server design) and `dating-drafts/` (merged). Not shipped. | — |
 
-All documents are version `2.0` (draft of 2026-11-03). The apps record accepted versions on the
-phone with a UTC timestamp, platform, app version and a SHA-256 of the displayed text (`WAIVER.md`
-§19.2 and the "Rules for the apps" in `IN_APP_CONSENT_COPY.md`). Bump the version and effective date
-whenever the text changes; a version bump triggers re-acceptance in the apps. The Android build
+`WAIVER`, `TERMS`, `PRIVACY`, `SAFETY_TIPS` and `IN_APP_CONSENT_COPY` are version `2.1` (draft of
+2026-11-04: UX 2.0, SPEC 5d — minimal legal UI, acceptance on the birth-date screen with **Begin**,
+Nearby consent at first turn-on, compatibility chart kept by matches, optional Instagram username sent
+only to friends, on-device setup AI); `COMMUNITY_GUIDELINES` is unchanged at `2.0`. The apps record
+accepted versions on the phone with a UTC timestamp, platform, app version and a SHA-256 of the
+displayed text (`WAIVER.md` §19.2 and the "Rules for the apps" in `IN_APP_CONSENT_COPY.md`). Bump the
+version and effective date whenever the text changes. **Re-acceptance:** a change of the **major**
+version (e.g. 2.x → 3.0, for material changes, Waiver §19.3) shows a compact re-accept sheet; a
+**minor** bump (2.0 → 2.1) shows a one-time notice sheet only (`IN_APP_CONSENT_COPY.md` §13). Existing
+users are never sent back through onboarding. The Android build
 bundles the five top-level documents from this folder (`android/app/build.gradle.kts`
 `copyLegalDocs`); the header table's `| Version | ... |` row is parsed by the apps, so keep that row's
 format.
@@ -97,11 +103,21 @@ release:
   carry only the service UUID. Temporary IDs rotate every 15 minutes and on every Nearby toggle.
 - The `hello` and `card` send only the fields listed in `PRIVACY.md` §3 (matching `docs/P2P_PROTOCOL.md`
   §5.3); the card and photo only after the match filter passes; blood type only with
-  `CONSENT_BLOOD_TYPE_MATCHING`; Nearby only with `CONSENT_ORIENTATION_DATA`. Hellos from non-matches
-  are discarded, not stored. Peers under 18 are never matched (protocol §9 step 1).
+  `CONSENT_BLOOD_TYPE_MATCHING`; Nearby only with `CONSENT_ORIENTATION_DATA` and
+  `CONSENT_NEARBY_BLUETOOTH` (recorded together by the Nearby sheet). Hellos from non-matches are
+  discarded, not stored; the matched peer's `hello.compat` is kept with the match / friend record
+  (24 h / until unmatch or block) for the compatibility chart. Peers under 18 are never matched (protocol §9 step 1).
 - The match card shows only: photo (screened on the receiving phone, else blurred) or zodiac art,
   first name, age, Sun/Moon/rising, Chinese animal, relationship status, looking-for, match kind,
-  compatibility. "Seeking", birth date, birth hour and blood type are never displayed.
+  compatibility. The compatibility view adds a wheel of the peer's Sun, Moon, Venus, Mars and
+  Ascendant (sign glyphs, no degree labels), aspects and score breakdown. "Seeking", birth date,
+  birth hour and blood type are never displayed.
+- The Instagram username is optional and typed or pasted by the user; there is no Instagram login,
+  API call or scraping. It is never in the advertisement, `hello` or `card`; it is sent only to
+  friends inside the encrypted channel (`profile` chat plaintext), can be withdrawn per friend, and is
+  deleted on unmatch / block.
+- Setup text ("tell us about you", natural-language birth entry) is parsed on the phone only (fixed
+  rules, then the on-device model) and not stored as typed.
 - Left swipes are never revealed; left-swiped peers are hidden for 30 days; unanswered matches expire
   after 24 h.
 - Chat is end-to-end encrypted (ECDH P-256 → HKDF-SHA256 → AES-256-GCM), stored only on the two
@@ -113,7 +129,7 @@ release:
   every AI reading.
 - "Delete all my data" wipes local storage, identity key and consent records.
 - Acceptance records are stored on the phone with document versions, UTC timestamp, platform, app
-  version and text hash, and viewable under Settings → Legal.
+  version and text hash, and viewable under Settings → Privacy & legal.
 - The App's data is excluded from phone backups (Android `data_extraction_rules.xml` /
   `backup_rules.xml` include no app data; iOS marks Application Support/Conjunction
   `isExcludedFromBackup`). Queued messages have no expiry. "Delete all my data" exists on both

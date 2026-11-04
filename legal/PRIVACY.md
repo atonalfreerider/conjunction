@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Document | `PRIVACY` |
-| Version | 2.0 (draft of 2026-11-03) |
+| Version | 2.1 (draft of 2026-11-04) |
 | Effective date | [EFFECTIVE DATE] |
 | Publisher | [LEGAL ENTITY NAME], doing business as MetaVirtuoso, [ADDRESS] |
 | Contact (including privacy and data-protection requests, and reports) | [CONTACT EMAIL] |
@@ -36,7 +36,9 @@ phones, what (very little) reaches us or other companies, and your choices.
   age, signs and Chinese animal) **before either of you accepts**.
 - Before a mutual match, **this data is not encrypted** on the Bluetooth link.
 - If you both swipe right, your phones exchange a long-term **identity key** and you can **chat**.
-  Chats are **end-to-end encrypted** and stored **only on the two phones**.
+  Chats are **end-to-end encrypted** and stored **only on the two phones**. If you add an
+  **Instagram username**, it goes only to people you matched with, inside that encrypted channel.
+  The App has no Instagram login and reads nothing from Instagram.
 - Your **gender and who you are seeking** can reveal your **sexual orientation**, and **blood type**
   is health-related. They are sent to nearby phones only with your **explicit consent**.
 - **What you send to someone stays on their phone.** We cannot delete it from their phone, and
@@ -63,9 +65,10 @@ GDPR household exemption applies to users.]
 | **Your full birth chart** (all planet positions, houses, aspects, Four Pillars) | Drawing the chart and writing readings. |
 | **Readings** (daily, natal, Eastern, palm, compatibility blurbs) | Shown to you; generated on the phone. |
 | **Palm photos** | Measured on the phone (hand landmarks and line detection) to describe your palm to the on-device AI. **Never sent anywhere.** Deleted after the reading unless you choose to save it in the App. |
-| **Your profile** (first name, profile photo, short bio, dating and friends settings, optional blood type) | Building your hello and card for Nearby (Section 3). |
+| **Your profile** (first name, profile photo, short bio, dating and friends settings, optional blood type, optional Instagram username) | Building your hello and card for Nearby (Section 3); the Instagram username is used only after a mutual match (Section 4). |
+| **What you type during setup** (for example a sentence like "Aug 7 1994, 4:53 pm, Providence" or "I'm Sam, into hiking, looking to date") | Read **on the phone**, by fixed rules and, where available, by the on-device AI, to fill in your birth details and profile for you to check. Not stored as typed and never sent anywhere. The AI can also suggest a bio from your chart (and, on Android where supported, your photo); you choose whether to use it. |
 | **Your identity key** | A random key pair made by the App the first time you match, kept in the Android Keystore or iOS Keychain. Used to set up encrypted chats and to let your friends' phones recognise yours later. The private key never leaves your phone. |
-| **Matches, friends and chats** | The cards of people you matched with, their identity keys, and your chat history with them (Section 4). |
+| **Matches, friends and chats** | The cards of people you matched with, the chart positions from their hello (to draw your compatibility chart), their identity keys, the Instagram username they chose to share, and your chat history with them (Section 4). |
 | **Safety settings** | People you blocked, snoozed or passed on, pause settings. |
 | **Your acceptance records** for our legal documents | Showing what you agreed to and when (document, version, time, app version, platform and a fingerprint of the text). Kept on your phone only. |
 
@@ -116,10 +119,10 @@ connect and each sends a "hello" with only what is needed to work out whether yo
 | Sent in the hello | Notes |
 |---|---|
 | A random **temporary ID** | Changes every 15 minutes and every time you turn Nearby on, so you cannot be followed by it. |
-| **Your gender, who you are seeking** — *sensitive: can reveal sexual orientation* — **relationship status** and **what you are looking for** (dating, friends or both) | Used by the other phone to decide whether you can be a dating or friends match. Sent only after you give the separate consent in Section 7. |
+| **Your gender, who you are seeking** — *sensitive: can reveal sexual orientation* — **relationship status** and **what you are looking for** (dating, friends or both) | Used by the other phone to decide whether you can be a dating or friends match. Sent only after you give the Nearby consent in Section 7. |
 | **Chart positions used for the compatibility score**: the longitudes of the Sun, Moon, Venus, Mars and (if your birth time is known) the Ascendant; your Chinese year animal and day-pillar stem | So both phones calculate the same score. The other phone also works out your signs and Chinese animal from them. |
-| **Birth date**, and **birth hour** if you know it (never the minute) | For the 18+ check, your age, and the "birthday twin" / "exact twin" checks. The birth date itself is not displayed; twins are told they share a birthday (and hour). |
-| **Blood type** (A, B, AB or O; never Rh) — *sensitive: health-related* | **Only if you tick "Also use my blood type in Nearby compatibility"** (off by default). Otherwise it is left out and never leaves your phone. |
+| **Birth date**, and **birth hour** if you know it (never the minute) | For the 18+ check, your age, and the "birthday twin" / "exact twin" checks. The birth date and hour themselves are not displayed; twins are told they share a birthday (and hour). |
+| **Blood type** (A, B, AB or O; never Rh) — *sensitive: health-related* | **Only if you switch on "Use in Nearby matching"** next to your blood type (off by default). Otherwise it is left out and never leaves your phone. |
 | Friend-recognition codes, mixed with decoys | Let your existing friends' phones recognise yours; strangers cannot use them to identify or track you. |
 
 **Step 2 — your card, sent only when the other phone's hello makes you a match.** If both phones
@@ -132,10 +135,16 @@ The other person then sees your **match card before either of you accepts**: pho
 their phone first, Section 6), first name, age, Sun / Moon / Rising signs, Chinese animal,
 relationship status, what you are looking for, the compatibility score and whether it is a dating or
 friends match (a dating match also tells them you are a gender they seek and that you seek theirs).
-Unanswered match cards are discarded after 24 hours.
+They can also open a **compatibility chart**: a wheel that places your Sun, Moon, Venus, Mars and (if
+known) Ascendant next to theirs, with the aspects between them and the score breakdown. Their phone
+**keeps the chart positions from your hello together with the match** so this chart stays available:
+for 24 hours for an unanswered match card, and for as long as you are friends. Unanswered match cards
+are discarded after 24 hours.
 
-**Not sent at any stage:** your birth place, the minute of your birth time, your full chart, your
-readings, palm photos, your location, your phone number, contacts or any device identifier.
+**Not sent at any stage:** your birth place, the minute of your birth time, your full chart (only
+the points listed above), your readings, what you typed during setup, palm photos, your location, your
+phone number, contacts or any device identifier. Your Instagram username is never sent before a
+mutual match.
 
 **What we cannot control.** Before a mutual match, **nothing your phone sends is encrypted**: the
 hello, your card, your photo and your swipe can be read by anyone who connects to your phone or
@@ -155,8 +164,14 @@ right now, so they may be able to recognise you.
 - **Swipes.** Swiping right or left sends your answer to the other phone. A left swipe is never
   shown to the other person; your phone hides that person from you for 30 days.
 - **Mutual match.** When you both swipe right, your phones exchange your **identity public keys**
-  and save each other as **friends**: their card, photo and key are stored on your phone, and yours
-  on theirs.
+  and save each other as **friends**: their card, photo, key and chart positions are stored on your
+  phone, and yours on theirs. Friends can always reopen your compatibility chart.
+- **Instagram username (optional).** If you entered one, your phone sends it to each new friend
+  inside the end-to-end encrypted channel, and sends an update if you change or remove it. You can
+  stop sharing it with any friend (or with new matches by default) in the App; their phone then
+  removes it. Tapping a friend's Instagram opens the Instagram app or website, where Meta's own terms
+  and privacy policy apply. **Conjunction does not connect to Instagram**, does not log in to it and
+  receives nothing from it, and the username is never sent to us or to Meta by the App.
 - **Chat is end-to-end encrypted.** Messages are encrypted on your phone with a key only your phone
   and your friend's phone can work out (ECDH P-256, HKDF-SHA256, AES-256-GCM) and sent over the
   Bluetooth link. We cannot read them, and they pass through no server. Each new connection uses
@@ -222,12 +237,16 @@ email [CONTACT EMAIL].
 
 - **Gender and seeking (sexual orientation).** Your gender, who you are seeking and your relationship
   status are used to decide who you can be matched with. Because they can reveal your sexual
-  orientation, the App asks for your **explicit consent** with a separate checkbox before they are
-  ever sent to another phone. Without it you can still use charts and readings, but not Nearby.
+  orientation, the App asks for your **explicit consent** when you first turn on Nearby: a short
+  screen says what is sent and to whom, and you must tick "I consent…" before Nearby can start. This
+  consent is separate from accepting the Terms. Without it you can still use charts and readings, but
+  not Nearby.
 - **Blood type (health-related).** Used for your own blood-type reading on your phone. It is added to
-  your hello **only if you separately agree**.
-- **Withdrawing consent.** In **Settings → Privacy** you can withdraw either consent at any time.
-  Your phone then stops sending that data (withdrawing the dating-profile consent turns Nearby off).
+  your hello **only if you switch on** "Use in Nearby matching" next to your blood type, which is a
+  separate consent (off by default).
+- **Withdrawing consent.** In **Profile → Settings → Privacy & legal** (Nearby consent → Withdraw)
+  and with the blood-type switch you can withdraw either consent at any time, as easily as you gave
+  it. Your phone then stops sending that data (withdrawing the Nearby consent turns Nearby off).
   **Copies already received by other phones** — for example
   those of your friends — **stay on those phones**; we cannot reach them.
 
@@ -267,17 +286,17 @@ On your phone:
 | Data | Kept |
 |---|---|
 | Hellos received from people who are **not** a match | Not kept: discarded as soon as the App decides there is no match |
-| Unanswered match cards | 24 hours |
+| Unanswered match cards (including the chart positions from that person's hello) | 24 hours |
 | People you passed on (left swipe), snoozed or unmatched | A one-way fingerprint calculated from the chart data in their hello (not their name or photo), for 30 days after a left swipe or unmatch and 7 days after a snooze, so they are not shown again |
-| Friends (mutual matches) and chats | Until you unmatch or block them (which deletes the chat from your phone), or delete the App's data |
+| Friends (mutual matches) and chats, including their chart positions and any Instagram username they shared | Until you unmatch or block them (which deletes the chat, chart positions and username from your phone), or delete the App's data |
 | Messages waiting for delivery | Until delivered, or until you unmatch or block that friend or delete the App's data (there is no automatic expiry) |
-| Blocks | Until you unblock (iPhone: Settings → Blocked people) or delete the App's data. [Engineering: the Android App has no unblock screen yet; until it does, an Android block lasts until the App's data is deleted.] |
+| Blocks | Until you unblock (Profile → Settings → Privacy & legal → Blocked people) or delete the App's data. [Engineering: SPEC 5d.1.3 adds the Android unblock screen; until it ships, an Android block lasts until the App's data is deleted.] |
 | Palm photos | Deleted after the reading unless you save them |
 | Everything else (profile, settings, acceptance records) | Until you change it or delete the App's data |
 
 **On other people's phones,** what you sent them stays as long as their App keeps it under the same
-rules — so a friend keeps your card, photo, key and your chats with them **until they unmatch, block
-or delete their App's data**. Unmatching or blocking on your phone does **not** delete anything
+rules — so a friend keeps your card, photo, key, chart positions, Instagram username (if you shared
+it) and your chats with them **until they unmatch, block or delete their App's data**. Unmatching or blocking on your phone does **not** delete anything
 from the other phone (the App does not send a remote-delete), and a phone running modified software
 may ignore their own App's rules.
 
@@ -288,7 +307,7 @@ With us: emails as described in Section 5.
 - **On your phone:** unmatch or block a friend in the App (this deletes your chat with them from
   your phone); turn off Nearby; or delete **everything** — profile, birth data, readings, palm
   photos, friends, chats, received photos, acceptance records and your identity key — with
-  **Settings → Delete all my data**, by clearing the App's storage in your phone's settings, or by
+  **Profile → Settings → Privacy & legal → Delete all my data**, by clearing the App's storage in your phone's settings, or by
   uninstalling the App. We cannot
   recover local data, and nothing is restored if you reinstall (except from your own phone backup).
 - **On other people's phones:** **we cannot delete what you already sent to other phones**, and the
@@ -304,7 +323,7 @@ form; this section explains how deletion works instead.
 Wherever you live, you can ask us to access, correct, export or delete personal data **we hold** —
 which, for almost everyone, is nothing, or only emails you sent us. Everything else is on your phone
 and under your control in the App: you can correct it in Profile, delete it (Section 11), and save a
-copy with **Settings → Export my data**, which writes the App's data on your phone (except key
+copy with **Profile → Settings → Privacy & legal → Export my data**, which writes the App's data on your phone (except key
 material) to a file that you save or share yourself (Android: a location you pick; iPhone: the share sheet); nothing is sent to us. Email [CONTACT EMAIL]; we answer within one month (GDPR) or 45
 days (US state laws), extendable where the law allows. We will not discriminate against you for
 exercising your rights.

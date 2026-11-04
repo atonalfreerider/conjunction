@@ -3,23 +3,93 @@
     <!-- Working name (SPEC): change here only. See docs/NAMES.md. -->
     <string name="app_name">Conjunction</string>
     <string name="tagline">Your stars, nearby.</string>
+    <string name="action_back">Back</string>
     <string name="channel_conjunctions_id" translatable="false">conjunctions</string>
 
+    <!-- Foreground-service notification while paused. -->
     <string name="nearby_paused_until">Paused until %1$s. Nothing is shared.</string>
     <string name="nearby_turn_off">Turn off</string>
-    <string name="nearby_resume">Resume</string>
 
     <string name="daily_reminder_title">Today\'s reading is ready</string>
     <string name="daily_reminder_body">Open Conjunction to see what the sky has written for you.</string>
 
-    <string name="tab_chart">Chart</string>
-    <string name="tab_today">Today</string>
-    <string name="tab_eastern">Eastern</string>
-    <string name="tab_palm">Palm</string>
-    <string name="tab_nearby">Nearby</string>
-    <string name="tab_profile">Profile</string>
-
-    <string name="entertainment_note">For entertainment only. Written on this phone; never sent anywhere.</string>
+    <string name="entertainment_note">For entertainment · written on this phone</string>
     <string name="ai_source_device">Written on this phone by Gemini Nano</string>
     <string name="ai_source_fallback">From Conjunction\'s bundled verses</string>
+
+    <!-- SPEC 5d.11 (UX 2.0). Same keys on iOS (Localizable.xcstrings). -->
+    <string name="tab_today">Today</string>
+    <string name="tab_chart">Chart</string>
+    <string name="tab_nearby">Nearby</string>
+    <string name="tab_readings">Readings</string>
+    <string name="tab_profile">Profile</string>
+    <string name="tab_nearby_badge_desc">Nearby, %1$d new matches</string>
+    <string name="readings_segment_eastern">Eastern</string>
+    <string name="readings_segment_palm">Palm</string>
+    <string name="nearby_off_line">Nearby is off.</string>
+    <string name="nearby_paused_line">Paused until %1$s.</string>
+    <string name="nearby_empty_off">Turn on Nearby to meet compatible people close by.</string>
+    <string name="nearby_empty_listening">Listening for conjunctions… We\'ll let you know.</string>
+    <string name="nearby_empty_paused">Paused until %1$s.</string>
+    <string name="nearby_turn_on_button">Turn on Nearby</string>
+    <string name="nearby_resume">Resume</string>
+    <string name="nearby_turn_on_bluetooth">Turn on Bluetooth</string>
+    <string name="nearby_open_settings">Open Settings</string>
+    <string name="nearby_section_new">New matches</string>
+    <string name="nearby_section_waiting">Waiting</string>
+    <string name="nearby_section_conjunctions">Conjunctions</string>
+    <string name="nearby_waiting_for">Waiting for %1$s</string>
+    <string name="nearby_say_hi">Say hi</string>
+    <string name="match_card_chart">Chart</string>
+    <string name="match_popup_say_hi">Say hi</string>
+    <string name="match_popup_see_chart">See our chart</string>
+    <string name="compat_title">You &amp; %1$s</string>
+    <string name="compat_legend">Inner: you · Outer: %1$s</string>
+    <string name="compat_western">Western</string>
+    <string name="compat_chinese">Chinese</string>
+    <string name="compat_blood">Blood type</string>
+    <string name="compat_aspects_title">Aspects</string>
+    <string name="compat_eastern_title">Eastern</string>
+    <string name="compat_reading_title">Reading</string>
+    <string name="compat_wheel_pending">Your chart together appears the next time you\'re near %1$s.</string>
+    <string name="onb_welcome_start">Get started</string>
+    <string name="onb_birth_title">When and where were you born?</string>
+    <string name="onb_birth_hint">e.g. Aug 7 1994, 4:53 pm, Providence RI</string>
+    <string name="onb_chip_add_date">Add date</string>
+    <string name="onb_chip_add_time">Add time</string>
+    <string name="onb_chip_add_place">Add place</string>
+    <string name="onb_chip_time_unknown">Time unknown</string>
+    <string name="onb_birth_separately">Enter each separately</string>
+    <string name="onb_about_title">Tell us about you</string>
+    <string name="onb_about_hint">e.g. I\'m Sam, a single guy into hiking and jazz, looking to date women</string>
+    <string name="onb_first_name">First name</string>
+    <string name="onb_interests">Interests</string>
+    <string name="onb_card_title">Your card</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_continue">Continue</string>
+    <string name="onb_done">Done</string>
+    <string name="photo_take">Take a photo</string>
+    <string name="bio_label">Bio</string>
+    <string name="bio_write_for_me">Write one for me</string>
+    <string name="bio_another">Another</string>
+    <string name="instagram_paste">Paste</string>
+    <string name="instagram_invalid">That doesn\'t look like an Instagram username.</string>
+    <string name="instagram_chip">Instagram</string>
+    <string name="instagram_from_share_title">Use @%1$s as your Instagram?</string>
+    <string name="instagram_from_share_use">Use it</string>
+    <string name="instagram_share_not_profile">Conjunction can only use an Instagram profile link here.</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_nearby">Nearby</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notif_daily">Daily reading</string>
+    <string name="settings_notif_matches">Matches nearby</string>
+    <string name="settings_notif_messages">Messages</string>
+    <string name="settings_snoozed">Snoozed people</string>
+    <string name="menu_snooze">Snooze 7 days</string>
+    <string name="menu_block">Block</string>
+    <string name="menu_report">Report</string>
+    <string name="menu_safety_tips">Safety Tips</string>
+    <string name="menu_safety_code">Safety code</string>
+    <string name="menu_unmatch">Unmatch</string>
+    <string name="not_now">Not now</string>
 </resources>

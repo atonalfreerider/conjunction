@@ -7,6 +7,7 @@ import com.metavirtuoso.conjunction.core.chinese.ChineseAnimal
 import com.metavirtuoso.conjunction.core.chinese.ChineseZodiac
 import com.metavirtuoso.conjunction.core.chinese.HeavenlyStem
 import com.metavirtuoso.conjunction.core.compat.CompatProfile
+import com.metavirtuoso.conjunction.core.compat.Compatibility
 import com.metavirtuoso.conjunction.core.compat.CompatResult
 import java.time.LocalDate
 import java.time.LocalTime
@@ -37,6 +38,14 @@ object CompatWire {
         "highlights" to r.highlights, "isBirthdayTwin" to r.isBirthdayTwin, "isExactTwin" to r.isExactTwin,
         "sharesBirthday" to r.sharesBirthday, "chineseRelation" to r.chineseRelation.name, "stemRelation" to r.stemRelation.name,
     )
+
+    /** `synastry` of a golden case (SPEC 5d.4): Compatibility.synastry(a, b) in order. */
+    fun synastryToList(lines: List<Compatibility.SynastryLine>): List<Map<String, Any?>> = lines.map {
+        linkedMapOf(
+            "pointA" to it.pointA.name, "pointB" to it.pointB.name, "aspect" to it.aspect.name,
+            "orbCentideg" to it.orbCentideg, "weight" to it.weight, "score" to it.score,
+        )
+    }
 }
 
 /** Real people-like profiles computed from birth data (fixed inputs, so results are reproducible). */

@@ -1,0 +1,195 @@
+{
+ "description": "AboutYouParser.parse(text) golden cases (SPEC 5d.5). Hand-specified by testdata/tools/make_golden_onboarding.py; Kotlin and Swift must match every field.",
+ "cases": [
+  {
+   "text": "I'm Sam, a single guy into hiking and jazz, looking to date women",
+   "firstName": "Sam",
+   "gender": "male",
+   "seeking": "female",
+   "relationship": "single",
+   "lookingFor": "dating",
+   "interests": "hiking and jazz",
+   "note": "the placeholder example"
+  },
+  {
+   "text": "My name is Aurora. I'm a woman looking for a man, mostly for friendship.",
+   "firstName": "Aurora",
+   "gender": "female",
+   "seeking": "male",
+   "relationship": null,
+   "lookingFor": "friends",
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "call me Zoë! married, here to make friends, I love tea and tarot",
+   "firstName": "Zoë",
+   "gender": null,
+   "seeking": null,
+   "relationship": "in_a_relationship",
+   "lookingFor": "friends",
+   "interests": "tea and tarot",
+   "note": ""
+  },
+  {
+   "text": "Just a girl who likes girls",
+   "firstName": null,
+   "gender": "female",
+   "seeking": "female",
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "I am bisexual and single, into climbing",
+   "firstName": null,
+   "gender": null,
+   "seeking": "both",
+   "relationship": "single",
+   "lookingFor": null,
+   "interests": "climbing",
+   "note": ""
+  },
+  {
+   "text": "Looking for men or women, I'm Alex",
+   "firstName": "Alex",
+   "gender": null,
+   "seeking": "both",
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "Hi! I'm Priya, 29, a woman seeking a man to date",
+   "firstName": "Priya",
+   "gender": "female",
+   "seeking": "male",
+   "relationship": null,
+   "lookingFor": "dating",
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "dad of two, divorced, love hiking",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": "hiking",
+   "note": ""
+  },
+  {
+   "text": "My partner and I are new in town and want to meet friends",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": "in_a_relationship",
+   "lookingFor": "friends",
+   "interests": null,
+   "note": "'my partner' is a status, not dating intent"
+  },
+  {
+   "text": "I'm not single but looking for friends",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": "in_a_relationship",
+   "lookingFor": "friends",
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "I'm open to dating and friends",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": "both",
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "I'm a guy into guys",
+   "firstName": null,
+   "gender": "male",
+   "seeking": "male",
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": "seeking clause removed before own gender"
+  },
+  {
+   "text": "my name is jordan, looking for everyone",
+   "firstName": "Jordan",
+   "gender": null,
+   "seeking": "both",
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": "first letter capitalised"
+  },
+  {
+   "text": "i'm jordan",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": "after I'm only a capitalised word is a name"
+  },
+  {
+   "text": "I'm a man looking for a woman",
+   "firstName": null,
+   "gender": "male",
+   "seeking": "female",
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": ""
+  },
+  {
+   "text": "woman, single, enjoy pottery; looking for a relationship",
+   "firstName": null,
+   "gender": "female",
+   "seeking": null,
+   "relationship": "single",
+   "lookingFor": "dating",
+   "interests": "pottery",
+   "note": ""
+  },
+  {
+   "text": "I'm Mary-Jane and I like board games, books",
+   "firstName": "Mary-Jane",
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": "board games",
+   "note": "interests stop at a comma"
+  },
+  {
+   "text": "My friends say I'm funny",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null,
+   "note": "'my friends' is not looking for friends"
+  }
+ ]
+}

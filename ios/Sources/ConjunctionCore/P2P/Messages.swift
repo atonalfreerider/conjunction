@@ -195,18 +195,21 @@ public enum P2PMessage: Hashable, Sendable {
 public enum ChatPayload: Hashable, Sendable {
     case text(id: String, ts: Int64, text: String)
     case read(id: String, ts: Int64, refs: [String])
+    /// SPEC 5d.6: the sender's Instagram handle for this friend (`ig` nil = not shared / removed).
+    /// Not a chat message: never shown, never stored in the history, never listed in `read.refs`.
+    case profile(id: String, ts: Int64, rev: Int, ig: String?)
     /// A kind this version does not know; ignored after decryption.
     case unknown(id: String, ts: Int64, kind: String)
 
     public var id: String {
         switch self {
-        case .text(let id, _, _), .read(let id, _, _), .unknown(let id, _, _): return id
+        case .text(let id, _, _), .read(let id, _, _), .unknown(let id, _, _), .profile(let id, _, _, _): return id
         }
     }
 
     public var ts: Int64 {
         switch self {
-        case .text(_, let ts, _), .read(_, let ts, _), .unknown(_, let ts, _): return ts
+        case .text(_, let ts, _), .read(_, let ts, _), .unknown(_, let ts, _), .profile(_, let ts, _, _): return ts
         }
     }
 
@@ -216,6 +219,9 @@ public enum ChatPayload: Hashable, Sendable {
             return ["id": .string(id), "ts": .int(ts), "kind": .string("text"), "text": .string(text)]
         case .read(let id, let ts, let refs):
             return ["id": .string(id), "ts": .int(ts), "kind": .string("read"), "refs": .array(refs.map { .string($0) })]
+        case .profile(let id, let ts, let rev, let ig):
+            return ["id": .string(id), "ts": .int(ts), "kind": .string("profile"), "rev": .int(Int64(rev)),
+                    "ig": ig.map { .string($0) } ?? .null]
         case .unknown(let id, let ts, let kind):
             return ["id": .string(id), "ts": .int(ts), "kind": .string(kind)]
         }
@@ -336,6 +342,16 @@ public enum P2PMessages {
                 guard case .string(let s) = r, isHex(s, 32) else { throw P2PError.malformed("refs[]: bad id") }
                 return s
             })
+        case .string("profile")?:
+            let rev = try int(o, "rev", 0, Int64(P2PConstants.maxProfileRev))
+            let ig: String?
+            switch o["ig"] {
+            case nil, .null?: ig = nil
+            case .string(let v)?: ig = v
+            default: throw P2PError.malformed("ig: expected a string or null")
+            }
+            // Lenient: a string failing the handle rule is treated as null (SPEC 5d.6).
+            return .profile(id: id, ts: ts, rev: rev, ig: InstagramHandle.received(ig))
         case .string(let kind)?:
             return .unknown(id: id, ts: ts, kind: kind)
         default:

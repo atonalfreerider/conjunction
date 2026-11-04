@@ -88,16 +88,10 @@ fun ReadingCard(
                     color = Palette.Moonstone,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
-                Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        stringResource(if (state.reading.source == ReadingSource.ON_DEVICE_AI) R.string.ai_source_device else R.string.ai_source_fallback),
-                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-                        color = Palette.MoonstoneDim,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                state.reading.note?.let { FinePrint(it) }
-                FinePrint(stringResource(R.string.entertainment_note), Modifier.padding(top = 4.dp))
+                // One fine-print line per reading (SPEC 5d.1): no provenance or model-availability notes.
+                // The only extra note kept is the palm one, which says what the on-device model looked at.
+                state.reading.note?.takeIf { state.reading.source == ReadingSource.ON_DEVICE_AI }?.let { FinePrint(it, Modifier.padding(top = 12.dp)) }
+                FinePrint(stringResource(R.string.entertainment_note), Modifier.padding(top = 8.dp))
                 Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (onRefresh != null) GhostButton("Write again", onClick = onRefresh, modifier = Modifier.weight(1f))
                     GhostButton(stringResource(R.string.report_reading), onClick = { reporting = true }, modifier = Modifier.weight(1f), color = Palette.RoseCopper)

@@ -18,6 +18,11 @@ final class NearbyRepository: ObservableObject {
     var openChatFriendId: String?
     private(set) var foreground = true
     private(set) var radioRunning = false
+    /// Settings › Notifications: Matches nearby / Messages (from the profile).
+    private var notifyMatches = true
+    private var notifyMessages = true
+    /// Compatibility views opened this session (the score counts up on the first open only).
+    var compatOpened: Set<String> = []
     private var resumeTimer: Timer?
     let node: NearbyNode
 
@@ -40,10 +45,12 @@ final class NearbyRepository: ObservableObject {
 
     private func announce(_ event: NearbyEvent, peerName: String?, peerSun: String?) {
         if event.kind == .message {
-            if !(foreground && openChatFriendId == event.friendId) { Notifications.show(event, peerName: peerName, peerSun: peerSun) }
+            if notifyMessages && !(foreground && openChatFriendId == event.friendId) {
+                Notifications.show(event, peerName: peerName, peerSun: peerSun)
+            }
         } else if foreground {
             events.send(event)
-        } else {
+        } else if notifyMatches {
             Notifications.show(event, peerName: peerName, peerSun: peerSun)
         }
     }
@@ -63,6 +70,8 @@ final class NearbyRepository: ObservableObject {
 
     /// Applies the profile: what this phone sends, and whether the radio should run.
     func apply(profile: OwnerProfile, charts: OwnerCharts?) {
+        notifyMatches = profile.notifyMatches
+        notifyMessages = profile.notifyMessages
         let photo = profile.photoFile.flatMap { _ in PhotoCodec.cardPhoto(AppFiles.ownerPhotoURL) }
         let local = profile.nearbyEnabled ? OwnerCharts.localPeerProfile(profile, charts: charts, photo: photo) : nil
         node.setLocalProfile(local)
@@ -91,6 +100,9 @@ final class NearbyRepository: ObservableObject {
     var now: Int64 { P2PLink.nowMs() }
     var inbox: [StoredEncounter] { state.inbox(now: now) }
     var waiting: [StoredEncounter] { state.waiting(now: now) }
+    var pendingCount: Int { state.pendingCount(now: now) }
+    func compatSubject(_ key: String) -> CompatSubject? { state.compatSubject(key, now: now) }
+    var snoozed: [HiddenPeer] { state.snoozed(now: now) }
     var friends: [FriendSummary] { state.friendSummaries(inRange: engineStatus.friendsInRange) }
     func friend(_ id: String) -> FriendSummary? { state.friendSummary(id, inRange: engineStatus.friendsInRange) }
     func encounter(_ fp: String) -> StoredEncounter? { state.encounter(fp) }
@@ -135,32 +147,21 @@ final class NearbyRepository: ObservableObject {
         onQueue { n in n.store.update { s in for i in s.messages.indices where s.messages[i].id == messageId { s.messages[i].screening = .safe } } }
     }
 
-    /// Block a friend: kept as a blocked record (so they are recognised and refused), chat deleted here.
+    /// Block a friend: kept as a blocked record (so they are recognised and refused), chat and
+    /// everything kept of them (chart, reading, Instagram) deleted here.
     func blockFriend(_ friendId: String) {
         onQueue { n in
-            n.store.update { s in
-                let fps = s.encounters.filter { $0.friendId == friendId }.map(\.fingerprint)
-                for i in s.friends.indices where s.friends[i].id == friendId { s.friends[i].blocked = true }
-                s.messages.removeAll { $0.friendId == friendId }
-                s.encounters.removeAll { $0.friendId == friendId }
-                s.hidden += fps.map { HiddenPeer(fingerprint: $0, until: Int64.max, reason: "block") }
-            }
+            n.store.update { $0.blockFriend(friendId) }
             n.engine.disconnectPeer(friendId: friendId, fingerprint: nil)
         }
     }
 
-    /// Unmatch: friendship and chat deleted here; their card stays hidden for 30 days.
+    /// Unmatch: friendship, chat and kept data deleted here; their card stays hidden for 30 days.
     func unmatch(_ friendId: String) {
         let until = P2PLink.nowMs() + NearbyEngine.leftSwipeHideMs
         onQueue { n in
             n.engine.disconnectPeer(friendId: friendId, fingerprint: nil)
-            n.store.update { s in
-                let fps = s.encounters.filter { $0.friendId == friendId }.map(\.fingerprint)
-                s.friends.removeAll { $0.id == friendId }
-                s.messages.removeAll { $0.friendId == friendId }
-                s.encounters.removeAll { $0.friendId == friendId }
-                s.hidden += fps.map { HiddenPeer(fingerprint: $0, until: until, reason: "unmatch") }
-            }
+            n.store.update { $0.unmatch(friendId, hiddenUntil: until) }
         }
     }
 
@@ -170,14 +171,29 @@ final class NearbyRepository: ObservableObject {
 
     private func hideStranger(_ fingerprint: String, until: Int64, reason: String) {
         onQueue { n in
-            n.store.update { s in
-                s.encounters.removeAll { $0.fingerprint == fingerprint }
-                s.hidden.removeAll { $0.fingerprint == fingerprint }
-                s.hidden.append(HiddenPeer(fingerprint: fingerprint, until: until, reason: reason))
-            }
+            n.store.update { $0.hideStranger(fingerprint, until: until, reason: reason) }
             n.engine.disconnectPeer(friendId: nil, fingerprint: fingerprint)
         }
     }
+
+    /// Settings › Nearby › Snoozed people.
+    func unsnooze(_ fingerprint: String) {
+        onQueue { n in n.store.update { $0.hidden.removeAll { $0.fingerprint == fingerprint && $0.reason == "snooze" } } }
+    }
+
+    /// "Share my Instagram with <name>" (friend ⋯ and chat ⋯): the next `profile` goes at once if in range.
+    func setInstagramShare(_ friendId: String, on: Bool) {
+        onQueue { n in
+            n.store.update { $0.setInstagramShare(friendId, on: on) }
+            n.engine.refreshProfiles()
+        }
+    }
+
+    /// The owner's handle or the Settings default changed (SPEC 5d.6).
+    func refreshProfiles() { onQueue { $0.engine.refreshProfiles() } }
+
+    /// The Compatibility view's reading, cached on the record (SPEC 5d.4 item 6).
+    func saveBlurb(_ key: String, _ blurb: StoredBlurb) { onQueue { n in n.store.update { $0.saveBlurb(key, blurb) } } }
 
     /// Settings → Blocked people: forget a blocked former friend (they could match again later).
     func unblockFriend(_ friendId: String) {

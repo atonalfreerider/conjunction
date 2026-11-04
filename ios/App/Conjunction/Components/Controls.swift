@@ -138,6 +138,11 @@ struct OrnateTextField: View {
     var keyboard: UIKeyboardType = .default
     var limit: Int?
     var onSubmit: (() -> Void)?
+    /// Hint shown while empty (e.g. "e.g. Aug 7 1994, 4:53 pm, Providence RI").
+    var placeholder: String?
+    /// Called when the field loses focus (onboarding asks the on-device model then).
+    var onFocusLost: (() -> Void)?
+    var isError = false
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -145,9 +150,10 @@ struct OrnateTextField: View {
             Text(label).typeStyle(.bodySmall).foregroundStyle(focused ? Palette.gold : Palette.moonstoneDim)
             Group {
                 if multiline {
-                    TextField("", text: $text, axis: .vertical).lineLimit(minLines...max(minLines, 8))
+                    TextField("", text: $text, prompt: placeholder.map { Text($0).foregroundColor(Palette.moonstoneDim.opacity(0.7)) },
+                              axis: .vertical).lineLimit(minLines...max(minLines, 8))
                 } else {
-                    TextField("", text: $text)
+                    TextField("", text: $text, prompt: placeholder.map { Text($0).foregroundColor(Palette.moonstoneDim.opacity(0.7)) })
                 }
             }
             .typeStyle(.bodyLarge)
@@ -160,12 +166,17 @@ struct OrnateTextField: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(Palette.midnight.opacity(focused ? 0.6 : 0.45).clipShape(CutCornerShape(cut: 8)))
-            .overlay(CutCornerShape(cut: 8).stroke(focused ? Palette.gold : Palette.goldDeep, lineWidth: 1))
+            .overlay(CutCornerShape(cut: 8).stroke(isError ? Palette.roseCopper : focused ? Palette.gold : Palette.goldDeep, lineWidth: 1))
             .accessibilityLabel(label)
-            if let supporting { Text(supporting).typeStyle(.bodySmall).foregroundStyle(Palette.moonstoneDim) }
+            if let supporting {
+                Text(supporting).typeStyle(.bodySmall).foregroundStyle(isError ? Palette.roseCopper : Palette.moonstoneDim)
+            }
         }
         .onChange(of: text) { _, newValue in
             if let limit, newValue.count > limit { text = String(newValue.prefix(limit)) }
+        }
+        .onChange(of: focused) { _, isFocused in
+            if !isFocused { onFocusLost?() }
         }
     }
 }

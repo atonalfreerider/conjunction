@@ -152,6 +152,11 @@ struct TodayScreen: View {
     @State private var state: ReadingState = .loading()
     private let today = LocalDate.todayInCurrentTimeZone()
 
+    private var isReady: Bool {
+        if case .ready = state { return true }
+        return false
+    }
+
     private var fullDate: String {
         let f = DateFormatter()
         f.dateStyle = .full
@@ -166,6 +171,7 @@ struct TodayScreen: View {
                 Text("\(natal.sunSign.displayName) sun · \(natal.moonSign.displayName) moon" + (natal.risingSign.map { " · \($0.displayName) rising" } ?? ""))
                     .typeStyle(.titleMedium).foregroundStyle(Palette.goldPale).multilineTextAlignment(.center)
                 ReadingCard(title: "Your day", state: state, onRefresh: { load(charts, refresh: true) })
+                if isReady { NotificationsCard() }
                 SkyNow(date: today)
             } else {
                 NoBirthData()
@@ -184,6 +190,55 @@ struct TodayScreen: View {
             }
             state = .ready(r)
         }
+    }
+}
+
+/// One-time card on Today (SPEC 5d.3.2): "Get your reading each morning?" after the first reading
+/// is shown, if notifications were never asked. Allow -> system prompt and the daily reminder;
+/// Not now -> never shown again.
+private struct NotificationsCard: View {
+    @EnvironmentObject var app: AppModel
+
+    var body: some View {
+        if !app.profile.notificationsPrompted {
+            OrnatePanel(padding: 18) {
+                Text(L10n.permNotificationsTitle).typeStyle(.titleMedium).foregroundStyle(Palette.goldPale)
+                Text(L10n.permNotificationsBody).typeStyle(.bodyMedium).foregroundStyle(Palette.moonstone).padding(.vertical, 6)
+                HStack(spacing: 10) {
+                    GoldButton(L10n.permNotificationsButton) {
+                        Task {
+                            let granted = await Notifications.requestAuthorization()
+                            app.update { $0.notificationsPrompted = true; if granted { $0.dailyReminder = true } }
+                        }
+                    }
+                    GhostButton(AppText.notNow) { app.update { $0.notificationsPrompted = true } }
+                }
+            }
+        }
+    }
+}
+
+/// Readings (SPEC 5d.2): Eastern and Palm under one "Eastern | Palm" segment control.
+enum ReadingsSegment: String { case eastern, palm }
+
+struct ReadingsScreen: View {
+    @Binding var segment: ReadingsSegment
+
+    var body: some View {
+        let header = HStack {
+            Spacer()
+            ChoiceChips(options: [(ReadingsSegment.eastern, AppText.readingsSegmentEastern), (.palm, AppText.readingsSegmentPalm)],
+                        selected: segment) { segment = $0 }
+                .fixedSize()
+            Spacer()
+        }
+        Group {
+            switch segment {
+            case .eastern: EasternScreen()
+            case .palm: PalmScreen()
+            }
+        }
+        .environment(\.tabHeader, AnyView(header))
     }
 }
 

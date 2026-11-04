@@ -10,6 +10,40 @@ public enum FallbackReadings {
         list[Math.floorMod(seed, list.count)]
     }
 
+    /// Opening fragments for `bio`, by the sun sign's element (fire, earth, air, water).
+    public static let bioOpeners: [[String]] = [
+        ["{sun} sun with a spark to match", "Bold {sun} heart, warm laugh", "{sun} fire, always up for an adventure"],
+        ["Grounded {sun} with a soft side", "{sun} sun, steady and loyal", "Earthy {sun} with slow-burn charm"],
+        ["Curious {sun}, quick to laugh", "{sun} sun with my head in the stars", "Chatty {sun} full of big ideas"],
+        ["Dreamy {sun} with a deep heart", "{sun} sun, all intuition", "Tender {sun}, tide-pulled and true"],
+    ]
+    public static let bioClosers = [
+        "Let's compare charts.", "Ask me about my moon.", "Here for good talks under the stars.",
+        "Bring your best stargazing spot.",
+    ]
+
+    /// Deterministic "Write one for me" bio (SPEC 5d.5) when the model is unavailable: one line of at
+    /// most `BioPrompt.maxChars` characters from the big three and the user's interests; "Another"
+    /// increments `seed`. Same text as Kotlin FallbackReadings.bio.
+    public static func bio(_ chart: NatalChart, interests: String?, seed: Int) -> String {
+        let sun = chart.sunSign
+        let opener = pick(bioOpeners[Element.allCases.firstIndex(of: sun.element)!], seed + sun.ordinal)
+            .replacingOccurrences(of: "{sun}", with: sun.displayName, options: .literal)
+        let signs = "\(opener). \(chart.moonSign.displayName) moon" + (chart.risingSign.map { ", \($0.displayName) rising" } ?? "") + "."
+        let closer = pick(bioClosers, seed / 3 + chart.moonSign.ordinal)
+        let likeParts = interests.map { $0.split(separator: ",", omittingEmptySubsequences: false).map { String($0).trim() }.filter { !$0.isEmpty } }
+        let likes = likeParts.map { Array($0.prefix(2)).joined(separator: " and ") }.flatMap { $0.isEmpty ? nil : $0 }
+        var candidates: [String] = []
+        if let likes {
+            candidates.append("\(signs) Into \(likes). \(closer)")
+            candidates.append("\(signs) Into \(likes).")
+        }
+        candidates.append("\(signs) \(closer)")
+        candidates.append(signs)
+        return candidates.first { $0.unicodeScalars.count <= BioPrompt.maxChars }
+            ?? String(String.UnicodeScalarView(signs.unicodeScalars.prefix(BioPrompt.maxChars)))
+    }
+
     /// Kotlin's fold of String.replace("{key}", value): literal, every occurrence, in order.
     private static func fill(_ template: String, _ pairs: (String, String)...) -> String {
         pairs.reduce(template) { acc, kv in acc.replacingOccurrences(of: "{\(kv.0)}", with: kv.1, options: .literal) }

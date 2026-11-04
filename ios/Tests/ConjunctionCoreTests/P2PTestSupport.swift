@@ -121,6 +121,7 @@ extension LinkEvent {
         case .friendEstablished: return "FriendEstablished"
         case .friendNearby: return "FriendNearby"
         case .chatReceived: return "ChatReceived"
+        case .profileReceived: return "ProfileReceived"
         case .delivered: return "Delivered"
         case .protocolError: return "ProtocolError"
         case .closed: return "Closed"

@@ -9,6 +9,7 @@ import re
 
 from . import canonjson
 from . import consts as C
+from . import instagram
 from .frames import FrameError, pack_body, unpack_body
 
 GENDERS = ("male", "female")
@@ -115,6 +116,11 @@ def chat_text(msg_id: str, ts: int, text: str) -> dict:
 
 def chat_read(msg_id: str, ts: int, refs: list) -> dict:
     return {"id": msg_id, "ts": ts, "kind": "read", "refs": list(refs)}
+
+
+def chat_profile(msg_id: str, ts: int, rev: int, ig) -> dict:
+    """Chat plaintext kind `profile` (SPEC 5d.6): the sender's Instagram handle for this friend, or None."""
+    return {"id": msg_id, "ts": ts, "kind": "profile", "rev": rev, "ig": ig}
 
 
 def encode(msg: dict, blob: bytes = b"") -> bytes:
@@ -293,4 +299,13 @@ def decode_chat_plaintext(pt: bytes) -> dict:
         if not isinstance(refs, list) or not (1 <= len(refs) <= C.MAX_READ_REFS):
             raise FrameError("malformed", "chat.refs")
         return chat_read(msg_id, ts, [_hex(r, _HEX32, "chat.refs[]") for r in refs])
+    if kind == "profile":
+        rev = _int(_req(o, "rev"), 0, C.MAX_PROFILE_REV, "chat.rev")
+        ig = _opt(o, "ig")
+        if ig is not None and not isinstance(ig, str):
+            raise FrameError("malformed", "chat.ig: expected a string or null")
+        # Lenient: a string failing the handle rule is treated as null (SPEC 5d.6).
+        return chat_profile(msg_id, ts, rev, instagram.received(ig))
+    if not isinstance(kind, str):
+        raise FrameError("malformed", "chat.kind: expected a string")
     return {"id": msg_id, "ts": ts, "kind": None}  # unknown kinds are ignored (forward compatibility)

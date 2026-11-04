@@ -1,0 +1,131 @@
+{
+ "description": "OnboardingExtraction: validation of on-device model JSON (SPEC 5d.5). `reject` inputs give no result (keep the deterministic chips); otherwise each field is validated on its own.",
+ "today": "2026-11-04",
+ "birth": [
+  {
+   "raw": "{\"date\":\"1994-08-07\",\"time\":\"16:53\",\"timeUnknown\":false,\"place\":\"Providence, RI\"}",
+   "date": "1994-08-07",
+   "time": "16:53",
+   "timeUnknown": false,
+   "place": "Providence, RI"
+  },
+  {
+   "raw": "```json\n{\"date\":\"1994-08-07\",\"time\":null,\"timeUnknown\":true,\"place\":null}\n```",
+   "date": "1994-08-07",
+   "time": null,
+   "timeUnknown": true,
+   "place": null
+  },
+  {
+   "raw": "Sure! Here it is: {\"date\": \"1985-09-09\", \"time\": \"07:05\", \"timeUnknown\": true, \"place\": \"  Austin, TX \"} Hope that helps.",
+   "date": "1985-09-09",
+   "time": "07:05",
+   "timeUnknown": false,
+   "place": "Austin, TX"
+  },
+  {
+   "raw": "{\"date\":\"2030-01-01\",\"time\":\"24:00\",\"timeUnknown\":false,\"place\":\"\"}",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "place": null
+  },
+  {
+   "raw": "{\"date\":\"1899-12-31\",\"time\":\"23:60\",\"timeUnknown\":\"yes\",\"place\":null}",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "place": null
+  },
+  {
+   "raw": "{\"date\":\"1994-8-7\",\"time\":\"4:53\",\"place\":\"Paris\"}",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "place": "Paris"
+  },
+  {
+   "raw": "{\"date\":\"1994-02-29\",\"time\":\"00:00\"}",
+   "date": null,
+   "time": "00:00",
+   "timeUnknown": false,
+   "place": null
+  },
+  {
+   "raw": "{\"date\":5,\"time\":1653,\"timeUnknown\":false,\"place\":[\"Paris\"]}",
+   "date": null,
+   "time": null,
+   "timeUnknown": false,
+   "place": null
+  }
+ ],
+ "birthReject": [
+  "not json",
+  "",
+  "{\"date\":\"1994-08-07\",\"date\":\"1995-01-01\"}",
+  "{\"place\":1.5}",
+  "[1,2]",
+  "{\"date\":\"1994-08-07\""
+ ],
+ "aboutYou": [
+  {
+   "raw": "{\"firstName\":\"Sam\",\"gender\":\"male\",\"seeking\":\"female\",\"relationship\":\"single\",\"lookingFor\":\"dating\",\"interests\":\"hiking, jazz\"}",
+   "firstName": "Sam",
+   "gender": "male",
+   "seeking": "female",
+   "relationship": "single",
+   "lookingFor": "dating",
+   "interests": "hiking, jazz"
+  },
+  {
+   "raw": "{\"firstName\":\"Sam123\",\"gender\":\"Male\",\"seeking\":\"women\",\"relationship\":\"married\",\"lookingFor\":\"Dating\",\"interests\":\"x\"}",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": "x"
+  },
+  {
+   "raw": "{\"firstName\":\"Mary-Jane O'Neil\",\"gender\":null,\"seeking\":\"both\",\"relationship\":\"in_a_relationship\",\"lookingFor\":\"both\",\"interests\":null}",
+   "firstName": "Mary-Jane O'Neil",
+   "gender": null,
+   "seeking": "both",
+   "relationship": "in_a_relationship",
+   "lookingFor": "both",
+   "interests": null
+  },
+  {
+   "raw": "{\"firstName\":\"  Zoë \",\"interests\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+   "firstName": "Zoë",
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": null
+  },
+  {
+   "raw": "{\"firstName\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"interests\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": null,
+   "interests": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "raw": "{\"firstName\":\"   \",\"gender\":\"other\",\"lookingFor\":\"friends\"}",
+   "firstName": null,
+   "gender": null,
+   "seeking": null,
+   "relationship": null,
+   "lookingFor": "friends",
+   "interests": null
+  }
+ ],
+ "aboutYouReject": [
+  "garbage {",
+  "{}}",
+  "{\"firstName\":\"A\",\"firstName\":\"B\"}"
+ ]
+}
