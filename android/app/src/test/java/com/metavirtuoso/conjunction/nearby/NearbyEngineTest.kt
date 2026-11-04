@@ -13,6 +13,9 @@ import com.metavirtuoso.conjunction.core.match.MatchProfile
 import com.metavirtuoso.conjunction.core.match.RelationshipStatus
 import com.metavirtuoso.conjunction.core.match.Seeking
 import com.metavirtuoso.conjunction.core.p2p.LinkRole
+import com.metavirtuoso.conjunction.core.p2p.P2pMessage
+import com.metavirtuoso.conjunction.core.p2p.P2pMessages
+import com.metavirtuoso.conjunction.core.p2p.Reassembler
 import com.metavirtuoso.conjunction.core.p2p.SoftwareP256Key
 import com.metavirtuoso.conjunction.core.p2p.SwipeDirection
 import com.metavirtuoso.conjunction.core.p2p.WireCompat
@@ -63,9 +66,32 @@ class NearbyEngineTest {
         var closedWith: LinkOutcome? = null
         var onClosed: () -> Unit = {}
         override val label = name
-        override fun send(frames: List<ByteArray>) { frames.forEach { f -> net.queue.addLast { deliver(f) } } }
+        val sent = ArrayList<ByteArray>()
+        override fun send(frames: List<ByteArray>) { sent += frames; frames.forEach { f -> net.queue.addLast { deliver(f) } } }
         override fun close(outcome: LinkOutcome) { closedWith = outcome; net.queue.addLast { onClosed() } }
     }
+
+    /**
+     * A port like a real GATT queue: frames wait until [writeOne] hands the next one to the radio
+     * (one Write Request / notification at a time), so a close can find frames not yet written.
+     */
+    private class SlowPort(override val label: String) : LinkPort {
+        val pending = ArrayDeque<ByteArray>()
+        val written = ArrayList<ByteArray>()
+        var discarded = 0
+        var closedWith: LinkOutcome? = null
+        override fun send(frames: List<ByteArray>) { pending.addAll(frames) }
+        override fun close(outcome: LinkOutcome) { closedWith = outcome }
+        override fun discardPending() { discarded += pending.size; pending.clear() }
+        fun writeOne(): ByteArray? = pending.removeFirstOrNull()?.also { written += it }
+    }
+
+    private fun messagesIn(frames: List<ByteArray>): List<P2pMessage> {
+        val r = Reassembler()
+        return frames.mapNotNull { r.accept(it, 0) }.map { P2pMessages.decode(it).message }
+    }
+
+    private fun helloEid(frames: List<ByteArray>): String = messagesIn(frames).filterIsInstance<P2pMessage.Hello>().first().eid
 
     private var now = 1_762_171_200_000L
     private val today = LocalDate.of(2026, 11, 3)
@@ -130,8 +156,12 @@ class NearbyEngineTest {
         cPort.onClosed = { central.onDisconnected(cId); pId?.let(peripheral::onDisconnected) }
         pPort.onClosed = {}
         cId = central.openLink(LinkRole.CENTRAL, cPort, 185)!!
+        lastPorts = cPort to pPort
         return cId to { pId }
     }
+
+    /** (central, peripheral) ports of the last [connect]. */
+    private lateinit var lastPorts: Pair<Port, Port>
 
     private fun drop(central: NearbyEngine, cId: Int, peripheral: NearbyEngine, pId: Int?) {
         central.onDisconnected(cId)
@@ -257,6 +287,98 @@ class NearbyEngineTest {
         assertEquals(1, hostA.announced.count { it.kind == NearbyEventKind.MATCH })
         assertEquals(1, a.openLinkCount)
         assertEquals(1, b.openLinkCount)
+    }
+
+    /**
+     * Regression (OTA round 1, scenarios 3/9): the duplicate link's card and photo frames, queued
+     * in the GATT client together with its hello, kept being written for seconds after both sides
+     * had closed it with `bye dedup`. On the LE connection the pair shares with the kept link they
+     * reached a peripheral with no link for them ("frame 1 of unknown message 2"), whose error
+     * handling dropped the connection and the kept link with it. Now only the bye goes out.
+     */
+    @Test
+    fun dedupLoserWritesNothingButItsByeOverASlowConnection() {
+        val net = Net()
+        connect(net, a, b)
+        net.pump()
+        val eidA = helloEid(lastPorts.first.sent)
+        val eidB = helloEid(lastPorts.second.sent)
+        // The duplicate whose central has the larger eid is the one closed (protocol 7.2).
+        val (central, peripheral) = if (eidB > eidA) b to a else a to b
+        val cPort = SlowPort("c2")
+        val pPort = SlowPort("p2")
+        val cId = central.openLink(LinkRole.CENTRAL, cPort, 185)!!
+        var pId: Int? = null
+        var guard = 0
+        while (cPort.pending.isNotEmpty() || pPort.pending.isNotEmpty()) {
+            check(++guard < 10_000)
+            cPort.writeOne()?.let { f ->
+                val id = pId ?: peripheral.openLink(LinkRole.PERIPHERAL, pPort, 185).also { pId = it }
+                if (id != null) peripheral.onFrame(id, f)
+            }
+            pPort.writeOne()?.let { f -> central.onFrame(cId, f) }
+        }
+        val pHost = if (peripheral === a) hostA else hostB
+        assertTrue("the peripheral detected the duplicate", pHost.logs.any { it.startsWith("dedup:") })
+        assertTrue("its queued hello/card/photo were dropped", pPort.discarded >= 2)
+        assertEquals(listOf<P2pMessage>(P2pMessage.Bye("dedup")), messagesIn(pPort.written))
+        assertEquals(LinkOutcome.DEDUP, pPort.closedWith)
+        assertEquals(LinkOutcome.DEDUP, cPort.closedWith)
+        assertTrue("no protocol errors", (hostA.logs + hostB.logs).none { "protocol error" in it })
+        central.onDisconnected(cId)
+        pId?.let(peripheral::onDisconnected)
+
+        // The kept link is untouched: one card each, and the mutual swipe still makes friends on it.
+        assertEquals(1, a.openLinkCount)
+        assertEquals(1, b.openLinkCount)
+        a.swipe(storeA.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        b.swipe(storeB.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        net.pump()
+        assertEquals(1, storeA.state.value.friends.size)
+        assertEquals(storeA.state.value.friends.single().safetyCode, storeB.state.value.friends.single().safetyCode)
+    }
+
+    /** OTA scenario 10: blocking a friend ends the link; later links and chats from them are refused. */
+    @Test
+    fun blockedFriendIsRefusedOnLaterLinksAndTheirChatsAreDropped() {
+        val net = Net()
+        connect(net, a, b)
+        net.pump()
+        val fpOfB = storeA.state.value.encounters.single().fingerprint
+        a.swipe(fpOfB, SwipeDirection.RIGHT)
+        b.swipe(storeB.state.value.encounters.single().fingerprint, SwipeDirection.RIGHT)
+        net.pump()
+        val fA = storeA.state.value.friends.single()
+        val fB = storeB.state.value.friends.single()
+        queue(storeB, fB.id, "before the block")
+        b.deliver(fB.id)
+        net.pump()
+        assertEquals(1, storeA.state.value.messagesWith(fA.id).size)
+
+        a.blockFriend(fA.id)
+        net.pump()
+        val sA = storeA.state.value
+        assertTrue(sA.friend(fA.id)!!.blocked)
+        assertTrue("chat deleted", sA.messagesWith(fA.id).isEmpty())
+        assertTrue("card deleted", sA.encounters.isEmpty())
+        assertTrue("card fingerprint hidden for good", sA.isHidden(fpOfB, Long.MAX_VALUE - 1))
+        assertEquals("the link was closed", 0, a.openLinkCount)
+        assertEquals(0, b.openLinkCount)
+
+        // B comes back later (new ephemeral ids) with a queued message, in both directions.
+        now += 16 * 60_000L
+        hostA.announced.clear()
+        queue(storeB, fB.id, "are you there?")
+        val net2 = Net()
+        connect(net2, b, a)
+        net2.pump()
+        connect(net2, a, b)
+        net2.pump()
+        assertTrue("nothing reaches A", storeA.state.value.messages.isEmpty())
+        assertEquals(ChatStatus.QUEUED, storeB.state.value.messages.last().status)
+        assertTrue("no match card, no message notification", hostA.announced.isEmpty() && storeA.state.value.encounters.isEmpty())
+        assertEquals(0, a.openLinkCount)
+        assertEquals(0, b.openLinkCount)
     }
 
     @Test

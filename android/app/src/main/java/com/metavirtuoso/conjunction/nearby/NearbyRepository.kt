@@ -238,7 +238,7 @@ class NearbyRepository(
         store.load()
         val s = store.state.value
         if (s.messages.none { it.friendId == friendId && !it.mine && !it.seen }) return
-        store.update { st -> st.copy(messages = st.messages.map { if (it.friendId == friendId && !it.mine) it.copy(seen = true) else it }) }
+        store.update { it.withMessagesSeen(friendId) }
         engine { deliver(friendId) }
     }
 
@@ -252,15 +252,7 @@ class NearbyRepository(
     suspend fun blockFriend(friendId: String) {
         store.load()
         val now = System.currentTimeMillis()
-        store.update { s ->
-            val fps = s.encounters.filter { it.friendId == friendId }.map { it.fingerprint }
-            s.copy(
-                friends = s.friends.map { if (it.id == friendId) it.copy(blocked = true) else it },
-                messages = s.messages.filterNot { it.friendId == friendId },
-                encounters = s.encounters.filterNot { it.friendId == friendId },
-                hidden = s.hidden + fps.map { HiddenPeer(it, Long.MAX_VALUE, "block") },
-            )
-        }
+        store.update { it.withFriendBlocked(friendId) }
         Log.i(P2pNode.TAG, "blocked friend ${friendId.take(8)} at $now")
         engine { disconnectPeer(friendId, null) }
     }

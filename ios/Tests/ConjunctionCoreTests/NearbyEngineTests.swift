@@ -42,8 +42,40 @@ final class NearbyEngineTests: XCTestCase {
         var closedWith: LinkOutcome?
         var onClosed: () -> Void = {}
         init(_ net: Net, _ name: String) { self.net = net; label = name }
-        func send(_ frames: [[UInt8]]) { for f in frames { net.queue.append { [unowned self] in self.deliver(f) } } }
+        var sent: [[UInt8]] = []
+        func send(_ frames: [[UInt8]]) { sent += frames; for f in frames { net.queue.append { [unowned self] in self.deliver(f) } } }
         func close(_ outcome: LinkOutcome) { closedWith = outcome; net.queue.append { [unowned self] in self.onClosed() } }
+    }
+
+    /// A port like a real GATT queue: frames wait until `writeOne` hands the next one to the radio,
+    /// so a close can find frames not yet written.
+    final class SlowPort: LinkPort {
+        let label: String
+        var pending: [[UInt8]] = []
+        var written: [[UInt8]] = []
+        var discarded = 0
+        var closedWith: LinkOutcome?
+        init(_ name: String) { label = name }
+        func send(_ frames: [[UInt8]]) { pending += frames }
+        func close(_ outcome: LinkOutcome) { closedWith = outcome }
+        func discardPending() { discarded += pending.count; pending.removeAll() }
+        func writeOne() -> [UInt8]? {
+            guard !pending.isEmpty else { return nil }
+            let f = pending.removeFirst()
+            written.append(f)
+            return f
+        }
+    }
+
+    private func messages(in frames: [[UInt8]]) throws -> [P2PMessage] {
+        var r = Reassembler()
+        return try frames.compactMap { try r.accept($0, nowMs: 0) }.map { try P2PMessages.decode($0).message }
+    }
+
+    private func helloEid(_ frames: [[UInt8]]) throws -> String {
+        for m in try messages(in: frames) { if case .hello(let h) = m { return h.eid } }
+        XCTFail("no hello")
+        return ""
     }
 
     var now: Int64 = 1_762_171_200_000
@@ -268,6 +300,49 @@ final class NearbyEngineTests: XCTestCase {
         XCTAssertEqual(hostA.announced.filter { $0.kind == .match }.count, 1)
         XCTAssertEqual(a.openLinkCount, 1)
         XCTAssertEqual(b.openLinkCount, 1)
+    }
+
+    /// Regression (OTA round 1, scenarios 3/9; Android NearbyEngineTest twin): the duplicate link's
+    /// queued card / photo frames kept being written after `bye dedup`, onto the LE connection the
+    /// pair shares with the kept link. Now only the bye goes out.
+    func testDedupLoserWritesNothingButItsByeOverASlowConnection() throws {
+        let net = Net()
+        connect(net, a, b)
+        net.pump()
+        let eidA = try helloEid(ports[0].sent), eidB = try helloEid(ports[1].sent)
+        // The duplicate whose central has the larger eid is the one closed (protocol 7.2).
+        let (central, peripheral): (NearbyEngine, NearbyEngine) = eidB > eidA ? (b, a) : (a, b)
+        let cPort = SlowPort("c2"), pPort = SlowPort("p2")
+        let cId = central.openLink(role: .central, port: cPort, attMtu: 185)!
+        var pId: Int?
+        var guardCount = 0
+        while !cPort.pending.isEmpty || !pPort.pending.isEmpty {
+            guardCount += 1
+            precondition(guardCount < 10_000)
+            if let f = cPort.writeOne() {
+                if pId == nil { pId = peripheral.openLink(role: .peripheral, port: pPort, attMtu: 185) }
+                if let id = pId { peripheral.onFrame(id, f) }
+            }
+            if let f = pPort.writeOne() { central.onFrame(cId, f) }
+        }
+        let pHost = peripheral === a ? hostA! : hostB!
+        XCTAssertTrue(pHost.logs.contains { $0.hasPrefix("dedup:") }, "the peripheral detected the duplicate")
+        XCTAssertGreaterThanOrEqual(pPort.discarded, 2, "its queued hello/card/photo were dropped")
+        XCTAssertEqual(try messages(in: pPort.written), [.bye(reason: "dedup")])
+        XCTAssertEqual(pPort.closedWith, .dedup)
+        XCTAssertEqual(cPort.closedWith, .dedup)
+        XCTAssertFalse((hostA.logs + hostB.logs).contains { $0.contains("protocol error") }, "no protocol errors")
+        central.onDisconnected(cId)
+        if let id = pId { peripheral.onDisconnected(id) }
+
+        // The kept link is untouched: the mutual swipe still makes friends on it.
+        XCTAssertEqual(a.openLinkCount, 1)
+        XCTAssertEqual(b.openLinkCount, 1)
+        a.swipe(storeA.state.encounters[0].fingerprint, .right)
+        b.swipe(storeB.state.encounters[0].fingerprint, .right)
+        net.pump()
+        XCTAssertEqual(storeA.state.friends.count, 1)
+        XCTAssertEqual(storeA.state.friends.first?.safetyCode, storeB.state.friends.first?.safetyCode)
     }
 
     func testStopSaysByeAndRefusesNewLinks() {

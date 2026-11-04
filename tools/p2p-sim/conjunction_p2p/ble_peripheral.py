@@ -8,9 +8,15 @@ no adapter settings. Everything it registers disappears when the process exits.
 
 Limitation: BlueZ sends a characteristic's notifications to every subscribed client, so this
 peripheral serves one central at a time; a second central's writes are rejected until the first
-link ends."""
+link ends.
+
+When a link ends while the test peer's central role is still linked with the same device (the two
+links of a pair share one LE connection), the connection is left up: BlueZ's Device1.Disconnect
+would drop it for both links (docs/P2P_PROTOCOL.md 7.2). A new link starts only with a frame that
+can start one (msgId 0, index 0); leftovers of the ended link are ignored (protocol 3, step 7)."""
 import asyncio
 import logging
+import time
 
 from dbus_fast import BusType, Message, MessageType, Variant
 from dbus_fast.aio import MessageBus
@@ -19,6 +25,7 @@ from dbus_fast.errors import DBusError
 from dbus_fast.service import ServiceInterface, dbus_property, method
 
 from . import consts as C
+from .frames import is_link_start
 from .link import PERIPHERAL
 
 log = logging.getLogger("p2p.peripheral")
@@ -137,6 +144,9 @@ class Peripheral:
         self._send_task = None
         self._wake = asyncio.Event()
         self._link_n = 0
+        self.central = None          # the test peer's Central, if it runs both roles (set by sim.py)
+        self.link_since = None       # monotonic time the current link started
+        self._leftover_from = None   # device whose leftover frames were last logged
 
     async def start(self):
         self.bus = await MessageBus(bus_type=BusType.SYSTEM, negotiate_unix_fd=True).connect()
@@ -176,6 +186,15 @@ class Peripheral:
         if self.active_device is not None and device != self.active_device:
             return False
         if self.active_device is None:
+            if not is_link_start(frame):
+                # Left over from a link with this device that already ended: no link, no error.
+                if self._leftover_from != device:
+                    log.info("ignoring leftover frame (msg %d) from %s: no link open", int.from_bytes(frame[1:3], "big"),
+                             device.rsplit("/", 1)[-1])
+                    self._leftover_from = device
+                return True
+            self._leftover_from = None
+            self.link_since = time.monotonic()
             self._link_n += 1
             self.active_device = device
             self.handle = f"P{self._link_n}:{device.rsplit('/', 1)[-1]}"
@@ -208,11 +227,22 @@ class Peripheral:
                 await asyncio.sleep(0.3)  # let the bye reach the central, then disconnect it
                 await self._disconnect(self.active_device)
 
+    def linked_with(self, address: str) -> bool:
+        """True while a link with the device at this BD address is open on the peripheral side."""
+        return self.handle is not None and self.active_device is not None and \
+            self.active_device.endswith("dev_" + address.upper().replace(":", "_"))
+
     async def _disconnect(self, device):
         handle = self.handle
         self.peer.drop_link(handle)
         self.active_device = None
         self.handle = None
+        self.link_since = None
+        address = device.rsplit("dev_", 1)[-1].replace("_", ":") if device and "dev_" in device else None
+        if address and self.central is not None and self.central.linked_with(address):
+            # The pair's other link (our central role) runs on the same LE connection: keep it up.
+            log.info("[%s] link over; LE connection left up (our central link with %s uses it)", handle, address)
+            return
         if device and device != "?":
             try:
                 await self._call("org.bluez.Device1", "Disconnect", "", [], path=device)
@@ -231,4 +261,5 @@ class Peripheral:
             self.peer.drop_link(self.handle)
             self.active_device = None
             self.handle = None
+            self.link_since = None
             self.outbox.notifying = False

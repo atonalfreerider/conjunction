@@ -31,6 +31,15 @@ public protocol LinkPort: AnyObject {
     func send(_ frames: [[UInt8]])
     /// The link is finished: disconnect once queued frames are written. [outcome] sets the cool-down.
     func close(_ outcome: LinkOutcome)
+    /// Drop every queued frame not yet handed to the radio (a write or notification already in
+    /// flight completes). Called when a link is closed as a duplicate (protocol 7.2): the peer
+    /// closes it too, and on the LE connection the pair shares with the kept link, frames written
+    /// after its `bye` would reach a peripheral that has no link for them any more.
+    func discardPending()
+}
+
+public extension LinkPort {
+    func discardPending() {}
 }
 
 /// Integration points the engine needs from the app (or a test). Called on the engine's queue.
@@ -394,6 +403,9 @@ public final class NearbyEngine {
         let loser = (keepThis && !keepOther) ? other : rec
         log("dedup: links \(rec.id)/\(other.id) reach the same phone; closing \(loser.id)")
         loser.suppressed = true
+        // Nothing more goes out on the duplicate but its bye (protocol 7.2): card / photo frames
+        // queued in the transport would otherwise keep flowing for seconds after the peer closed it.
+        if !loser.portClosed { loser.port.discardPending() }
         loser.link.close(reason: "dedup")
         if loser !== rec { flush(loser) }
     }

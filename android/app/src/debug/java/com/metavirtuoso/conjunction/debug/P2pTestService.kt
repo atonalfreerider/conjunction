@@ -42,7 +42,10 @@ import com.metavirtuoso.conjunction.core.p2p.SwipeDirection
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -60,19 +63,32 @@ import kotlinx.coroutines.launch
  * adb shell am start-foreground-service $S -a start [--ei rssi -90]
  * adb shell am start-foreground-service $S -a swipe --es dir right      # newest pending card
  * adb shell am start-foreground-service $S -a chat --es text "hello"    # newest friend (queued if away)
+ * adb shell am start-foreground-service $S -a read                      # newest friend's chat read (read receipts)
+ * adb shell am start-foreground-service $S -a block                     # block the newest friend (engine's block path)
+ * adb shell am start-foreground-service $S -a pause [--ei seconds 60]   # radio off like Nearby's Pause (auto-resume)
+ * adb shell am start-foreground-service $S -a resume
  * adb shell am start-foreground-service $S -a status                    # dump store to logcat
- * adb shell am start-foreground-service $S -a stop
  * adb shell am start-foreground-service $S -a reset                     # wipe the test persona's data + key
+ * adb shell am start-foreground-service $S -a stop [--ez keep true]     # radio off, then the service exits
  * adb logcat -s ConjunctionP2P ConjunctionP2PTest
  * ```
+ * `block` / `read` / `chat` act on the newest non-blocked friend, or on the one whose first name
+ * is given with `--es name Aurora`. After `block`, `status` shows the friend with `blocked=true`
+ * and its chats gone; later links from that phone end with `bye done` and its chats are dropped.
  * Persona Vega: male, seeking women, single, looking for dating and friends, born 1992-05-21
  * 09:15 in Paris, with a generated 480x640 test photo. Refuses to run while the real Nearby
  * service is on.
  */
 @SuppressLint("NewApi") // guarded by the SDK_INT check in onStartCommand; debug builds only
 class P2pTestService : Service() {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    // This service shares the app's process with the owner's real session: an uncaught error in a
+    // debug coroutine must be logged, never allowed to kill that process.
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Default +
+            CoroutineExceptionHandler { _, e -> Log.e(TAG, "debug coroutine failed (process kept alive)", e) },
+    )
     private var node: P2pNode? = null
+    private var resumeJob: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -108,9 +124,10 @@ class P2pTestService : Service() {
             }
             "chat" -> withNode { n ->
                 val text = intent?.getStringExtra("text")?.takeIf { it.isNotBlank() } ?: "Hello from Vega (Pixel test peer)"
+                val name = intent?.getStringExtra("name")
                 n.post {
-                    val friend = n.store.state.value.friends.filter { !it.blocked }.maxByOrNull { it.since }
-                    if (friend == null) log("chat: no friend yet") else {
+                    val friend = friendOf(n, name)
+                    if (friend == null) log("chat: no friend ${name ?: "yet"}") else {
                         val line = ChatLine(NearbyEngine.newMessageId(), friend.id, mine = true, text = text, ts = System.currentTimeMillis(), status = ChatStatus.QUEUED)
                         n.store.update { s -> s.copy(messages = s.messages + line) }
                         log("chat queued ${line.id.take(8)} to ${friend.firstName}: $text")
@@ -119,15 +136,65 @@ class P2pTestService : Service() {
                     }
                 }
             }
+            "read" -> withNode { n ->
+                val name = intent?.getStringExtra("name")
+                n.post {
+                    val friend = friendOf(n, name)
+                    if (friend == null) log("read: no friend ${name ?: "yet"}") else {
+                        val unseen = n.store.state.value.messagesWith(friend.id).count { !it.mine && !it.seen }
+                        log("read: $unseen unseen message(s) from ${friend.firstName} (${friend.id.take(8)}) marked read")
+                        n.engine.markSeen(friend.id)
+                        if (friend.id !in n.engine.status.value.friendsInRange) n.transport.expediteReconnect()
+                    }
+                }
+            }
+            "block" -> withNode { n ->
+                val name = intent?.getStringExtra("name")
+                n.post {
+                    val friend = friendOf(n, name)
+                    if (friend == null) log("block: no friend ${name ?: "yet"}") else {
+                        log("block: ${friend.firstName} (${friend.id.take(8)})")
+                        n.engine.blockFriend(friend.id)
+                    }
+                }
+            }
+            "pause" -> withNode { n ->
+                // What Nearby's "Pause for 1 hour" does to the radio: graceful stop, later restart.
+                val seconds = intent?.getIntExtra("seconds", 0)?.takeIf { it > 0 }
+                resumeJob?.cancel()
+                scope.launch { n.stopRadio(graceful = true); log("paused${seconds?.let { " for $it s" } ?: " (until -a resume)"}") }
+                if (seconds != null) resumeJob = scope.launch { delay(seconds * 1_000L); log("pause over; radio: ${n.startRadio()}") }
+            }
+            "resume" -> {
+                if (NearbyBluetoothService.state.value.running) return stop("refusing: the real Nearby service is running")
+                if (!NearbyPermissions.granted(this)) return stop("missing Bluetooth permissions (pm grant BLUETOOTH_SCAN/ADVERTISE/CONNECT)")
+                withNode { n ->
+                    resumeJob?.cancel()
+                    resumeJob = null
+                    scope.launch { log("resumed; radio: ${n.startRadio()}") }
+                }
+            }
             "status" -> withNode { n -> n.post { dump(n) } }
             "stop" -> {
-                node?.let { n -> scope.launch { n.stopRadio(graceful = true); log("radio stopped") } }
+                // Radio off (byes go out), then the service ends and its notification goes away,
+                // unless --ez keep true.
+                val keep = intent?.getBooleanExtra("keep", false) == true
+                resumeJob?.cancel()
+                resumeJob = null
+                scope.launch {
+                    node?.let { n -> n.stopRadio(graceful = true); log("radio stopped") }
+                    if (!keep) {
+                        delay(STOP_GRACE_MS) // let the graceful teardown (1.5 s) finish
+                        log("service stopping")
+                        stopSelf(startId) // not if a newer command arrived meanwhile
+                    }
+                }
             }
             "reset" -> {
                 val n = node ?: createNode().also { node = it }
                 scope.launch {
                     n.stopRadio(graceful = false)
-                    n.store.clear()
+                    n.store.clear() // loads the store first; a fresh process has no loaded node
                     KeystoreIdentity.delete(ALIAS)
                     log("test persona data and key deleted")
                 }
@@ -136,6 +203,11 @@ class P2pTestService : Service() {
         }
         return START_NOT_STICKY
     }
+
+    /** The newest non-blocked friend, or the one called [name] (case-insensitive). Engine thread. */
+    private fun friendOf(n: P2pNode, name: String?) = n.store.state.value.friends
+        .filter { !it.blocked && (name == null || it.firstName.equals(name, ignoreCase = true)) }
+        .maxByOrNull { it.since }
 
     private fun withNode(block: (P2pNode) -> Unit) {
         val n = node ?: return log("not started")
@@ -212,5 +284,6 @@ class P2pTestService : Service() {
         const val TAG = "ConjunctionP2PTest"
         const val ALIAS = "conjunction_identity_debug"
         private const val ID = 4900
+        private const val STOP_GRACE_MS = 2_000L
     }
 }

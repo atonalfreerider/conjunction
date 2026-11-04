@@ -11,6 +11,18 @@ import kotlin.random.Random
 class P2pFrameTest {
 
     @Test
+    fun onlyTheFirstFrameOfMessageZeroStartsALink() {
+        val hello = FrameCodec.encode(0, ByteArray(600) { 1 }, 182)
+        assertTrue(FrameCodec.isLinkStart(hello[0]))
+        assertTrue("later frames of message 0 do not", hello.drop(1).none(FrameCodec::isLinkStart))
+        // Leftovers of an ended link (round 1 OTA: frame 2/16 of message 2 after a dedup bye).
+        val photo = FrameCodec.encode(2, ByteArray(3000) { 2 }, 182)
+        assertTrue(photo.none(FrameCodec::isLinkStart))
+        assertTrue(FrameCodec.encode(1, byteArrayOf(0, 2, 0x7b, 0x7d), 182).none(FrameCodec::isLinkStart))
+        assertTrue("header only is not a frame", !FrameCodec.isLinkStart(hello[0].copyOf(7)))
+    }
+
+    @Test
     fun randomBodiesRoundTripAtEveryMtu() {
         val rnd = Random(42)
         repeat(500) {

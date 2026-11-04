@@ -98,6 +98,25 @@ data class P2pState(
     fun encounter(fp: String): StoredEncounter? = encounters.firstOrNull { it.fingerprint == fp }
     fun isHidden(fp: String, now: Long): Boolean = hidden.any { it.fingerprint == fp && it.until > now }
     fun messagesWith(friendId: String): List<ChatLine> = messages.filter { it.friendId == friendId }
+
+    /**
+     * Block a friend: the record stays (marked blocked, so the friend is recognised on later links
+     * and refused with `bye done`, and their chats are dropped), their messages and match card are
+     * deleted, and their card fingerprints are hidden for good.
+     */
+    fun withFriendBlocked(friendId: String): P2pState {
+        val fps = encounters.filter { it.friendId == friendId }.map { it.fingerprint }
+        return copy(
+            friends = friends.map { if (it.id == friendId) it.copy(blocked = true) else it },
+            messages = messages.filterNot { it.friendId == friendId },
+            encounters = encounters.filterNot { it.friendId == friendId },
+            hidden = hidden + fps.map { HiddenPeer(it, Long.MAX_VALUE, "block") },
+        )
+    }
+
+    /** The person looked at the chat: incoming messages are seen (read receipts go out when in range). */
+    fun withMessagesSeen(friendId: String): P2pState =
+        copy(messages = messages.map { if (it.friendId == friendId && !it.mine) it.copy(seen = true) else it })
 }
 
 /**
@@ -158,8 +177,13 @@ class P2pStore(
         dataStore.updateData { snapshot }
     }
 
-    /** Erases friends, chats, inbox, hide list and received photos (Delete all my data). */
+    /**
+     * Erases friends, chats, inbox, hide list and received photos (Delete all my data). Safe to
+     * call before anything else touched the store: it loads first, so a fresh process (or the
+     * debug service's `reset` with no node yet) never trips [update]'s load check.
+     */
     suspend fun clear() {
+        load()
         update { P2pState() }
         persist()
         photosDir.deleteRecursively()

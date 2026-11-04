@@ -203,6 +203,8 @@ final class BleTransport: NSObject {
             pump()
         }
 
+        func discardPending() { queue.removeAll() }
+
         func pump() {
             guard let out = transport.outbox else { return }
             while let frame = queue.first {
@@ -245,6 +247,9 @@ final class BleTransport: NSObject {
         }
         conn.lastActivity = BleTransport.nowMs()
         if conn.finished { return }
+        // A link starts with the central's hello (msgId 0, index 0); anything else on a connection
+        // without a link is left over from one that already ended: ignore it (protocol 3.7).
+        if conn.linkId == nil && !FrameCodec.isLinkStart(frame) { return }
         if conn.linkId == nil {
             let mtu = central.maximumUpdateValueLength + 3
             guard let id = engine.openLink(role: .peripheral, port: conn, attMtu: mtu) else {
@@ -319,6 +324,8 @@ final class BleTransport: NSObject {
             closing = true
             pump()
         }
+
+        func discardPending() { queue.removeAll() }
 
         private func pump() {
             guard !writing, let inbox else { return }

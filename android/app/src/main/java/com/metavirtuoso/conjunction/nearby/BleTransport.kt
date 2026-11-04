@@ -27,6 +27,7 @@ import android.os.Handler
 import android.os.ParcelUuid
 import android.os.SystemClock
 import androidx.annotation.RequiresApi
+import com.metavirtuoso.conjunction.core.p2p.FrameCodec
 import com.metavirtuoso.conjunction.core.p2p.LinkRole
 import com.metavirtuoso.conjunction.core.p2p.P2pConstants
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -230,6 +231,8 @@ class BleTransport(
         var mtu = P2pConstants.DEFAULT_ATT_MTU
         var subscribed = false
         var linkId: Int? = null
+        /** One log line per run of leftover frames (see onInboxWrite). */
+        var leftoverLogged = false
         private val queue = ArrayDeque<ByteArray>()
         private var notifying = false
         private var closing = false
@@ -245,6 +248,10 @@ class BleTransport(
         override fun close(outcome: LinkOutcome) {
             closing = true
             pump()
+        }
+
+        override fun discardPending() {
+            queue.clear()
         }
 
         fun pump() {
@@ -395,6 +402,15 @@ class BleTransport(
     private fun onInboxWrite(device: BluetoothDevice, frame: ByteArray) {
         if (!running) return
         val c = servers.getOrPut(device.address) { ServerConn(device) }
+        if (c.linkId == null && !FrameCodec.isLinkStart(frame)) {
+            // Left over from a link on this connection that already ended (e.g. the duplicate of
+            // a pair's two links, whose LE connection stays up for the kept one): no new link, no
+            // error (protocol 3.7). A new link starts with the central's hello.
+            if (!c.leftoverLogged) log("ignoring leftover frame (msg ${FrameCodec.msgIdOf(frame)}) from ${device.address.takeLast(5)}")
+            c.leftoverLogged = true
+            return
+        }
+        c.leftoverLogged = false
         val id = c.linkId ?: engine.openLink(LinkRole.PERIPHERAL, c, c.mtu).also { c.linkId = it }
         if (id == null) {
             // Over the link cap or Nearby not ready: do not answer (protocol 3.6).
@@ -510,6 +526,10 @@ class BleTransport(
             closing = true
             this.outcome = outcome
             pump()
+        }
+
+        override fun discardPending() {
+            queue.clear()
         }
 
         private fun pump() {

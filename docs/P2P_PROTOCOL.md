@@ -168,6 +168,10 @@ ATT error `0x0D Invalid Attribute Value Length` — frames always fit one ATT PD
 6. Accept every incoming connection as peripheral (subject to the 4-link cap; over the cap, a
    peripheral simply does not answer: Android `cancelConnection`, iOS cannot refuse and lets the
    hello timeout fire).
+7. **Link start.** A peripheral opens a link on the first INBOX frame with `msgId` 0 and `index` 0
+   (the central's `hello`). An INBOX frame that arrives while the connection has no open link and
+   is not such a frame is left over from a link that already ended on a connection that stayed up
+   (section 7.2): discard it silently — no link, no `error`, no disconnect.
 
 Both phones are centrals and peripherals, so A may connect to B while B connects to A. Section 7.2
 says which of the two links survives.
@@ -453,6 +457,19 @@ strings) and close the other with `bye dedup`. Each side evaluates
 false; both sides reach the same decision. The app keys match cards by peer `eid` so a duplicate
 link that already raised a *match* event does not show a second card.
 
+Closing the duplicate:
+
+- After deciding, send nothing more on it but the `bye dedup`: frames of earlier messages that
+  the transport has queued but not yet written (typically the `card` and `photo` produced
+  together with our `hello`) are dropped; a write or notification already in flight completes.
+- The two links of a pair usually share **one LE connection** (both phones' stacks reuse the
+  existing ACL for the second GATT role). Ending the duplicate MUST NOT take that connection
+  down: release only this link's GATT role (Android: `BluetoothGatt.disconnect()`/`close()` of
+  this client, never `cancelConnection` of a device we are also linked with; iOS: the central
+  disconnects as usual; BlueZ: do not call `Device1.Disconnect` / bleak `disconnect()` while the
+  other role still has a link with that device). The peripheral side applies section 3, step 7
+  to anything that still arrives.
+
 ### 7.3 Friend recognition tags
 
 After a mutual match both sides hold the same **friend secret** `fs` (section 8.5). In every
@@ -632,6 +649,15 @@ with `error` SHOULD NOT be retried to the same advertiser address for 120 s.
 Never sent: birth place, birth minutes, exact time zone, exact location (the app has no location
 permission), device name, phone number, account ids, Rh factor.
 
+**Device name (outside the protocol).** The advertisement carries no name (section 2.3), but every
+GATT server also exposes the Generic Access service, and its Device Name characteristic (0x2A00)
+holds the phone's Bluetooth name (on Android often the owner's first name, e.g. "John's Pixel" or
+"John"). Any central that connects — including any phone running this protocol — can read it, and
+BlueZ does so automatically on connect. Apps cannot hide or change it (Android has no API for the
+GAP service; renaming the adapter is a system setting the app must not touch). The consent copy
+and help should tell people that their phone's Bluetooth name is visible to nearby devices that
+connect, and that they can change it in the system Bluetooth settings.
+
 **Honest limitation for the consent copy.** The ephemeral id rotates, but the `hello` profile
 itself (four longitudes + birth date + hour) is close to unique, so someone running their own
 scanner near you repeatedly could recognise you across rotations by that profile. Matching on
@@ -675,7 +701,10 @@ SPEC 5c's `hello` list is carried as specified (age is derived from the birth da
 
 See `tools/p2p-sim/README.md`. The test peer serves one central at a time as peripheral (BlueZ
 D-Bus notifications go to every subscribed client, so a second central would see the first one's
-frames) and uses the `mtu`/`device` options of `WriteValue`.
+frames) and uses the `mtu`/`device` options of `WriteValue`. BlueZ's `Device1.Disconnect` (which
+bleak's `disconnect()` calls) drops the whole LE connection with that device, so the test peer
+leaves the connection up when it ends a link while its other role is still linked with the same
+device (section 7.2).
 
 ## 13. Test vectors
 

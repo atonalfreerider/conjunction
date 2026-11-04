@@ -51,6 +51,14 @@ def encode_frames(msg_id: int, body: bytes, frame_len: int) -> list:
     return frames
 
 
+def is_link_start(frame: bytes) -> bool:
+    """True when frame can open a link: msgId 0, index 0 (a central's hello is always the first frame
+    it writes on a link). A peripheral opens a link only on such a frame; anything else arriving on a
+    connection with no open link is left over from a link that already ended while the LE connection
+    stayed up (docs/P2P_PROTOCOL.md section 3, step 7) and is discarded without an error."""
+    return len(frame) >= C.FRAME_HEADER_LEN + 1 and frame[1:3] == b"\x00\x00" and frame[3:5] == b"\x00\x00"
+
+
 @dataclass
 class _Partial:
     count: int

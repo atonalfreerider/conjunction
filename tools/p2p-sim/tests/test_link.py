@@ -3,7 +3,7 @@ import random
 import unittest
 
 from conjunction_p2p import consts as C, crypto, messages as M
-from conjunction_p2p.frames import FrameError, Reassembler, encode_frames, pack_body
+from conjunction_p2p.frames import FrameError, Reassembler, encode_frames, is_link_start, pack_body
 from conjunction_p2p.link import CLOSED, KEYX, MATCHED, SECURE, Friend, dedup_keep
 
 from tests.helpers import AURORA, ORION, pair, policy, pump, types
@@ -17,6 +17,14 @@ def full_match(mtu=517):
 
 
 class FrameTests(unittest.TestCase):
+    def test_only_first_frame_of_message_zero_starts_a_link(self):
+        hello = encode_frames(0, b"\x01" * 600, 182)
+        self.assertTrue(is_link_start(hello[0]))
+        self.assertFalse(any(is_link_start(f) for f in hello[1:]))
+        # leftovers of an ended link (round 1 OTA: frame 2/16 of message 2 after a dedup bye)
+        self.assertFalse(any(is_link_start(f) for f in encode_frames(2, b"\x02" * 3000, 182)))
+        self.assertFalse(is_link_start(hello[0][:7]))
+
     def test_roundtrip_random_sizes_and_mtus(self):
         rng = random.Random(7)
         for _ in range(300):

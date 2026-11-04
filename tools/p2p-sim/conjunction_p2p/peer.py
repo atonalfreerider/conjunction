@@ -265,13 +265,21 @@ class SimPeer:
             self.on_close(handle)
 
     def _dedup(self, handle: str, link: Link) -> bool:
+        """Protocol 7.2: of two links to the same phone close the one whose central has the larger eid.
+        Nothing more goes out on it but the bye: its frames not yet written are dropped."""
         peer = link.peer_hello["eid"]
-        for h, other in self.links.items():
+        for h, other in list(self.links.items()):
             if h != handle and other.peer_hello and other.peer_hello["eid"] == peer and not other.closed:
-                if not dedup_keep(link.local.eid, peer, link.role == CENTRAL):
-                    log.info("[%s] duplicate link to eid %s; closing this one (dedup)", handle, peer)
-                    link.close("dedup")
-                    return True
+                keep_this = dedup_keep(link.local.eid, peer, link.role == CENTRAL)
+                keep_other = dedup_keep(other.local.eid, peer, other.role == CENTRAL)
+                loser_h, loser = (h, other) if keep_this and not keep_other else (handle, link)
+                log.info("[%s] duplicate link to eid %s; closing %s (dedup)", handle, peer,
+                         "this one" if loser is link else loser_h)
+                loser._frames.clear()
+                loser.close("dedup")
+                if loser is not link:
+                    self._after(loser_h, loser)
+                return loser is link
         return False
 
     def _on_event(self, handle: str, link: Link, ev: dict):

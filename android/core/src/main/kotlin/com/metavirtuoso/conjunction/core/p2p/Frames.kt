@@ -56,6 +56,17 @@ object FrameCodec {
     /** Message id of a frame (for logging / grouping); -1 if too short. */
     fun msgIdOf(frame: ByteArray): Int = if (frame.size >= 3) u16(frame, 1) else -1
 
+    /**
+     * True when [frame] can open a link: msgId 0, index 0 (a central's `hello` is always the first
+     * frame it writes on a link). A peripheral opens a link only on such a frame; anything else that
+     * arrives on a connection with no open link is left over from a link that already ended while
+     * the LE connection stayed up (section 3, step 7) and is discarded without an error.
+     */
+    fun isLinkStart(frame: ByteArray): Boolean = frame.size >= MIN_FRAME_LEN_ON_WIRE && u16(frame, 1) == 0 && u16(frame, 3) == 0
+
+    /** Header plus one payload byte (section 4.3 rule 1). */
+    private const val MIN_FRAME_LEN_ON_WIRE = FRAME_HEADER_LEN + 1
+
     internal fun u16(b: ByteArray, off: Int): Int = ((b[off].toInt() and 0xFF) shl 8) or (b[off + 1].toInt() and 0xFF)
 
     private fun put16(b: ByteArray, off: Int, v: Int) {

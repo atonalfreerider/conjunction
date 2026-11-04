@@ -4,6 +4,17 @@ import XCTest
 
 final class P2PFrameTests: XCTestCase {
 
+    func testOnlyTheFirstFrameOfMessageZeroStartsALink() throws {
+        let hello = try FrameCodec.encode(msgId: 0, body: [UInt8](repeating: 1, count: 600), frameLen: 182)
+        XCTAssertTrue(FrameCodec.isLinkStart(hello[0]))
+        XCTAssertTrue(hello.dropFirst().allSatisfy { !FrameCodec.isLinkStart($0) }, "later frames of message 0 do not")
+        // Leftovers of an ended link (round 1 OTA: frame 2/16 of message 2 after a dedup bye).
+        let photo = try FrameCodec.encode(msgId: 2, body: [UInt8](repeating: 2, count: 3000), frameLen: 182)
+        XCTAssertTrue(photo.allSatisfy { !FrameCodec.isLinkStart($0) })
+        XCTAssertTrue(try FrameCodec.encode(msgId: 1, body: [0, 2, 0x7b, 0x7d], frameLen: 182).allSatisfy { !FrameCodec.isLinkStart($0) })
+        XCTAssertFalse(FrameCodec.isLinkStart(Array(hello[0].prefix(7))), "header only is not a frame")
+    }
+
     func testRandomBodiesRoundTripAtEveryMtu() throws {
         var rnd = SeededRNG(42)
         for _ in 0..<500 {

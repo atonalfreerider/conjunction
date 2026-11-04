@@ -72,9 +72,13 @@ PY tools/p2p-sim/sim.py both aurora -v                          # laptop: test p
 S="-n com.metavirtuoso.conjunction/.debug.P2pTestService"
 adb shell am start-foreground-service $S -a start
 adb shell am start-foreground-service $S -a swipe --es dir right
-adb shell am start-foreground-service $S -a chat --es text "hello"
+adb shell am start-foreground-service $S -a chat --es text "hello"   # [--es name Aurora]
+adb shell am start-foreground-service $S -a read               # newest friend's messages read -> read receipts
+adb shell am start-foreground-service $S -a block              # block the newest friend (NearbyEngine.blockFriend)
+adb shell am start-foreground-service $S -a pause --ei seconds 60   # radio off like Nearby's Pause; -a resume
 adb shell am start-foreground-service $S -a status            # dumps cards, friends, messages
-adb shell am start-foreground-service $S -a stop               # ... and -a reset to wipe Vega's data
+adb shell am start-foreground-service $S -a reset              # wipe Vega's data and key
+adb shell am start-foreground-service $S -a stop               # radio off, then the service exits (--ez keep true: stays)
 adb logcat -s ConjunctionP2P ConjunctionP2PTest
 ```
 

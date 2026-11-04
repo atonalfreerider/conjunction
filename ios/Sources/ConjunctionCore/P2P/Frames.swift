@@ -55,6 +55,14 @@ public enum FrameCodec {
     /// Message id of a frame (for logging / grouping); -1 if too short.
     public static func msgId(of frame: [UInt8]) -> Int { frame.count >= 3 ? u16(frame, 1) : -1 }
 
+    /// True when `frame` can open a link: msgId 0, index 0 (a central's `hello` is always the first
+    /// frame it writes on a link). A peripheral opens a link only on such a frame; anything else that
+    /// arrives on a connection with no open link is left over from a link that already ended while
+    /// the LE connection stayed up (section 3, step 7) and is discarded without an error.
+    public static func isLinkStart(_ frame: [UInt8]) -> Bool {
+        frame.count >= P2PConstants.frameHeaderLen + 1 && u16(frame, 1) == 0 && u16(frame, 3) == 0
+    }
+
     static func u16(_ b: [UInt8], _ off: Int) -> Int { Int(b[off]) << 8 | Int(b[off + 1]) }
 }
 

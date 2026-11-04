@@ -137,3 +137,11 @@ Not verifiable here, and why:
   characteristic's `MTU` (BlueZ ≥ 5.62) and falls back to 23.
 - Two copies of the sim talking to each other reply to each other's canned lines; replies stop
   after 20 per link.
+- A phone re-advertises under a new random address after every connection, and BlueZ cannot tell
+  that it is the same phone (no bonding, so no IRK); connecting to it would time out after 20 s.
+  So by default the central does not connect to an address first seen while a link with a phone
+  is up. With several phones, start them before the sim or pass `--multi-phone`.
+- When both roles are linked with the same phone (the pair's two links share one LE connection),
+  ending the duplicate link leaves the connection up: BlueZ's `Device1.Disconnect` (bleak's
+  `disconnect()`) would drop the kept link too. Frames that still arrive for the ended link are
+  ignored until the phone starts a new link with `hello` (protocol section 3, step 7).

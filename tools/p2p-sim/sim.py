@@ -51,7 +51,11 @@ async def run_ble(args):
     from conjunction_p2p.ble_peripheral import Peripheral
     peer = make_peer(args, args.persona)
     periph = Peripheral(peer, args.adapter) if args.mode in ("peripheral", "both") else None
-    central = Central(peer, args.rssi, adapter=args.adapter) if args.mode in ("central", "both") else None
+    central = Central(peer, args.rssi, adapter=args.adapter, multi_phone=args.multi_phone) if args.mode in ("central", "both") else None
+    if periph and central:
+        # The two roles share LE connections with a phone linked both ways (protocol 7.2).
+        periph.central = central
+        central.peripheral = periph
 
     def on_output(handle):
         if handle.startswith("P") and periph:
@@ -127,6 +131,9 @@ def main():
     ap.add_argument("--swipe-delay", type=float, default=2.0, help="seconds before auto-swiping")
     ap.add_argument("--no-greet", action="store_true", help="do not send a greeting after a mutual match")
     ap.add_argument("--rssi", type=int, default=-80, help="proximity threshold in dBm (central)")
+    ap.add_argument("--multi-phone", action="store_true",
+                    help="central: also connect to addresses that appear while a link with a phone is up (several "
+                         "phones; by default they are taken for the linked phone's new advertising address)")
     ap.add_argument("--adapter", default="hci0")
     ap.add_argument("--mtu", type=int, default=185, help="loopback ATT_MTU")
     ap.add_argument("--today", help="override today's date (YYYY-MM-DD) for the 18+ check")

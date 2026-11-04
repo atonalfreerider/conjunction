@@ -46,6 +46,14 @@ interface LinkPort {
 
     /** The link is finished: disconnect once queued frames are written. [outcome] sets the reconnect cool-down. */
     fun close(outcome: LinkOutcome)
+
+    /**
+     * Drop every queued frame not yet handed to the radio (a write or notification already in
+     * flight completes). Called when a link is closed as a duplicate (protocol 7.2): the peer
+     * closes it too, and on the LE connection the pair shares with the kept link, frames written
+     * after its `bye` would reach a peripheral that has no link for them any more.
+     */
+    fun discardPending() {}
 }
 
 enum class LinkOutcome { NO_MATCH, DONE, DEDUP, ERROR, TIMEOUT, SHUTDOWN }
@@ -236,6 +244,19 @@ class NearbyEngine(
         }
     }
 
+    /** Block a friend (same store change as the app's Block): their links close now and later ones are refused. */
+    fun blockFriend(friendId: String) {
+        store.update { it.withFriendBlocked(friendId) }
+        host.log("blocked friend ${friendId.take(8)}")
+        disconnectPeer(friendId, null)
+    }
+
+    /** The person read the chat with [friendId]: read receipts go out now if a secure link is open. */
+    fun markSeen(friendId: String) {
+        store.update { it.withMessagesSeen(friendId) }
+        deliver(friendId)
+    }
+
     /** Close every link to a person (block, unmatch, report, snooze). */
     fun disconnectPeer(friendId: String?, fingerprint: String?) {
         for (rec in links.values.toList()) {
@@ -349,6 +370,9 @@ class NearbyEngine(
         val loser = if (keepThis && !keepOther) other else rec
         host.log("dedup: links ${rec.id}/${other.id} reach the same phone; closing ${loser.id}")
         loser.suppressed = true
+        // Nothing more goes out on the duplicate but its bye (protocol 7.2): card / photo frames
+        // queued in the transport would otherwise keep flowing for seconds after the peer closed it.
+        if (!loser.portClosed) loser.port.discardPending()
         loser.link.close("dedup")
         if (loser !== rec) flush(loser)
     }
