@@ -33,14 +33,6 @@ data class DatingProfile(
     fun toMatchProfile() = MatchProfile(gender, seeking, relationshipStatus, lookingFor)
 }
 
-enum class PhotoState(val wire: String) {
-    NONE("none"), PENDING("pending"), APPROVED("approved"), REJECTED("rejected");
-
-    companion object {
-        fun fromWire(value: String?): PhotoState = entries.firstOrNull { it.wire == value } ?: NONE
-    }
-}
-
 /** Everything the app remembers about its owner. Lives in the "profile" DataStore (excluded from backup). */
 data class Profile(
     val ageGateBirthDate: LocalDate? = null,
@@ -51,17 +43,20 @@ data class Profile(
     val bloodType: BloodType? = null,
     /** Optional Rh factor; null = not given. Shown only in the owner's own reading. */
     val rh: RhFactor? = null,
-    /** CONSENT_BLOOD_TYPE_MATCHING: blood type may be uploaded for Nearby scores. */
+    /** CONSENT_BLOOD_TYPE_MATCHING: blood type may be sent to nearby phones for compatibility. */
     val bloodForMatching: Boolean = false,
     val dating: DatingProfile? = null,
-    /** CONSENT_ORIENTATION_DATA: required before any dating field leaves the phone. */
+    /** CONSENT_ORIENTATION_DATA: required before any dating field leaves the phone (in a Nearby hello). */
     val orientationConsent: Boolean = false,
     val honestyConfirmed: Boolean = false,
     val displayName: String = "",
     val bio: String = "",
-    val photoState: PhotoState = PhotoState.NONE,
+    /** The owner's profile photo (JPEG in app storage). Sent only to Nearby matches, downscaled to 640 px. */
     val localPhotoPath: String? = null,
-    /** CONSENT_NEARBY_LOCATION recorded. */
+    /**
+     * CONSENT_NEARBY_BLUETOOTH recorded (consent copy 2.0). The server build's location consent
+     * (key "nearby_consent") is deliberately not carried over: Nearby needs the new consent.
+     */
     val nearbyConsent: Boolean = false,
     val nearbyEnabled: Boolean = false,
     val nearbyPausedUntil: Long = 0L,
@@ -71,7 +66,7 @@ data class Profile(
 ) {
     val firstName: String get() = displayName.trim().substringBefore(' ')
 
-    /** Whether Nearby can be used at all: dating consent + profile, 18+, honesty and location consent. */
+    /** Whether Nearby can be used at all: dating consent + profile, honesty and birth data (Nearby consent is separate). */
     val nearbyEligible: Boolean get() = dating != null && orientationConsent && honestyConfirmed && birth != null
 
     fun isPaused(nowMillis: Long): Boolean = nearbyPausedUntil > nowMillis

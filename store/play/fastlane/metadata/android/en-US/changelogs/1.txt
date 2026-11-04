@@ -1,1 +1,1 @@
-First release: on-device horoscopes, birth chart, Chinese zodiac and Four Pillars, blood type and palm readings, plus opt-in Nearby matching for dating or friends with swipe cards and chat.
+First release: on-device horoscopes, birth chart, Chinese zodiac and Four Pillars, blood type and palm readings, plus opt-in Nearby matching over Bluetooth for dating or friends, with swipe cards and encrypted chat. No servers.

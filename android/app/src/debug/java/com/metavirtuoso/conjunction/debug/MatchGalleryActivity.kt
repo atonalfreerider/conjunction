@@ -18,7 +18,7 @@ import com.metavirtuoso.conjunction.ui.theme.ConjunctionTheme
 
 /**
  * DEBUG BUILDS ONLY (src/debug): shows the match experience with a sample encounter so it can be
- * checked and screenshotted on a phone without a backend or a second person nearby.
+ * checked and screenshotted on a phone without a second phone nearby.
  *
  * ```
  * adb shell am start -n com.metavirtuoso.conjunction/.debug.MatchGalleryActivity --es screen match|twin|card
@@ -34,12 +34,12 @@ class MatchGalleryActivity : ComponentActivity() {
         )
         val screen = intent.getStringExtra("screen") ?: "match"
         val card = EncounterCard(
-            encounterId = "demo", otherUid = "demo-other", kind = "dating", status = "pending",
+            encounterId = "demo", kind = "dating", status = "pending",
             total = 87, western = 84, chinese = 95, blood = 78,
             highlights = listOf("Your Venus trines their Sun", "Horse and Dog are trine allies"),
             birthdayTwin = screen == "twin", exactTwin = false,
             card = MatchCard("Orion", 31, "sagittarius", "leo", "aries", "horse", "single", "both", hasPhoto = false),
-            photoUrl = null, expiresAt = null,
+            photoPath = null,
         )
         setContent {
             ConjunctionTheme {

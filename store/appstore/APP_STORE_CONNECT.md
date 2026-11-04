@@ -6,16 +6,17 @@ Bundle id `com.metavirtuoso.conjunction`, publisher MetaVirtuoso. Companion docu
 |---|---|
 | `fastlane/metadata/` | `fastlane deliver` metadata: name, subtitle, promotional text, description, keywords, URLs, categories, copyright, App Review notes |
 | `APP_PRIVACY.md` | The App Privacy ("nutrition label") answers and the privacy manifest |
-| `INFO_PLIST.md` | Info.plist usage strings, background modes, entitlements, export compliance |
-| `REVIEW_NOTES.md` | App Review: how to test, demo companion, guidelines 1.2, 4.3, 4.8, 5.1.1(v), 2.5.4, 1.1.4 |
+| `INFO_PLIST.md` | Info.plist usage strings (Bluetooth, camera), Bluetooth background modes, capabilities, export compliance |
+| `REVIEW_NOTES.md` | App Review: how to test (in-app demo match, two devices, laptop test peer), guidelines 1.2, 4.3, 5.1.1, 2.5.4, 1.1.4 |
 
 ## 0. Prerequisite: the paid Apple Developer Program
 
 There is **no App Store or TestFlight path without it.** As of the Sundial notes (2026-09-30) the
 owner has only a free Apple ID (Personal Team), which can sideload to their own phone for 7 days but
-cannot: create an App Store Connect record, use TestFlight, register push notifications (APNs — the
-`aps-environment` entitlement is not available to Personal Teams, so **match and chat notifications
-cannot work in a sideloaded build**), or enable Sign in with Apple.
+cannot create an App Store Connect record or use TestFlight. (The serverless build needs no push
+entitlement and no Sign in with Apple — notifications are local and Bluetooth background modes need no
+entitlement — so a sideloaded Personal Team build can run every feature; it still expires after 7
+days.)
 
 - Enrol at https://developer.apple.com/programs/enroll/ (99 USD/year), with two-factor auth on the
   Apple Account to keep. **Owner only.**
@@ -36,7 +37,7 @@ Apps → + → New App
 | Platforms | iOS |
 | Name | `Conjunction: Astrology Dating` (`name.txt`, 29/30; must be unique on the App Store — reserve it early) |
 | Primary language | English (U.S.) |
-| Bundle ID | `com.metavirtuoso.conjunction` (register it first in Certificates, Identifiers & Profiles with **Push Notifications** and **Sign In with Apple** capabilities) |
+| Bundle ID | `com.metavirtuoso.conjunction` (register it first in Certificates, Identifiers & Profiles; **no** extra capabilities are needed — no Push Notifications, no Sign In with Apple) |
 | SKU | `CONJUNCTION-IOS` |
 | User access | Full access |
 
@@ -94,9 +95,10 @@ re-read Apple's in-form definition). If `deliver` rejects a value, set that item
 - Free. No in-app purchases in 1.0 (so no Paid Apps Agreement, banking or tax forms needed).
 - Availability: all countries where the owner is ready to handle reports and law-enforcement
   requests; consider excluding countries where dating apps or LGBTQ+ users face legal risk (the app
-  stores "seeking", which can reveal sexual orientation) — a decision for the owner.
-- **Untick** "iPhone and iPad Apps on Apple Silicon Macs" and "Apple Vision Pro" (Nearby needs a
-  phone's GPS; Macs would match people at their desks).
+  broadcasts gender and "seeking" to nearby phones, which can reveal sexual orientation) — a decision for the owner.
+- **Untick** "iPhone and iPad Apps on Apple Silicon Macs" and "Apple Vision Pro" (Nearby is designed
+  for a phone carried in a pocket; Macs would match people at their desks, and background Bluetooth
+  behaves differently there).
 - iPad: build iPhone-only for 1.0 (`TARGETED_DEVICE_FAMILY = 1`), which also removes the 13" iPad
   screenshot requirement. iPhone apps still run on iPads in compatibility mode.
 
@@ -120,39 +122,34 @@ re-read Apple's in-form definition). If `deliver` rejects a value, set that item
 
 ## 6. App Review information
 
-- **Sign-in required:** No (anonymous account). Leave demo user/password blank
+- **Sign-in required:** No (there are no accounts). Leave demo user/password blank
   (`review_information/demo_user.txt` is empty on purpose).
 - **Contact:** first name, last name, phone (owner; not committed to the repo — add them in
   App Store Connect or as local `review_information/first_name.txt`, `last_name.txt`,
   `phone_number.txt` that are not committed), email `themetavirtuoso@gmail.com`.
-- **Notes:** `review_information/notes.txt` (3168/4000). Background and reasoning: `REVIEW_NOTES.md`.
+- **Notes:** `review_information/notes.txt` (3527/4000). Background and reasoning: `REVIEW_NOTES.md`.
 - **Attachment:** the two-device screen recording (also link it in the notes).
 
 ## 7. Export compliance
 
-The app uses only standard encryption provided by the OS and Apple/Google SDKs over HTTPS (TLS) —
-exempt under the EAR's mass-market / standard-protocol exemption, so set
-`ITSAppUsesNonExemptEncryption = NO` in Info.plist (see `INFO_PLIST.md`); App Store Connect then
-does not ask on each upload. If the chat ever adds its own end-to-end encryption, revisit this
-(that is still usually exempt but needs the "uses encryption" answers and possibly an annual
-self-classification report).
+The serverless build has **its own end-to-end encryption** for chat (ECDH P-256 → HKDF-SHA256 →
+AES-256-GCM), on top of whatever the OS provides. That is no longer the "HTTPS only" case.
+
+- Set **`ITSAppUsesNonExemptEncryption = YES`** in Info.plist (`INFO_PLIST.md`) and answer the export
+  compliance questions in App Store Connect (or upload documentation once and reference it).
+- Apple's documentation table (https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/,
+  read 2026-11-03): "encryption limited to that within the Apple operating system" → no
+  documentation in App Store Connect; "an industry standard algorithm, not provided within the Apple
+  operating system" → upload a **French encryption declaration** (only if distributing in France);
+  proprietary algorithms → CCATS + French declaration. **If the iOS app implements all of it with
+  Apple's CryptoKit**, choose the first category. If any other crypto library is bundled, the second
+  applies.
+- US EAR: standard algorithms for messaging confidentiality in a free mass-market app are normally
+  classified 5D992.c (mass market); confirm with counsel whether a BIS self-classification report is
+  needed. The Android app is subject to the same US export rules even though Play asks no question.
 
 ## 8. Sign in with Apple (guideline 4.8)
 
-The spec offers **optional Google Sign-In** to upgrade the anonymous account. Guideline 4.8: an app
-that uses a third-party or social login (such as Google Sign-In) to set up or authenticate the
-user's primary account **must also offer an equivalent login service** that limits data to name and
-email, lets users keep their email private, and does not collect interactions for advertising
-without consent. **Sign in with Apple** meets all three, so the iOS app must offer Sign in with Apple
-wherever Google Sign-In appears, shown at least as prominently (Apple's HIG). Requirements that
-follow:
-
-- Enable the **Sign In with Apple** capability on the App ID and the entitlement
-  `com.apple.developer.applesignin = [Default]`.
-- Firebase Auth: enable the Apple provider; configure the Services ID / key for token revocation.
-- **Account deletion (5.1.1(v))** must also **revoke the Sign in with Apple token** through Apple's
-  REST API (`/auth/revoke`) when a Sign-in-with-Apple-linked account is deleted.
-- Handle the private relay email (do not require a "real" email).
-
-If Google Sign-In were dropped from iOS (anonymous accounts only), 4.8 would not apply; keeping both
-is friendlier for people who switch phones.
+Not applicable: the serverless build has **no login of any kind** (no Google Sign-In, no anonymous
+account), so 4.8 does not apply and the Sign In with Apple capability must not be enabled. If any
+third-party login is ever added, add Sign in with Apple at the same time.

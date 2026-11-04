@@ -1,0 +1,5 @@
+# Conjunction P2P test peer (Python 3.12+; tested with 3.14)
+bleak==3.0.2          # central (and the D-Bus library, dbus-fast, used by the peripheral)
+dbus-fast>=2.21       # BlueZ GATT server / advertisement (installed with bleak on Linux)
+cryptography==50.0.2  # P-256 ECDH, HKDF, AES-GCM
+# bless is NOT used: see conjunction_p2p/ble_peripheral.py for why.

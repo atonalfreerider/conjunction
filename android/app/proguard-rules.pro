@@ -10,8 +10,8 @@
 -keep class com.google.mlkit.genai.** { *; }
 -dontwarn com.google.mlkit.genai.**
 
-# Firebase Functions callable results are plain Map/List; Firestore reads use DocumentSnapshot
-# getters (no POJO mapping), so no model keep rules are needed.
+# Nearby (nearby/): no reflection. The P2P wire format is hand-written canonical JSON (core.p2p.WireJson)
+# and the local store uses org.json, so no model keep rules are needed.
 
 # Stack traces for crash reports from the Play Console.
 -keepattributes SourceFile,LineNumberTable

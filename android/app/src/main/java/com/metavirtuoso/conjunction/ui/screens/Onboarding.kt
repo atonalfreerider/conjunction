@@ -1,6 +1,7 @@
 package com.metavirtuoso.conjunction.ui.screens
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -63,8 +64,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.metavirtuoso.conjunction.AppContainer
 import com.metavirtuoso.conjunction.R
+import com.metavirtuoso.conjunction.nearby.NearbyPermissions
 import com.metavirtuoso.conjunction.ai.DailyReminderReceiver
 import com.metavirtuoso.conjunction.core.blood.BloodType
 import com.metavirtuoso.conjunction.core.blood.RhFactor
@@ -339,7 +342,7 @@ private fun LegalStep(container: AppContainer, onNext: () -> Unit) {
         },
     ) {
         OrnatePanel(Modifier.fillMaxWidth()) {
-            listOf(R.string.legal_summary_1, R.string.legal_summary_2, R.string.legal_summary_3, R.string.legal_summary_4, R.string.legal_summary_5).forEach {
+            listOf(R.string.legal_summary_1, R.string.legal_summary_2, R.string.legal_summary_3, R.string.legal_summary_6, R.string.legal_summary_4, R.string.legal_summary_5).forEach {
                 Row(Modifier.padding(vertical = 4.dp)) {
                     Text("✦  ", color = Palette.Gold, style = MaterialTheme.typography.bodyMedium)
                     Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
@@ -667,20 +670,22 @@ fun DatingFields(
 
 @Composable
 private fun NearbyOptInStep(container: AppContainer, profile: Profile, onNext: () -> Unit) {
-    if (!container.nearbyApi.isConfigured) {
+    if (!container.nearby.supported) {
         StepPage(stringResource(R.string.nearby_title), 0.88f, actions = { GoldButton("Continue", onClick = onNext, modifier = Modifier.fillMaxWidth()) }) {
-            Text(stringResource(R.string.nearby_not_configured), style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center)
-            Text(stringResource(R.string.nearby_not_configured_body), style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.nearby_android_old_version), style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center)
         }
         return
     }
     NearbyConsentContent(container, profile, progress = 0.88f, onDone = onNext)
 }
 
-/** Nearby explanation + consent + location rationale + permission + enable. Reused from the Nearby tab. */
+/**
+ * Nearby prominent disclosure (legal/IN_APP_CONSENT_COPY.md section 5) + consent + Bluetooth
+ * ("Nearby devices") rationale + permission + enable. No location permission is ever requested.
+ * Reused from the Nearby tab.
+ */
 @Composable
 fun NearbyConsentContent(container: AppContainer, profile: Profile, progress: Float?, onDone: () -> Unit) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var understood by rememberSaveable { mutableStateOf(false) }
     var showRationale by remember { mutableStateOf(false) }
@@ -688,22 +693,26 @@ fun NearbyConsentContent(container: AppContainer, profile: Profile, progress: Fl
     var error by remember { mutableStateOf<String?>(null) }
     var safety by remember { mutableStateOf(false) }
     val checkboxText = stringResource(R.string.nearby_checkbox)
-    val locationDenied = stringResource(R.string.perm_location_denied)
+    val disclosure = listOf(
+        R.string.nearby_body, R.string.nearby_point_bluetooth, R.string.nearby_point_hello, R.string.nearby_point_card,
+        R.string.nearby_point_keep, R.string.nearby_point_swipe, R.string.nearby_point_safety, R.string.nearby_point_control,
+    ).map { stringResource(it) }
+    val bluetoothDenied = stringResource(R.string.perm_bluetooth_denied)
 
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
-        val ok = granted[Manifest.permission.ACCESS_FINE_LOCATION] == true || granted[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        // POST_NOTIFICATIONS may be declined; Nearby still works (matches then show only in the app).
+        val ok = NearbyPermissions.BLUETOOTH.all { granted[it] == true || ContextCompat.checkSelfPermission(container.context, it) == PackageManager.PERMISSION_GRANTED }
         if (!ok) {
-            error = locationDenied
+            error = bluetoothDenied
             return@rememberLauncherForActivityResult
         }
         busy = true
         scope.launch {
             try {
-                container.consentLedger.record(ConsentRecord.now(ConsentKeys.NEARBY_LOCATION, ConsentKeys.COPY_VERSION, checkboxText))
+                // The consent record hashes the whole disclosure the person saw, plus the checkbox.
+                container.consentLedger.record(ConsentRecord.now(ConsentKeys.NEARBY_BLUETOOTH, ConsentKeys.COPY_VERSION, (disclosure + checkboxText).joinToString("\n")))
                 container.profileStore.update { it.copy(nearbyConsent = true) }
-                val p = container.profileStore.current()
-                val charts = p.birth?.let { withContext(Dispatchers.Default) { Charts.compute(it, p.bloodType) } }
-                container.nearby.enable(charts)
+                container.nearby.enable()
                 onDone()
             } catch (e: Exception) {
                 error = e.message ?: "Nearby could not be turned on."
@@ -722,29 +731,32 @@ fun NearbyConsentContent(container: AppContainer, profile: Profile, progress: Fl
         },
     ) {
         Image(painterResource(R.drawable.popup_match_nearby), contentDescription = null, modifier = Modifier.size(180.dp))
-        Text(stringResource(R.string.nearby_body), style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
+        Text(disclosure.first(), style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
         OrnatePanel(Modifier.fillMaxWidth()) {
-            listOf(R.string.nearby_point_location, R.string.nearby_point_card, R.string.nearby_point_swipe, R.string.nearby_point_safety, R.string.nearby_point_control).forEach {
+            disclosure.drop(1).forEach {
                 Row(Modifier.padding(vertical = 4.dp)) {
                     Text("✦  ", color = Palette.Gold, style = MaterialTheme.typography.bodyMedium)
-                    Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
+                    Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
                 }
             }
         }
         GhostButton(stringResource(R.string.nearby_read_safety), onClick = { safety = true }, modifier = Modifier.fillMaxWidth())
         GoldCheckRow(understood, { understood = it }, checkboxText)
-        if (!profile.nearbyEligible) FinePrint("Complete your dating & friends profile first (Profile → Who you'd like to meet).")
+        if (!profile.nearbyEligible) FinePrint("Complete your birth details and your dating & friends profile first (Profile → Who you'd like to meet).")
         error?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center) }
     }
     if (showRationale) {
         PermissionRationaleDialog(
-            title = stringResource(R.string.perm_location_title),
-            body = stringResource(R.string.perm_location_body),
-            button = stringResource(R.string.perm_location_button),
+            title = stringResource(R.string.perm_bluetooth_title),
+            body = stringResource(R.string.perm_bluetooth_body),
+            button = stringResource(R.string.perm_bluetooth_button),
             art = R.drawable.popup_match_nearby,
+            extra = stringResource(R.string.perm_bluetooth_android_note),
             onConfirm = {
                 showRationale = false
-                permissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                val wanted = NearbyPermissions.BLUETOOTH.toList() +
+                    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(Manifest.permission.POST_NOTIFICATIONS) else emptyList())
+                permissions.launch(wanted.toTypedArray())
             },
             onDismiss = { showRationale = false },
         )

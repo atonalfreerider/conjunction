@@ -2,13 +2,15 @@ package com.metavirtuoso.conjunction
 
 import android.app.Application
 import android.content.Context
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.metavirtuoso.conjunction.ai.GeminiNanoModel
 import com.metavirtuoso.conjunction.ai.ReadingService
 import com.metavirtuoso.conjunction.ai.TextModel
 import com.metavirtuoso.conjunction.data.ProfileStore
 import com.metavirtuoso.conjunction.data.ReadingCache
 import com.metavirtuoso.conjunction.legal.ConsentLedger
-import com.metavirtuoso.conjunction.nearby.NearbyApi
 import com.metavirtuoso.conjunction.nearby.NearbyRepository
 import com.metavirtuoso.conjunction.nearby.Notifications
 import com.metavirtuoso.conjunction.palm.PalmScanner
@@ -25,8 +27,8 @@ class AppContainer(context: Context, model: TextModel = GeminiNanoModel()) {
     val readingCache = ReadingCache(app)
     val textModel: TextModel = model
     val readings = ReadingService(model, readingCache)
-    val nearbyApi = NearbyApi(app)
-    val nearby = NearbyRepository(app, nearbyApi, profileStore, consentLedger)
+    /** Serverless Bluetooth Nearby (SPEC 5c): matching, friends and chats on this phone. */
+    val nearby = NearbyRepository(app, profileStore, model)
     val palmScanner by lazy { PalmScanner(app) }
 
     /** Offline lat/lon -> IANA zone grid (about 1 MB; loaded on first use, off the main thread). */
@@ -49,5 +51,10 @@ class ConjunctionApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         Notifications.createChannels(this)
+        // Foreground = full-screen match popups instead of notifications, and on-device screening may run.
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) = container.nearby.onForegroundChanged(true)
+            override fun onStop(owner: LifecycleOwner) = container.nearby.onForegroundChanged(false)
+        })
     }
 }

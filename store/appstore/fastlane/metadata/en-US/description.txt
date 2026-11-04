@@ -21,19 +21,21 @@ PALM READING
 • Your palm photo is never uploaded, and it is deleted after the reading unless you save it.
 
 CONJUNCTIONS NEARBY (OPTIONAL, 18+)
-• Nearby is off until you turn it on, and uses location only while you use the app (iOS shows the blue location indicator while it runs). Pause it for an hour or until tomorrow at any time.
-• When another member who also opted in is within about 50 metres and your intentions fit (dating or friends, and who each of you is looking for), both phones light up: your two zodiac signs fly in and merge into one emblem, and your compatibility score counts up.
+• Nearby is off until you turn it on. It uses Bluetooth to find people close by who also turned it on. No location, no servers: phones talk to each other directly. Pause it for an hour or until tomorrow at any time.
+• When another member nearby is compatible and your intentions fit (dating or friends, and who each of you is looking for), both phones light up: your two zodiac signs fly in and merge into one emblem, and your compatibility score counts up.
 • Compatibility blends Western synastry (Sun, Moon, Venus, Mars and Rising), Chinese zodiac harmony and clashes, and blood-type pairing.
 • Born on the same day? Birthday twins get their own lavish celebration.
-• Swipe right to accept or left to pass. When you both swipe right, it's a Conjunction: your chat opens.
-• Your exact location is never shown to anyone. Other members only ever see "nearby", and our servers keep only your latest position for 10 minutes, with no location history.
+• iPhones in the background can be found by other iPhones; to be found by Android phones, keep Conjunction open.
+• Swipe right to accept or left to pass. When you both swipe right, it's a Conjunction: your end-to-end encrypted chat opens, phone to phone.
+• No distance or location is ever shown. Other members only see "nearby".
 
 SAFETY AND PRIVACY
 • For adults 18 and over only.
-• Profile photos are reviewed before anyone sees them, and every chat message is checked by automated moderation before it is delivered.
-• Block, unmatch or report anyone from their card or from the chat. Reports are reviewed by a person.
-• Your birth time and place, readings and palm photos stay on your iPhone. Delete your account and all its data at any time from Settings.
-• No ads. No tracking. No selling of your data.
+• No servers and no account: your card goes only to phones nearby, and chats stay on your two phones.
+• Your iPhone screens incoming photos and messages on the device and warns you before showing anything that looks harmful.
+• Block, unmatch or report anyone from their card or from the chat. A person reads every report.
+• Your birth time and place, readings and palm photos never leave your iPhone. Delete all your data at any time from Settings.
+• No ads. No tracking. No data collected by us.
 
 Readings and compatibility scores are for entertainment. They are not advice, and they are not a substitute for your own judgement about the people you meet. Please read our safety tips before meeting anyone in person.
 

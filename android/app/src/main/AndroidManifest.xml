@@ -2,23 +2,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Backend calls (Nearby, profile, chat). Readings never leave the phone. -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Nearby only, foreground service while the person has Nearby switched on.
-         There is deliberately NO ACCESS_BACKGROUND_LOCATION. -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Nearby (SPEC 5c): phone-to-phone Bluetooth LE. No location permission at all: the scan
+         never derives location (it only reads RSSI to decide "close by"). Nearby needs Android 12+
+         (API 31); on Android 8-11 a BLE scan would need location, so Nearby is hidden there
+         (legal/IN_APP_CONSENT_COPY.md nearby_android_old_version, store/play/PERMISSIONS.md 1.1). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="31" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Local notifications only (match, birthday twin, "It's a Conjunction!", messages, Nearby status). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Palm photo (processed on device, never uploaded) and optional profile photo. -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Re-arms the optional 08:00 "today's reading is ready" reminder after a reboot. -->
+    <!-- Re-arms the optional 08:00 "today's reading is ready" reminder after a reboot (never Nearby). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- No advertising id (no ads); removed in case a library merges it in. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
     <application
         android:name=".ConjunctionApp"
@@ -37,6 +45,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:label="@string/app_name"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Conjunction.Starting">
@@ -46,18 +55,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Started only from the app's UI while it is visible (Nearby switch / Resume); never from boot. -->
         <service
-            android:name=".nearby.NearbyService"
+            android:name=".nearby.NearbyBluetoothService"
             android:exported="false"
-            android:foregroundServiceType="location" />
-
-        <service
-            android:name=".nearby.ConjunctionMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+            android:foregroundServiceType="connectedDevice" />
 
         <receiver
             android:name=".ai.DailyReminderReceiver"
@@ -67,25 +69,5 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-
-        <!-- FCM registers only after the person opts in to Nearby (NearbyRepository enables it). -->
-        <meta-data
-            android:name="firebase_messaging_auto_init_enabled"
-            android:value="false" />
-        <meta-data
-            android:name="firebase_analytics_collection_deactivated"
-            android:value="true" />
-        <meta-data
-            android:name="google_analytics_adid_collection_enabled"
-            android:value="false" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_stat_conjunction" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/gold" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/channel_conjunctions_id" />
     </application>
 </manifest>

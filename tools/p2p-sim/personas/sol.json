@@ -1,0 +1,14 @@
+{
+ "firstName": "Sol",
+ "bio": "Friends only - happily partnered.",
+ "gender": "male",
+ "seeking": "female",
+ "relationship": "in_a_relationship",
+ "lookingFor": "friends",
+ "bloodType": "ab",
+ "birth": {"date": "1988-07-30", "time": "23:15", "latitude": 51.5074, "longitude": -0.1278, "zone": "Europe/London", "place": "London, UK"},
+ "compat": {"sun": 12794, "moon": 33305, "venus": 8463, "mars": 682, "asc": 2845, "animal": "dragon", "stem": "ding", "blood": "ab", "birthDate": "1988-07-30", "birthHour": 23},
+ "photo": null,
+ "autoSwipe": "left",
+ "replies": ["Sol (test peer) got your message."]
+}

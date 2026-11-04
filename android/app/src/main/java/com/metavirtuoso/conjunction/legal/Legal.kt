@@ -96,24 +96,24 @@ object ConsentKeys {
     const val BLOOD_TYPE_MATCHING = "CONSENT_BLOOD_TYPE_MATCHING"
     const val ORIENTATION_DATA = "CONSENT_ORIENTATION_DATA"
     const val PROFILE_HONESTY = "PROFILE_HONESTY_CONFIRMED"
-    const val NEARBY_LOCATION = "CONSENT_NEARBY_LOCATION"
+    /** Consent copy 2.0 (serverless Bluetooth build); replaces the server build's CONSENT_NEARBY_LOCATION. */
+    const val NEARBY_BLUETOOTH = "CONSENT_NEARBY_BLUETOOTH"
 
     /** Version of the short in-app consent copy (legal/IN_APP_CONSENT_COPY.md). */
-    const val COPY_VERSION = "1.0"
+    const val COPY_VERSION = "2.0"
 }
 
 private val Context.consentDataStore by preferencesDataStore(name = "consents")
 
 /**
- * Append-only local ledger of accepted consents. Uploaded with the account once Nearby creates
- * one ([pendingUpload], backend callable recordConsents); withdrawals are records with
+ * Append-only local ledger of accepted consents, kept only on this phone (there is no server;
+ * Settings → Legal → My acceptance records shows it). Withdrawals are records with
  * [ConsentRecord.withdrawn] set.
  */
 class ConsentLedger(private val store: DataStore<Preferences>) {
     constructor(context: Context) : this(context.applicationContext.consentDataStore)
 
     private val recordsKey = stringPreferencesKey("records")
-    private val uploadedKey = stringPreferencesKey("uploaded_count")
 
     val records: Flow<List<ConsentRecord>> = store.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
@@ -133,17 +133,6 @@ class ConsentLedger(private val store: DataStore<Preferences>) {
         val list = all()
         val last = list.lastOrNull { it.key == key } ?: return null
         return if (last.withdrawn) null else last.version
-    }
-
-    suspend fun pendingUpload(): List<ConsentRecord> {
-        val prefs = store.data.first()
-        val uploaded = prefs[uploadedKey]?.toIntOrNull() ?: 0
-        return decode(prefs[recordsKey]).drop(uploaded)
-    }
-
-    /** Marks the first [count] records (as returned in order by [all]) as uploaded. */
-    suspend fun markUploaded(count: Int) {
-        store.edit { it[uploadedKey] = count.toString() }
     }
 
     suspend fun clear() {

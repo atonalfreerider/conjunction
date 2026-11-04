@@ -3,11 +3,11 @@
 | | |
 |---|---|
 | Document | `WAIVER` |
-| Version | 1.0 (draft of 2026-11-03) |
+| Version | 2.0 (draft of 2026-11-03) |
 | Effective date | [EFFECTIVE DATE] |
 | Publisher | MetaVirtuoso, the trade name of [LEGAL ENTITY NAME], [ADDRESS] |
 | Contact | [CONTACT EMAIL] |
-| Applies to | The Conjunction mobile apps for Android (`com.metavirtuoso.conjunction`) and iOS, and the online services that support them |
+| Applies to | The Conjunction mobile apps for Android (`com.metavirtuoso.conjunction`) and iOS (the apps have no servers; they talk directly to other phones over Bluetooth) |
 
 > **Read this carefully. It affects your legal rights.** By ticking "I agree" in the app, you give up
 > certain rights, including the right to sue us for some kinds of harm, the right to a jury trial and
@@ -25,7 +25,8 @@ business as MetaVirtuoso ("**MetaVirtuoso**", "**we**", "**us**", "**our**").
 feature in it, including birth charts, horoscopes, Chinese zodiac and Four Pillars readings,
 blood-type readings, palm readings, the "Nearby" proximity feature ("**Conjunctions**"), match
 cards, swipes, matches, dating and friend connections, profiles, photos, chat messages,
-notifications, and the servers and websites that support them (together, the "**App**" or "**Service**").
+notifications, the Bluetooth connections between phones, and our websites and support email
+(together, the "**App**" or "**Service**").
 
 1.3. This Agreement works together with the Conjunction Terms of Service ("**Terms**"), the Privacy
 Policy, the Community Guidelines and the Safety Tips. If this Agreement and the Terms conflict on
@@ -34,8 +35,7 @@ Agreement controls.
 
 1.4. "**Released Parties**" means MetaVirtuoso, [LEGAL ENTITY NAME], and their owners, officers,
 employees, contractors, agents, licensors, successors and assigns. Where the law allows, it also
-includes our service providers when acting for us (for example, hosting, push notification and
-content moderation providers). Apple Inc. and Google LLC are not parties to this Agreement but
+includes our service providers when acting for us (for example, our email provider). Apple Inc. and Google LLC are not parties to this Agreement but
 receive the third-party protections described in the Terms.
 
 ## 2. Eligibility: you must be 18 or older
@@ -45,7 +45,8 @@ you live, if that is higher), and that you have the legal capacity to enter into
 
 2.2. The App lets you be discovered by, and meet, strangers. It is not designed for, directed to or
 offered to anyone under 18. If you are under 18, you must not use the App. If we learn that a user
-is under 18, we will close the account and delete its data as described in the Privacy Policy.
+is under 18, we will take the steps available to us (Terms, Section 7.3), including reporting any
+child sexual exploitation to the authorities.
 
 2.3. You represent that you are not prohibited from using the App under the law of any applicable
 jurisdiction, that you have not been convicted of, or pleaded no contest to, a felony or indictable
@@ -113,22 +114,28 @@ cannot promise any outcome.
 
 ## 5. The Nearby feature: meeting other people
 
-5.1. **What Nearby does.** Nearby is off by default. If you turn it on, the App sends your phone's
-location to our servers while Nearby is active. When another person who has also turned on Nearby is
-within about 50 metres (about 160 feet), and your profile settings (what you are looking for —
-dating, friends or both — your gender and who you are seeking, and your relationship status) are
-compatible with theirs, both of you may receive a notification and a **match card** showing the other
-person's moderation-approved profile photo, first name, age, relationship status, what they are
+5.1. **What Nearby does.** Nearby is off by default. If you turn it on, your phone uses Bluetooth
+to find other phones running the App with Nearby on, sends each of them the data needed to check for a
+match (including your gender, who you are seeking, relationship status, chart data and birth date),
+and, if you match, your first name, bio line and profile photo, as described in the Privacy Policy.
+None of this is encrypted before a mutual match. There is no server in between. When another person who has also turned on Nearby is close
+enough for Bluetooth (usually within a few tens of metres), and your profile settings (what you are
+looking for — dating, friends or both — your gender and who you are seeking, and your relationship
+status) are compatible with theirs, both of you may receive a notification and a **match card**
+showing the other person's profile photo, first name, age, relationship status, what they are
 looking for, their signs and a compatibility score. You each swipe right (accept) or left (reject).
-If you both accept, a chat opens and you can message each other freely. You may then choose to meet
+If you both accept, an end-to-end encrypted chat opens and you can message each other
+whenever your phones are near each other. You may then choose to meet
 in person, including on a date.
 
 5.2. **No screening.** You understand and agree that **we do not conduct criminal background
 checks, identity verification, sex-offender registry searches, mental-health screening or any other
 screening of users**, and we make no representation or warranty about the identity, age, conduct,
 intentions, character, health or truthfulness of any user. Profile information, including photos,
-names and birth details, is supplied by users and may be false or misleading. Our moderation tools
-(automated and human) are imperfect and do not make any user safe.
+names and birth details, is supplied by users and may be false or misleading. **There is no central
+moderation**: the App screens incoming photos and messages on the receiving phone, and that
+screening is automated, imperfect and does not make any user safe. Because the App has no server or
+accounts, **we cannot remove another user's content from your phone, or ban or locate a user**.
 
 5.3. **Assumption of risk.** Interacting with strangers, online or in person, carries inherent risks
 that cannot be eliminated. **You knowingly and voluntarily assume all risks** arising from your use
@@ -167,9 +174,12 @@ anyone. In particular:
   App.
 
 5.6. **Your proximity is a signal.** A match card tells the other person that someone with your
-photo, first name, age and signs is within about 50 metres at that moment, **before you have accepted
-them**. Even though we never show your exact location, the other person can easily recognise you
-nearby, and may be able to follow you or work out where you live, work or spend time. Turn Nearby off, or pause it, whenever you do not want to be discoverable,
+photo, first name, age and signs is close enough for Bluetooth at that moment, **before you have
+accepted them**. Even though the App never uses or shows your location, the other person can easily
+recognise you nearby, and may be able to follow you or work out where you live, work or spend time.
+Your matching data (including gender and who you are seeking) is also sent to **every** nearby phone
+with Nearby on, not only to your matches, and someone using modified software or Bluetooth equipment
+could keep it, or pretend to match you to get your photo. Turn Nearby off, or pause it, whenever you do not want to be discoverable,
 including at home, at work, or anywhere you would not want a stranger to know you visit.
 
 5.7. **Dating and romantic meetings.** If you choose "dating", you understand that the App may
@@ -180,8 +190,8 @@ additional risks. You assume all risks of dating people you meet through the App
   name or age, false birth details, or may lie about their gender, intentions, relationship status
   (including being married or in a relationship while listed as "single"), health, criminal history
   or anything else. **We do not verify any profile information**, including age, gender,
-  relationship status or identity, and moderation of photos only checks for prohibited content, not
-  whether the photo is really of the user;
+  relationship status or identity, and on-device photo screening only looks for prohibited content,
+  not whether the photo is really of the user;
 - (b) **sexual health risks**, including sexually transmitted infections and unintended pregnancy.
   Any sexual activity is your own decision and your own responsibility. Talk with partners about
   sexual health and consent, use protection, and get tested regularly; consult a healthcare
@@ -202,24 +212,29 @@ signs say nothing about whether a person is safe or trustworthy.
 gender, relationship status and what you are looking for, to keep it up to date, and to use only
 photos of yourself. You are responsible for any harm caused by misrepresenting yourself.
 
-5.10. **Chat.** Messages are checked by an automated moderation service before delivery and some may
-be held or blocked. Moderation is imperfect: you may still receive messages that are offensive,
-sexual, threatening or fraudulent, and you assume that risk. Unmatch, block and report are available
+5.10. **Chat.** Messages are end-to-end encrypted and go directly between your two phones, so **we
+cannot read, moderate or remove them**. The App on your phone screens messages you receive and may
+hide some behind a warning, but that screening is imperfect: you may still receive messages that are
+offensive, sexual, threatening or fraudulent, and you assume that risk. Messages may arrive late or
+not at all, because they are delivered only when your phones are near each other. Anything you send
+stays on the other person's phone, and they may keep, copy or show it to others. Unmatch, block and report are available
 in every chat. Never move a conversation off the App before you trust someone; scammers often try
 to move you to another messaging service quickly.
 
-## 6. Location sharing
+## 6. Bluetooth and data sent to other phones
 
-6.1. Location sharing is **opt-in** and you can turn it off at any time in the App or in your phone's
-settings. While Nearby is on, the App reads your phone's precise location about once a minute (or
-after about 25 metres of movement) and sends it to our servers. We keep only your most recent
-position, treat it as expired after 10 minutes, and do not show it to other users. Details are in the
-Privacy Policy.
+6.1. Nearby is **opt-in** and you can pause or turn it off at any time in the App, from its
+notification, or by turning off Bluetooth or the App's Bluetooth ("Nearby devices") permission. The
+App does not use location. While Nearby is on, your phone advertises that it runs the App and
+exchanges data with other phones over Bluetooth, including while the App is in the background.
+Details are in the Privacy Policy.
 
-6.2. You accept the risks of transmitting location data over the internet, including that location
-data, like any data, could be exposed by a security incident despite our safeguards, and that
-location readings from phones can be inaccurate. A missing, delayed or inaccurate location reading
-may cause you to miss, or wrongly receive, a Nearby notification.
+6.2. You accept the risks of sending data over Bluetooth to phones we do not control, including that
+(a) other users, modified apps or Bluetooth equipment may receive, keep, copy or misuse your Nearby
+data, card, photo and messages, which are not encrypted before a mutual match; (b) data you send cannot be recalled or deleted from other phones, by you
+or by us; (c) Bluetooth signal strength is an imprecise measure of distance, so you may miss, or
+wrongly receive, a match, or be matched with someone who has left; and (d) messages may be delayed
+or never delivered.
 
 6.3. Do not turn on Nearby on a phone that someone else uses or controls, and do not turn it on for
 another person. You must not use the App to track or locate anyone.
@@ -241,7 +256,7 @@ phone's settings.
 ## 8. Camera and palm photos
 
 8.1. The palm reading feature uses your phone's camera, or a photo you pick. The photo is analysed on
-your phone and is not uploaded. It is deleted after the reading unless you choose to save it.
+your phone and is never sent anywhere. It is deleted after the reading unless you choose to save it.
 
 8.2. You agree to photograph **only your own hand**, or the hand of an adult who has given you
 permission, and not to capture other people, documents, screens, or anything you are not entitled to
@@ -250,10 +265,10 @@ photograph. Be aware of your surroundings while using the camera.
 8.3. A palm reading cannot identify you and is not used to identify you. It is not a biometric,
 medical or forensic analysis.
 
-8.4. Profile photos are different: if you add one, it is uploaded, checked by an automated
-moderation service and, once approved, **shown on your match card to nearby users you are matched
-with, before either of you accepts**, and to your matches (see the Privacy Policy).
-You are responsible for the photos you upload.
+8.4. Profile photos are different: if you add one, it is **sent to nearby users you are matched with
+and shown on your match card before either of you accepts**, and kept by your friends (see the
+Privacy Policy). It is not checked before it
+leaves your phone; the receiving phone screens it. You are responsible for the photos you use.
 
 ## 9. Your release of claims
 
@@ -269,9 +284,10 @@ causes of action of any kind, whether known or unknown, suspected or unsuspected
 - (c) **any communication, meeting or other interaction with any other user**, or with anyone you
   met or found through the App, whether online or in person;
 - (d) the conduct, statements or content of any other user or third party;
-- (e) the use of your location data, notifications, camera or photos as described in this Agreement
-  and the Privacy Policy;
-- (f) your use of the App while driving or otherwise distracted.
+- (e) the sending of your Nearby data, card, photo and messages to other phones over Bluetooth, and the
+  use of notifications, the camera or photos, as described in this Agreement and the Privacy Policy;
+- (f) anything another user, their phone or their software does with data you sent them;
+- (g) your use of the App while driving or otherwise distracted.
 
 9.2. This release includes Claims arising from the **ordinary negligence** of the Released
 Parties, to the extent the law of your jurisdiction allows a release of negligence.
@@ -327,9 +343,10 @@ from a course of dealing or usage of trade.
 
 11.2. Without limiting Section 11.1, we do not warrant that: (a) any reading, chart, calculation or
 score is accurate, complete or meaningful; (b) Nearby will detect every user nearby, or only users
-nearby; (c) notifications will be delivered, timely or accurate; (d) the App will be uninterrupted,
-secure, error-free or free of harmful components; (e) any user is who they say they are; or (f) our
-moderation will catch all inappropriate content or conduct.
+nearby; (c) notifications or messages will be delivered, timely or accurate; (d) the App will be uninterrupted,
+secure, error-free or free of harmful components; (e) any user is who they say they are; or (f) on-device
+screening will catch all inappropriate content or conduct; or (g) data you send to other phones can
+be protected, recalled or deleted once it has left your phone.
 
 11.3. Astronomical calculations are approximations. Birth charts depend on the date, time and place
 you enter; an error in that data gives a different chart.
@@ -358,7 +375,7 @@ does not allow to be limited.
 Before starting any arbitration or court case, you and we each agree to try to resolve the dispute
 informally. The party with the dispute must send a written notice describing it, the relief sought
 and their contact details (to us at [CONTACT EMAIL] and [ADDRESS]; to you at the contact details
-associated with your account, if any). If the dispute is not resolved within **60 days** of the
+you gave us, if any). If the dispute is not resolved within **60 days** of the
 notice, either party may proceed under Section 14 (or, where Section 14 does not apply, in court).
 Time limits are paused during this period.
 
@@ -410,8 +427,8 @@ they wait for a batch.
 written notice within 30 days after you first accept this Agreement** (or, if we materially change
 this Section, within 30 days after you accept the change, as to the change only). Email
 [CONTACT EMAIL] with the subject "Arbitration Opt-Out", or write to [ADDRESS], and include your name,
-the email or account identifier you use with the App (the in-app Settings screen shows your account
-ID), and a clear statement that you opt out of arbitration. Opting out does not affect any other
+the email address you use to write to us, and a clear statement that you opt out of arbitration
+(the App's Settings → Legal screen can prepare this email for you, with the date you accepted). Opting out does not affect any other
 part of this Agreement, and it will not affect how we treat you in the App.
 
 14.8. **Changes.** If we change this Section after you accepted it, you may reject the change by
@@ -495,8 +512,7 @@ subject matter.
 merger, acquisition, sale of assets or by operation of law, and the released and indemnified
 protections pass to the assignee.
 
-18.5. **Survival.** Sections 3, 4, 5.2–5.4, 5.7–5.10, 9 to 18 and 19.4 survive any termination of your account
-or your use of the App.
+18.5. **Survival.** Sections 3, 4, 5.2–5.4, 5.7–5.10, 9 to 18 and 19.4 survive the end of your use of the App.
 
 ## 19. Electronic acceptance
 
@@ -509,9 +525,9 @@ notices electronically.
 
 19.2. **Record of acceptance.** When you accept, the App records: the document name and **version**
 (for example `WAIVER 1.0`); a **timestamp** in UTC; the platform and App version; and a hash of the
-exact document text displayed. The record is stored on your device and, once you have an account
-with our servers, with your account. We keep it for as long as you have an account, and afterwards
-as long as needed to establish or defend legal claims (see the Privacy Policy).
+exact document text displayed. The record is stored on your phone only (the App has no server). You
+can view it in **Settings → Legal**; if you send it to us (for example to opt out of arbitration), we
+keep that email as long as needed to establish or defend legal claims (see the Privacy Policy).
 
 19.3. **Changes.** We may update this Agreement. If a change is material, the App will show you the
 new version and ask you to accept it before you continue using the affected features. Section 14.8
@@ -519,8 +535,8 @@ applies to changes to the arbitration agreement. The version you accepted applie
 happened before you accepted a new version.
 
 19.4. **Your copy.** You can read the current version at any time under **Settings → Legal** in the
-App and at [WEBSITE URL]/legal/waiver, and you can request a copy of your acceptance record by
-emailing [CONTACT EMAIL] or using **Settings → Export my data**.
+App and at [WEBSITE URL]/legal/waiver, and you can see your acceptance record under
+**Settings → Legal**.
 
 ## 20. Your acknowledgement
 

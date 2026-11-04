@@ -50,7 +50,12 @@ class LegalStepInputTest {
         }
         compose.mainClock.advanceTimeBy(2_000)
         val age = compose.onNodeWithText("I am 18 or older.")
+        // performScrollTo animates the scroll; with a paused clock it would wait forever once the
+        // page is taller than the screen (it is since legal_summary_6 was added), so the clock runs
+        // from here on.
+        compose.mainClock.autoAdvance = true
         age.performScrollTo()
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(500)
         age.assertIsOff()
         age.performClick()

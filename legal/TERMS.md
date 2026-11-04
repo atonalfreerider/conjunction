@@ -3,14 +3,15 @@
 | | |
 |---|---|
 | Document | `TERMS` |
-| Version | 1.0 (draft of 2026-11-03) |
+| Version | 2.0 (draft of 2026-11-03) |
 | Effective date | [EFFECTIVE DATE] |
 | Publisher | MetaVirtuoso, the trade name of [LEGAL ENTITY NAME], [ADDRESS] |
 | Contact | [CONTACT EMAIL] |
 
 These Terms of Service ("**Terms**") are a contract between you and [LEGAL ENTITY NAME], doing business
 as MetaVirtuoso ("**MetaVirtuoso**", "**we**", "**us**"), about your use of the Conjunction mobile apps
-and the services that support them (the "**App**" or "**Service**").
+(the "**App**" or "**Service**"). The App has no servers: it works on your phone and talks directly to
+other users' phones over Bluetooth.
 
 **The Release, Waiver of Liability, Assumption of Risk and Indemnity Agreement (the "Waiver") is part of
 these Terms.** It contains a release of claims, an indemnity, a limitation of liability, and, for US
@@ -20,7 +21,7 @@ Guidelines and Safety Tips are also part of these Terms.
 
 ## 1. Acceptance
 
-1.1. You accept these Terms by ticking "I agree" in the App during sign-up, or by using the App. The App
+1.1. You accept these Terms by ticking "I agree" in the App during onboarding, or by using the App. The App
 records the version you accepted and when (Waiver, Section 19).
 
 1.2. **You must be at least 18 years old** (or the age of majority where you live, if higher) to use the
@@ -31,9 +32,10 @@ Section 2 of the Waiver.
 
 2.1. The App calculates a birth chart from the birth details you enter; writes horoscopes, natal,
 Eastern (Chinese zodiac, Four Pillars and blood-type) and palm readings using an AI model running on your
-phone; and, if you turn it on, offers **Nearby**, which tells you when another opted-in user is close by,
-shows a match card and compatibility score, and, if you both swipe right, opens a chat so you can get
-to know each other as dates or friends.
+phone; and, if you turn it on, offers **Nearby**, which uses Bluetooth to tell you when another
+opted-in user is close by, shows a match card and compatibility score, and, if you both swipe right,
+opens an end-to-end encrypted chat over Bluetooth so you can get to know each other as dates or
+friends.
 
 2.2. **Readings and scores are for entertainment only** and are not advice of any kind (Waiver,
 Sections 3 and 4).
@@ -41,58 +43,67 @@ Sections 3 and 4).
 2.3. Features may vary by device. On-device AI depends on Apple's or Google's on-device model being
 available on your phone; where it is not, the App uses pre-written reading fragments instead.
 
-## 3. Accounts
+## 3. No account; your phone holds your data
 
-3.1. **Account creation.** Birth charts and readings work without signing in. To use Nearby, matches,
-profiles and chat, the App creates an account on our servers. The account may start as an
-anonymous account, which you can link to Sign in with Apple or Google Sign-In so you can restore it on a
-new phone. An anonymous account that is not linked may be impossible to recover if you lose or reset
-your phone.
+3.1. **No account.** The App has no user accounts and no servers. Your profile, matches, friends,
+chats and settings are stored only on your phone, and your phone exchanges data directly with other
+phones over Bluetooth, as described in the Privacy Policy.
 
 3.2. **Accurate information.** You agree to give accurate information about yourself, including your
-age and your birth details, and to keep your profile accurate. Your display name and photo must
+age and your birth details, and to keep your profile accurate. Your first name and photo must
 represent you, not someone else.
 
-3.3. **One person, one account.** Accounts are personal. You must not create an account for anyone
-else, share your account, sell or transfer it, or create a new account after we have suspended or
-banned you.
+3.3. **One person, one profile.** Your profile is personal. You must not set up the App to represent
+anyone else, or use more than one phone or install to get around a block, a pass or these Terms.
 
-3.4. **Security.** You are responsible for the security of your phone and of any sign-in method you
-link, and for activity on your account. Tell us at [CONTACT EMAIL] promptly if you think your account
-has been compromised.
+3.4. **Your phone, your responsibility.** You are responsible for the security of your phone (keep it
+locked) and for what is done with the App on it. Because nothing is stored with us, **we cannot
+recover, restore or move your profile, friends or chats** if you lose, reset or replace your phone,
+or delete the App. The App keeps its data out of phone backups, so a backup will not bring them back
+either.
 
-3.5. **Deleting your account.** You can delete your account at any time in **Settings → Delete
-account**, or by following the instructions at [ACCOUNT DELETION URL]. Deletion is permanent and is
-described in the Privacy Policy.
+3.5. **Deleting your data.** You can delete your data at any time by deleting the App's data or
+uninstalling it, as described in the Privacy Policy. **Data you have already sent to other people's
+phones (your card, photo, identity key and messages) stays on those phones; we cannot delete it.**
 
-## 4. Nearby, connections and messages
+## 4. Nearby, matches and messages
 
-4.1. Nearby is **off by default** and is only active when you turn it on. You can pause it (for an hour
-or until tomorrow) or turn it off at any time. Using Nearby means your location is sent to our servers
-as described in the Privacy Policy.
+4.1. **Bluetooth, off by default.** Nearby is **off by default** and is only active when you turn it
+on. While it is on, your phone uses Bluetooth to find, and be found by, other phones running the App
+with Nearby on. It sends each of them a "hello" (gender and who you are seeking, relationship status,
+what you are looking for, the chart data used for compatibility and birth date) whether or not you
+turn out to be a match, and, if you match, your card (first name, first line of your bio and profile
+photo) **before either of you accepts**. Nothing is encrypted before a mutual match. You can pause Nearby (for an hour or until tomorrow) or turn it off at
+any time. The App does not use your location.
 
-4.2. **Dating and friends profile.** You tell us your gender (I am), who you are seeking, your
-relationship status, and whether you are looking for dating, friends or both. We use these only to
-decide which nearby users you can be matched with and to show them on your match card. A dating match
-happens only if you both look for dating, each of you is the gender the other is seeking, and neither
-of you is "in a relationship"; otherwise you may be matched as friends if you both include friends.
+4.2. **Dating and friends profile.** You tell the App your gender (I am), who you are seeking, your
+relationship status, and whether you are looking for dating, friends or both. The App on each phone
+uses these only to decide which nearby users you can be matched with and to show them on your match
+card. A dating match happens only if you both look for dating, each of you is the gender the other is
+seeking, and neither of you is "in a relationship"; otherwise you may be matched as friends if you
+both include friends.
 
-4.3. **Match cards and swipes.** When you are matched with someone nearby, each of you sees a match
-card with the other's moderation-approved profile photo (or zodiac art if none is approved), first
-name, age, sun/moon/rising signs, Chinese zodiac animal, relationship status, what they are looking
-for and the compatibility score — **before either of you accepts**. Your exact location is never shown.
-Swipe right (or tap Accept) to accept; swipe left (or tap Reject) to decline. A left swipe is not
-shown to the other person, and the pair is not shown again for 30 days. Unanswered matches expire after
-24 hours.
+4.3. **Match cards and swipes.** When the App finds a match, each of you sees a match card with the
+other's profile photo (screened on the receiving phone, and blurred if it cannot be screened) or
+zodiac art, first name, age, sun/moon/rising signs, Chinese zodiac animal, relationship status, what
+they are looking for and the compatibility score — **before either of you accepts**. No distance or
+location is shown. Swipe right (or tap Accept) to accept; swipe left (or tap Pass) to decline. A left
+swipe is not shown to the other person, and the App does not show you that person again for 30 days.
+Unanswered matches expire after 24 hours.
 
-4.4. **Chat.** When you both accept, you are matched and a chat opens. Messages are checked by
-automated moderation before delivery and may be held or blocked (Section 7). You can **unmatch**,
-**block** or **report** from any chat. Unmatching ends the chat for both of you and removes the
-match; it is not shown as a block. Blocking also stops future match notifications and messages between
-you. You can also snooze notifications about a specific person.
+4.4. **Friends and chat.** When you both accept, your phones exchange identity keys, you become
+friends, and a chat opens. Messages are end-to-end encrypted and travel only over Bluetooth between
+your two phones; if your friend is out of range, a message is delivered only the next time your
+phones are near each other, which may be never. The App screens incoming messages on the receiving
+phone and may hide some behind a warning (Section 7). You can **unmatch**, **block** or **report**
+from any chat. Unmatching or blocking removes the chat and friend from your phone and stops future
+matches and messages between you on your phone; your former friend's phone keeps its own copy
+(Privacy Policy, Section 10). You can also snooze match notifications about a specific person.
 
-4.5. **Rate limits.** We may limit how often match notifications, swipes and messages can be sent, to
-protect users from spam and abuse.
+4.5. **Limits and reliability.** Bluetooth discovery is not guaranteed. Phones may fail to find each
+other, find each other late, or find someone who has already left; iPhones in the background can
+only be found by some phones (the App explains this). The App limits how much data it accepts from
+each phone, to protect users from spam and abuse.
 
 4.6. **You are solely responsible for your interactions with other users**, online and in person. We
 do not screen users (Waiver, Section 5). Please follow the Safety Tips.
@@ -101,9 +112,10 @@ do not screen users (Waiver, Section 5). Please follow the Safety Tips.
 
 You agree not to, and not to help anyone else to:
 
-- (a) use the App if you are under 18, or let anyone under 18 use your account;
+- (a) use the App if you are under 18, or let anyone under 18 use the App on your phone;
 - (b) harass, stalk, threaten, bully, intimidate, dox or harm anyone, or use the App to **track or
-  locate a person**, including by turning on Nearby on someone else's phone;
+  locate a person**, including by turning on Nearby on someone else's phone or by using Bluetooth
+  signals from the App to work out where someone is;
 - (c) post or send content that is sexually explicit, violent, hateful, discriminatory, defamatory,
   obscene, or otherwise breaks our Community Guidelines;
 - (d) send sexual content, or sexual advances after someone has asked you to stop or has not
@@ -114,96 +126,99 @@ You agree not to, and not to help anyone else to:
 - (f) solicit money, gifts, financial information or sexual services, promote commercial services,
   run scams, or advertise without our permission;
 - (g) impersonate anyone, misrepresent your identity, age or affiliation, or use someone else's photo;
-- (h) share another person's personal information, including photos, without their consent;
+- (h) share another person's personal information, including their match card, photos or messages,
+  without their consent, except in a report to us or to the authorities;
 - (i) use the App for any illegal purpose, or in violation of any law, including laws on privacy,
   data protection, consumer protection, and the use of mobile devices while driving;
-- (j) **spoof, falsify or manipulate your location**, or use emulators, bots, scripts, or multiple
-  devices or accounts to trigger Nearby notifications or collect information about users;
-- (k) scrape, crawl, harvest or collect data about other users or the Service by automated means;
-- (l) reverse engineer, decompile, disassemble or try to derive the source code of the App or our
-  servers, except where the law allows this despite this restriction;
-- (m) probe, scan or test the vulnerability of the Service, breach or circumvent any security or
-  authentication measure, rate limit or block, or interfere with the Service or other users'
-  enjoyment of it (good-faith security research reported to [CONTACT EMAIL] before disclosure is
-  welcome and will not be treated as a breach);
-- (n) introduce malware, or overload or disrupt our infrastructure;
+- (j) **relay, replay, spoof or manipulate Bluetooth signals or Nearby data** (for example to appear
+  near people you are not near, or to change your age), or use emulators, bots, scripts, modified or
+  imitation apps, or multiple devices to trigger matches or collect information about users;
+- (k) scrape, harvest, record, keep or collect other users' cards, photos or messages by any means
+  other than normal use of the App;
+- (l) reverse engineer, decompile, disassemble or try to derive the source code of the App, except
+  where the law allows this despite this restriction;
+- (m) interfere with other users' phones or the App's safety features, including blocks, passes, the
+  age check, on-device screening and rate limits (good-faith security research reported to
+  [CONTACT EMAIL] before disclosure is welcome and will not be treated as a breach);
+- (n) introduce malware, or send data designed to crash, overload or exploit other phones;
 - (o) use the App, its content or its output to train or improve any machine-learning model, or to
   build a competing product;
 - (p) copy, sell, sublicense or redistribute the App or its content except as these Terms allow.
 
 ## 6. Your content
 
-6.1. **What counts as your content.** "**Your Content**" means anything you add to the App that other
-users or we can see: your display name (first name), age as shown, profile photo, bio, dating and friends profile
-(gender, seeking, relationship status, looking-for), chat messages, reports and feedback.
-Birth data, readings and palm photos stay on your phone and are not Your Content shared with us,
-except the chart summary used for Nearby, as described in the Privacy Policy.
+6.1. **What counts as your content.** "**Your Content**" means anything you send from the App to
+other users or to us: your first name, age as shown, profile photo, bio, dating and friends profile
+(gender, seeking, relationship status, looking-for), the chart data on your Nearby card, chat
+messages, reports and feedback. Birth time and place, readings and palm photos stay on your phone and
+are not Your Content.
 
 6.2. **You keep ownership.** You own Your Content.
 
-6.3. **Licence to us.** You grant MetaVirtuoso a **worldwide, non-exclusive, royalty-free licence**,
-with the right to sublicense to our service providers acting for us, to host, store, copy, process,
-transmit, adapt (for example resize or compress), display and moderate Your Content **only as needed
-to operate, secure, moderate and improve the Service and to comply with law**. This includes showing
-your match card to nearby users you are matched with, showing your profile to your matches, and
-delivering your messages to the recipient.
-We do not use Your Content in advertising and do not sell it. The licence ends when Your Content is
-deleted from our systems, except for copies kept for the periods described in the Privacy Policy (for
-example, content attached to a safety report).
+6.3. **Licence.** You grant MetaVirtuoso a **worldwide, non-exclusive, royalty-free licence** to
+copy, process, transmit, adapt (for example resize or compress) and display Your Content **only as
+needed for the App to work as described** — including for the App on other users' phones to receive
+your Nearby card, show your match card and profile, and deliver and display your messages — and to
+use Your Content you send us in a report or email to keep users safe, enforce these Terms and comply
+with law. We do not use Your Content in advertising and do not sell it. **You understand that people
+you send Your Content to keep the copies on their phones**, and that we cannot recall them.
 
-6.4. **Your promises about Your Content.** You promise that you have all rights needed to post Your
-Content, that it is accurate and lawful, that it follows the Community Guidelines, and that it does not
-infringe anyone's intellectual-property, privacy or publicity rights. A profile photo must be of you,
-and any other identifiable person in it must have agreed to it.
+6.4. **Your promises about Your Content.** You promise that you have all rights needed to send Your
+Content, that it is accurate and lawful, that it follows the Community Guidelines, and that it does
+not infringe anyone's intellectual-property, privacy or publicity rights. A profile photo must be of
+you, and any other identifiable person in it must have agreed to it.
 
 6.5. **Feedback.** If you send us ideas or suggestions, you allow us to use them without obligation to
 you.
 
-## 7. Moderation and enforcement
+## 7. Safety tools, reports and enforcement
 
-7.1. **How we moderate.** To keep the community safe, display names, bios and every chat message are checked
-by automated text-moderation systems (provided by TypeSafe), and profile photos by automated image
-moderation (Google Cloud Vision SafeSearch), before other users can see them. Content that the
-systems are unsure about may be held for review by a person. Reports from users are triaged and
-reviewed. The Privacy Policy describes the data involved.
+7.1. **How the App keeps things safe without a server.** There is no central moderation. Instead:
+(a) the App on the **receiving** phone screens incoming photos and chat messages with the phone's
+on-device AI and hides or blurs content that may break the Community Guidelines (you can choose to
+view it); (b) no one can message you before you both accept; (c) you can **block**, **unmatch**,
+**snooze** and **pause Nearby** at any time; and (d) the App refuses cards showing an age under 18
+and limits how much data each nearby phone can send. Automated screening makes mistakes in both
+directions.
 
-7.1A. **Zero tolerance.** There is **no tolerance for objectionable content or abusive users**.
-We aim to review reports of objectionable content within 24 hours and, where they are upheld, to remove
-the content and eject the user who provided it.
+7.2. **Reports.** **Report** (on every match card, friend and chat) blocks the person on your phone
+and opens a pre-filled email to [CONTACT EMAIL] with the reported card and, if you choose, the
+messages. The report is sent only when you send that email. You can also email us directly.
 
-7.2. **What we may do.** We may, at our discretion and without prior notice where safety requires,
-refuse, hold, hide or remove any of Your Content; limit features (for example, pause your Nearby
-access); issue a warning; or suspend or permanently ban your account, if we reasonably believe you
-have broken these Terms, the Community Guidelines or the law, or that your use creates a risk to other
-users, us or third parties.
+7.3. **Zero tolerance and our response.** There is **no tolerance for objectionable content or
+abusive users**. We aim to read and respond to every report **within 24 hours**. Because the App
+has no server or accounts, **we cannot see, remove or edit content on users' phones, and we cannot
+suspend or ban a user's account**. Where a report is upheld we will, as appropriate: tell you what
+you can do (block, keep evidence, contact the police); preserve the report and pass it to law
+enforcement or emergency services where Section 7.5 applies; and [Engineering/Owner: if implemented,
+add the reported person's identity key to the list of blocked keys distributed with App updates, so
+that updated Apps refuse to match or chat with that key].
 
-7.3. **No duty to monitor.** We are not obliged to monitor content or conduct, and we are not
-responsible for content posted by users. Automated moderation makes mistakes in both directions.
+7.4. **No duty to monitor.** We are not obliged to monitor content or conduct, and we are not
+responsible for content users send each other.
 
-7.4. **Reports to authorities.** We may preserve content and share information with law enforcement
+7.5. **Reports to authorities.** We may preserve reports and share information with law enforcement
 or emergency services where we believe in good faith that it is required by law or necessary to
-prevent imminent harm, as described in the Privacy Policy.
+prevent imminent harm, as described in the Privacy Policy. In the US we report apparent child sexual
+exploitation to NCMEC.
 
-7.5. **Appeals.** If we remove your content or restrict your account, you can ask us to look again by
-emailing [CONTACT EMAIL] within 6 months. We will tell you the outcome. If you are in the EU, you may
-also have rights under the Digital Services Act, including to use a certified out-of-court dispute
-settlement body.
+7.6. **Questions and appeals.** If you disagree with how we handled a report, email [CONTACT EMAIL]
+within 6 months. If you are in the EU, you may also have rights under the Digital Services Act.
 
-7.6. **Reporting illegal content.** Anyone can report content they believe is illegal or infringes
+7.7. **Reporting illegal content.** Anyone can report content they believe is illegal or infringes
 their rights through the in-app Report button or by emailing [CONTACT EMAIL] with enough detail for
-us to find it. Copyright notices are covered in Section 9.3.
+us to understand it. Copyright notices are covered in Section 9.3.
 
 ## 8. Termination
 
-8.1. **By you.** You can stop using the App at any time and delete your account in the App.
+8.1. **By you.** You can stop using the App at any time and delete its data on your phone.
 
-8.2. **By us.** We may suspend or terminate your access to all or part of the App under Section 7.2, if
-required by law, or if we stop offering the App or a feature. Where reasonable and allowed, we will
-tell you in advance and give you a chance to export your data.
+8.2. **By us.** We may stop offering the App or a feature, or end your right to use the App if you
+break these Terms. Where reasonable and allowed, we will tell you in advance.
 
-8.3. **Effect.** On termination, your licence to use the App ends, and we delete your account data
-as described in the Privacy Policy. Sections 5 (as to past conduct), 6.3 (for retained copies), 6.4,
-6.5, 9, 11 to 14, and the Waiver survive termination.
+8.3. **Effect.** When these Terms end, your licence to use the App ends and you must stop using it.
+Copies of Your Content already on other users' phones are not affected. Sections 5 (as to past
+conduct), 6.3 (for copies already sent), 6.4, 6.5, 9, 11 to 14, and the Waiver survive termination.
 
 ## 9. Intellectual property
 
@@ -235,10 +250,10 @@ are handled by them under their policies.
 
 ## 11. Third-party services
 
-The App relies on services from third parties, including Apple, Google (Firebase, AICore/ML Kit, Cloud
-Vision) and TypeSafe. Your use of Apple's or Google's platforms, sign-in services and on-device models
-is also subject to their terms. We are not responsible for third-party services, but we choose our
-processors carefully, as described in the Privacy Policy. The App does not contain advertising.
+The App relies on your phone's platform, including Apple's or Google's operating system, Bluetooth
+stack, geocoding service, on-device AI models (Apple Foundation Models; Google AICore / Gemini Nano
+through ML Kit) and notifications. Your use of them is subject to Apple's or Google's terms. We are not
+responsible for third-party services. The App does not contain advertising.
 
 ## 12. App store terms
 
@@ -308,17 +323,17 @@ App, as if set out in full here.
 our practices. We will post the new version in the App and at [WEBSITE URL]/legal/terms with a new
 version number and effective date. **For material changes, we will notify you in the App at least 15
 days before they take effect** (unless the change is needed sooner for legal or safety reasons) and,
-where required, ask you to accept them. If you do not agree, you may stop using the App and delete your
-account; continuing to use it after the effective date means you accept the changes. Changes to the
+where required, ask you to accept them. If you do not agree, you may stop using the App and delete its
+data; continuing to use it after the effective date means you accept the changes. Changes to the
 arbitration agreement follow Waiver Section 14.8. Changes do not apply retroactively to Disputes we
 already knew about.
 
 14.2. **Changes to the App.** We may add, change, suspend or remove features, including Nearby, at any
 time. Where a change materially reduces a feature you rely on, we will try to give reasonable notice.
 
-14.3. **Notices.** We may send notices to you in the App or by push notification, and, if you gave us an
-email address through a linked sign-in, by email. You can send notices to us at [CONTACT EMAIL] and
-[ADDRESS].
+14.3. **Notices.** We give notices to you in the App (for example when an App update contains new
+Terms) and, if you have emailed us, by replying to that email. You can send notices to us at
+[CONTACT EMAIL] and [ADDRESS].
 
 14.4. **Export controls.** You must comply with all applicable export and sanctions laws.
 

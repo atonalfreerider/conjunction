@@ -5,6 +5,4 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.3.21" apply false
     id("org.jetbrains.kotlin.jvm") version "2.3.21" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.21" apply false
-    // Applied by :app only when app/google-services.json exists (the app builds without Firebase).
-    id("com.google.gms.google-services") version "4.5.0" apply false
 }

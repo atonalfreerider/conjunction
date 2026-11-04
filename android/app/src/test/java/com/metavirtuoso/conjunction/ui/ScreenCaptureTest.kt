@@ -26,7 +26,13 @@ import com.metavirtuoso.conjunction.nearby.EncounterCard
 import com.metavirtuoso.conjunction.nearby.MatchCard
 import com.metavirtuoso.conjunction.ui.match.MatchAnimation
 import com.metavirtuoso.conjunction.ui.match.SwipeCardPage
+import com.metavirtuoso.conjunction.nearby.ChatLine
+import com.metavirtuoso.conjunction.nearby.ChatStatus
+import com.metavirtuoso.conjunction.nearby.Screening
+import com.metavirtuoso.conjunction.nearby.StoredEncounter
+import com.metavirtuoso.conjunction.nearby.StoredFriend
 import com.metavirtuoso.conjunction.ui.screens.ChartScreen
+import com.metavirtuoso.conjunction.ui.screens.ChatScreen
 import com.metavirtuoso.conjunction.ui.screens.EasternScreen
 import com.metavirtuoso.conjunction.ui.screens.NearbyScreen
 import com.metavirtuoso.conjunction.ui.screens.OnboardingFlow
@@ -82,12 +88,12 @@ class ScreenCaptureTest {
         onboardingComplete = true,
     )
     private val card = EncounterCard(
-        encounterId = "demo", otherUid = "other", kind = "dating", status = "pending",
+        encounterId = "demo", kind = "dating", status = "pending",
         total = 87, western = 84, chinese = 95, blood = 78,
         highlights = listOf("Your Venus trines their Sun", "Horse and Dog are trine allies"),
         birthdayTwin = false, exactTwin = false,
         card = MatchCard("Orion", 31, "sagittarius", "leo", "aries", "horse", "single", "both", hasPhoto = false),
-        photoUrl = null, expiresAt = null,
+        photoPath = null,
     )
 
     private fun capture(name: String) {
@@ -106,8 +112,24 @@ class ScreenCaptureTest {
     @Test
     fun renderEveryScreen() {
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        org.robolectric.Shadows.shadowOf(context.packageManager).setSystemFeature(android.content.pm.PackageManager.FEATURE_BLUETOOTH_LE, true)
         val container = AppContainer(context, NoNanoModel())
         val charts = Charts.compute(birth, profile.bloodType)
+        // Sample Nearby data on this (Robolectric) phone: one pending card, one friend with a chat.
+        val now = System.currentTimeMillis()
+        kotlinx.coroutines.runBlocking { container.nearby.store.load() }
+        container.nearby.store.update { st ->
+            st.copy(
+                encounters = listOf(StoredEncounter("fp1", "dating", 87, 84, 95, 78, card.highlights, false, false, 31, "sagittarius", "leo", "aries", "horse", "single", "both", firstName = "Orion", createdAt = now, expiresAt = now + 20 * 3_600_000L)),
+                friends = listOf(StoredFriend("f1", "AA==", "AA==", "20854 15157 29182 95769 12447 76044", "dating", "Lyra", "Tea and telescopes.", "libra", "pisces", null, "rabbit", null, Screening.SAFE, now, now)),
+                messages = listOf(
+                    ChatLine("a".repeat(32), "f1", false, "Hi! Was that you by the planetarium?", now - 600_000, ChatStatus.RECEIVED, Screening.SAFE, seen = true),
+                    ChatLine("b".repeat(32), "f1", true, "Yes! The one with the gold scarf ☌", now - 540_000, ChatStatus.READ),
+                    ChatLine("c".repeat(32), "f1", false, "Add me on whatsapp", now - 500_000, ChatStatus.RECEIVED, Screening.FLAGGED),
+                    ChatLine("d".repeat(32), "f1", true, "See you Saturday", now - 60_000, ChatStatus.QUEUED),
+                ),
+            )
+        }
         var screen by mutableStateOf("onboarding_welcome")
         compose.mainClock.autoAdvance = false
         compose.setContent {
@@ -119,7 +141,8 @@ class ScreenCaptureTest {
                     "today" -> TodayScreen(container, charts)
                     "eastern" -> EasternScreen(container, profile, charts)
                     "palm" -> PalmScreen(container)
-                    "nearby" -> NearbyScreen(container, profile, charts, openChat = {})
+                    "nearby" -> NearbyScreen(container, profile.copy(nearbyEnabled = true, nearbyConsent = true), charts, openChat = {})
+                    "chat" -> ChatScreen(container, ChatTarget("f1"), onClose = {})
                     "profile" -> ProfileScreen(container, profile, charts)
                     "match_animation" -> MatchAnimation(card, R.drawable.zodiac_leo, null, "Fire meets fire: a bright, easy warmth.", onFinished = {})
                     "twin_animation" -> MatchAnimation(card.copy(birthdayTwin = true, kind = "friends"), R.drawable.zodiac_leo, null, "Born on the same day — the sky remembers.", onFinished = {})
@@ -135,6 +158,7 @@ class ScreenCaptureTest {
             "eastern" to 3000L,
             "palm" to 1000L,
             "nearby" to 1000L,
+            "chat" to 1000L,
             "profile" to 1000L,
             "match_animation" to 1400L,
             "twin_animation" to 2400L,

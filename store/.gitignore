@@ -1,0 +1,3 @@
+# The root .gitignore ignores "*key*.txt" (API key files). That also matches the App Store
+# keywords field, which is store copy, not a secret: re-include it.
+!/appstore/fastlane/metadata/*/keywords.txt

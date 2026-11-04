@@ -1,0 +1,96 @@
+# iOS CI for Conjunction: tests ConjunctionKit (ios/, the engines, the P2P protocol and the app's
+# Nearby logic) on macOS, where swift-crypto runs on CryptoKit, then builds the SwiftUI app for the
+# iOS Simulator from ios/App/project.yml. This is the only place the app is type-checked: there is
+# no Mac on the development PC (see ios/README.md, "What is verified where"). Nothing is signed.
+name: iOS build
+
+on:
+  push:
+    paths: ["ios/**", "legal/**", "testdata/**", "art/**", "android/core/src/main/resources/**", "tools/p2p-sim/personas/**", ".github/workflows/ios-*.yml"]
+  pull_request:
+    paths: ["ios/**", "legal/**", "testdata/**", "art/**", "android/core/src/main/resources/**", "tools/p2p-sim/personas/**", ".github/workflows/ios-*.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PROJECT: ios/App/Conjunction.xcodeproj
+  DERIVED_DATA: build/DerivedData
+  MINIMUM_XCODE_MAJOR: "26"
+
+jobs:
+  ios:
+    name: ConjunctionKit tests and the iOS app
+    # The newest macOS image (Xcode 27; Xcode 26 or later is needed for Foundation Models).
+    runs-on: xcode-27
+    timeout-minutes: 90
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Xcode
+        run: |
+          xcodebuild -version
+          swift --version
+          major=$(xcodebuild -version | sed -n 's/^Xcode \([0-9][0-9]*\).*/\1/p')
+          if [ -z "$major" ] || [ "$major" -lt "$MINIMUM_XCODE_MAJOR" ]; then
+            echo "::error::Conjunction needs Xcode $MINIMUM_XCODE_MAJOR or newer (Foundation Models SDK)"
+            exit 1
+          fi
+          command -v xcbeautify >/dev/null || brew install xcbeautify
+          command -v xcodegen >/dev/null || brew install xcodegen
+
+      - name: Test ConjunctionKit (macOS, CryptoKit)
+        working-directory: ios
+        run: swift test
+
+      - name: Generate the Xcode project
+        run: |
+          # The committed project is regenerated so the build always matches project.yml.
+          xcodegen generate --spec ios/App/project.yml
+          mkdir -p "$PROJECT/project.xcworkspace/xcshareddata/swiftpm"
+          cp ios/Package.resolved "$PROJECT/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+          if ! git diff --quiet -- ios/App; then
+            echo "::warning::ios/App differs from a fresh xcodegen run; regenerate and commit (diff below)"
+            git --no-pager diff --stat -- ios/App
+          fi
+          xcodebuild -list -project "$PROJECT"
+
+      - name: Build the app (iOS Simulator, Debug)
+        run: |
+          xcodebuild build -project "$PROJECT" -scheme Conjunction -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO | xcbeautify --renderer github-actions
+
+      - name: Build the app (iOS device, Release, unsigned)
+        run: |
+          xcodebuild build -project "$PROJECT" -scheme Conjunction -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO | xcbeautify --renderer github-actions
+
+      - name: Check the built app
+        run: |
+          app="$DERIVED_DATA/Build/Products/Release-iphoneos/Conjunction.app"
+          plist="$app/Info.plist"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist" | grep -qx com.metavirtuoso.conjunction
+          /usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$plist"
+          for f in WAIVER.md TERMS.md PRIVACY.md COMMUNITY_GUIDELINES.md SAFETY_TIPS.md PrivacyInfo.xcprivacy \
+                   cinzel_decorative_bold.ttf cormorant_garamond_variable.ttf; do
+            [ -e "$app/$f" ] || { echo "::error::$f is missing from the app bundle"; exit 1; }
+          done
+          if /usr/libexec/PlistBuddy -c 'Print :NSLocationWhenInUseUsageDescription' "$plist" 2>/dev/null; then
+            echo "::error::the serverless app must not ask for location"; exit 1
+          fi
+          # No keys or Firebase in the bundle, the executable included (-a: binary files as text).
+          if grep -rla -e "AIza[0-9A-Za-z_-]\{20,\}" -e "sk-[A-Za-z0-9]\{20,\}" -e "GoogleService-Info" "$app"; then
+            echo "::error::something that looks like an API key or Firebase config is in the app"; exit 1
+          fi

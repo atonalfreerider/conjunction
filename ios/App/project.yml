@@ -1,0 +1,145 @@
+# XcodeGen spec for the Conjunction iOS app. Generate the project with
+#
+#   ~/tools/XcodeGen/.build/release/xcodegen generate --spec ios/App/project.yml   (from the repository root)
+#   (or: brew install xcodegen; xcodegen generate --spec ios/App/project.yml)
+#
+# which writes ios/App/Conjunction.xcodeproj plus Resources/Conjunction/Info.plist and
+# Conjunction.entitlements (edit them here, not there: they are rewritten on every generation).
+# Regenerate after adding, removing or renaming a file. See ios/README.md.
+#
+#   Conjunction   iOS 17+ app, iPhone and iPad   com.metavirtuoso.conjunction   1.0.0 (1)
+#
+# The app depends on ConjunctionKit (ios/Package.swift): ConjunctionCore, the engines shared with
+# Android plus the serverless P2P protocol and the app's Nearby logic, tested on Linux.
+#
+# Signing: automatic, DEVELOPMENT_TEAM left empty on purpose (the owner's Team ID goes below, or
+# CI passes it). No push, no App Groups, no location: a free Personal Team can sideload it.
+#
+# The usage strings below must match legal/IN_APP_CONSENT_COPY.md section 9 word for word
+# (ios/Tests/ConjunctionCoreTests/AppSupportTests.swift checks them on every `swift test`).
+
+name: Conjunction
+
+options:
+  minimumXcodeGenVersion: 2.46.0
+  xcodeVersion: "27.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  groupSortPosition: top
+  deploymentTarget:
+    iOS: "17.0"
+
+packages:
+  ConjunctionKit:
+    path: ..
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    VERSIONING_SYSTEM: apple-generic
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    GENERATE_INFOPLIST_FILE: "NO"
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    ENABLE_PREVIEWS: "YES"
+    ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+    DEAD_CODE_STRIPPING: "YES"
+    LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
+
+targets:
+  Conjunction:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Conjunction
+        excludes: ["**/*.md"]
+      - path: Resources/Assets.xcassets
+      - path: Resources/Fonts
+        buildPhase: resources
+      # Info.plist and the entitlements (no build phase) and PrivacyInfo.xcprivacy (a resource).
+      - path: Resources/Conjunction
+      # The legal documents, bundled as they are in the repository (the single source of truth).
+      - path: ../../legal/WAIVER.md
+        buildPhase: resources
+      - path: ../../legal/TERMS.md
+        buildPhase: resources
+      - path: ../../legal/PRIVACY.md
+        buildPhase: resources
+      - path: ../../legal/COMMUNITY_GUIDELINES.md
+        buildPhase: resources
+      - path: ../../legal/SAFETY_TIPS.md
+        buildPhase: resources
+    dependencies:
+      - package: ConjunctionKit
+        product: ConjunctionCore
+      # Readings and screening use Apple's Foundation Models (iOS 26) behind `#if canImport` and
+      # `if #available`; weak linking keeps the app launching on iOS 17 to 25.
+      - sdk: FoundationModels.framework
+        weak: true
+      - sdk: SensitiveContentAnalysis.framework
+        weak: true
+    entitlements:
+      path: Resources/Conjunction/Conjunction.entitlements
+      properties:
+        # Incoming profile photos are checked with SensitiveContentAnalysis when the person has
+        # Sensitive Content Warning on (SPEC 5c); otherwise they are blurred until tapped.
+        com.apple.developer.sensitivecontentanalysis.client:
+          - analysis
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.metavirtuoso.conjunction
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: "NO"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_IDENTITY: Apple Development
+    info:
+      path: Resources/Conjunction/Info.plist
+      properties:
+        CFBundleDisplayName: Conjunction
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSRequiresIPhoneOS: true
+        # E2E chat encryption (CryptoKit only): see store/appstore/INFO_PLIST.md and APP_STORE_CONNECT.md §7.
+        ITSAppUsesNonExemptEncryption: true
+        ConjunctionSupportEmail: themetavirtuoso@gmail.com
+        UIAppFonts:
+          - cinzel_decorative_regular.ttf
+          - cinzel_decorative_bold.ttf
+          - cinzel_variable.ttf
+          - cormorant_garamond_variable.ttf
+          - cormorant_garamond_italic_variable.ttf
+        NSBluetoothAlwaysUsageDescription: "Conjunction uses Bluetooth only while Nearby is on, to find people close by who also turned Nearby on and to exchange match cards and encrypted messages directly with their phones. It doesn't use your location."
+        NSCameraUsageDescription: "Conjunction uses the camera to photograph your palm for a reading on this phone, and to take a profile photo if you choose."
+        # Nearby keeps advertising, scanning and talking to peers in the background (state restoration).
+        UIBackgroundModes:
+          - bluetooth-central
+          - bluetooth-peripheral
+        UIRequiredDeviceCapabilities:
+          - arm64
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIUserInterfaceStyle: Dark
+        UIApplicationSupportsIndirectInputEvents: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+schemes:
+  Conjunction:
+    build:
+      targets:
+        Conjunction: all
+    run:
+      config: Debug
+    archive:
+      config: Release

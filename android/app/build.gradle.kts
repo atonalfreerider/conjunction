@@ -6,9 +6,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 /**
  * Conjunction Android app (Jetpack Compose).
  *
- * Builds and runs WITHOUT Firebase: the google-services plugin is applied only when
- * app/google-services.json exists. Without it the Nearby screen says "Nearby service not
- * configured in this build" and every on-device feature (chart, readings, palm) still works.
+ * Serverless build (SPEC 5c): no Firebase, no push, no location. Nearby matching runs phone to
+ * phone over Bluetooth LE (docs/P2P_PROTOCOL.md, nearby/ package).
  *
  * Library versions are the newest that support compileSdk 36 + AGP 8.13 (checked against each
  * AAR's aar-metadata.properties on Google Maven, 2026-11-03): androidx.core 1.19 / Compose UI 1.12
@@ -19,11 +18,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-}
-
-val hasGoogleServices = file("google-services.json").exists()
-if (hasGoogleServices) {
-    apply(plugin = "com.google.gms.google-services")
 }
 
 /** Upload-key settings for Play releases; kept out of git in android/keystore.properties (same layout as Sundial). */
@@ -41,12 +35,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
-        buildConfigField("boolean", "FIREBASE_CONFIGURED", hasGoogleServices.toString())
-        // Firebase Local Emulator Suite host for debug builds only (gradle property conjunction.emulatorHost).
-        buildConfigField("String", "EMULATOR_HOST", "\"\"")
-        // "Report this reading" address (Play AI-content policy). Set conjunction.supportEmail in
-        // android/gradle.properties or ~/.gradle/gradle.properties; empty = share sheet.
-        val supportEmail = providers.gradleProperty("conjunction.supportEmail").getOrElse("").trim()
+        // Support / report address ("Report this reading", Report a person, arbitration opt-out).
+        // legal/README.md [CONTACT EMAIL]; override with -Pconjunction.supportEmail=... .
+        val supportEmail = providers.gradleProperty("conjunction.supportEmail").getOrElse("themetavirtuoso@gmail.com").trim()
         buildConfigField("String", "SUPPORT_EMAIL", "\"$supportEmail\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,10 +59,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            val emulatorHost = providers.gradleProperty("conjunction.emulatorHost").getOrElse("")
-            buildConfigField("String", "EMULATOR_HOST", "\"$emulatorHost\"")
-        }
         release {
             // Unsigned when keystore.properties is absent; Play needs the upload-key-signed bundle.
             signingConfig = signingConfigs.findByName("upload")
@@ -157,16 +144,9 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.6.2")
     implementation("androidx.camera:camera-view:1.6.2")
 
-    // Nearby.
-    implementation("com.google.android.gms:play-services-location:21.4.0")
-    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-functions")
-    implementation("com.google.firebase:firebase-messaging")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
+    // Nearby (Bluetooth LE, android.bluetooth only; no Play services, no Firebase).
+    implementation("androidx.datastore:datastore:1.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20250517")

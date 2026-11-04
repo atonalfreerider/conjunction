@@ -1,7 +1,5 @@
 package com.metavirtuoso.conjunction.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,7 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metavirtuoso.conjunction.AppContainer
@@ -59,8 +56,8 @@ import com.metavirtuoso.conjunction.data.charts
 import com.metavirtuoso.conjunction.legal.ConsentRecord
 import com.metavirtuoso.conjunction.legal.LegalDoc
 import com.metavirtuoso.conjunction.legal.LegalTexts
-import com.metavirtuoso.conjunction.nearby.PushEvent
-import com.metavirtuoso.conjunction.nearby.PushKind
+import com.metavirtuoso.conjunction.nearby.NearbyEvent
+import com.metavirtuoso.conjunction.nearby.NearbyEventKind
 import com.metavirtuoso.conjunction.ui.match.MatchExperience
 import com.metavirtuoso.conjunction.ui.screens.AgeBlockedScreen
 import com.metavirtuoso.conjunction.ui.screens.ChartScreen
@@ -87,17 +84,17 @@ enum class Tab(val label: Int, val icon: ImageVector) {
     PROFILE(R.string.tab_profile, Icons.Outlined.Person),
 }
 
-/** An open chat (after a mutual match). */
-data class ChatTarget(val pairId: String, val otherUid: String)
+/** An open chat with a friend (after a mutual match), by local friend id. */
+data class ChatTarget(val friendId: String)
 
 /**
  * Top of the UI: waits for the stored profile, then shows the age block, onboarding, a legal
  * re-acceptance when the bundled documents changed version, or the main tabs. Match / twin /
- * conjunction events (FCM in the foreground, or a tapped notification) open the full-screen
- * match experience over everything.
+ * conjunction events (from the Bluetooth engine while the app is open, or a tapped local
+ * notification) open the full-screen match experience over everything.
  */
 @Composable
-fun ConjunctionRoot(container: AppContainer, pendingEvent: PushEvent?, onEventConsumed: () -> Unit, onReady: () -> Unit) {
+fun ConjunctionRoot(container: AppContainer, pendingEvent: NearbyEvent?, onEventConsumed: () -> Unit, onReady: () -> Unit) {
     val profile by container.profileStore.profile.collectAsState(initial = null)
     val p = profile
     LaunchedEffect(p != null) { if (p != null) onReady() }
@@ -147,29 +144,33 @@ private fun rememberChangedLegalDocs(container: AppContainer): List<LegalDoc> {
 }
 
 @Composable
-private fun MainScaffold(container: AppContainer, profile: Profile, pendingEvent: PushEvent?, onEventConsumed: () -> Unit) {
-    val context = LocalContext.current
+private fun MainScaffold(container: AppContainer, profile: Profile, pendingEvent: NearbyEvent?, onEventConsumed: () -> Unit) {
     var tab by rememberSaveable { mutableStateOf(Tab.TODAY) }
     var chat by remember { mutableStateOf<ChatTarget?>(null) }
-    var overlay by remember { mutableStateOf<PushEvent?>(null) }
+    var overlay by remember { mutableStateOf<NearbyEvent?>(null) }
     val charts by remember(container) { container.profileStore.profile.charts() }.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
 
-    // Foreground pushes and tapped notifications.
-    LaunchedEffect(Unit) { container.nearby.events.collect { overlay = it } }
+    // Matches found while the app is open, and tapped notifications.
+    LaunchedEffect(Unit) {
+        container.nearby.events.collect { event ->
+            // A mutual match while that person's card is already on screen: the card moves on by itself.
+            if (overlay?.encounterId == null || overlay?.encounterId != event.encounterId) overlay = event
+        }
+    }
     LaunchedEffect(pendingEvent) {
         val event = pendingEvent ?: return@LaunchedEffect
-        if (event.kind == PushKind.MESSAGE && event.pairId != null) {
+        val friend = event.friendId
+        if (event.kind == NearbyEventKind.MESSAGE && friend != null) {
             tab = Tab.NEARBY
+            chat = ChatTarget(friend)
         } else {
             overlay = event
         }
         onEventConsumed()
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        scope.launch { container.nearby.resumeServiceIfNeeded(granted) }
+        scope.launch { container.nearby.resumeServiceIfNeeded() }
     }
 
     Box(Modifier.fillMaxSize().background(Palette.Midnight)) {

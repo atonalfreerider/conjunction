@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest for the serverless Bluetooth build (store/appstore/APP_PRIVACY.md):
+  no tracking, no collected data types (App Privacy label "Data Not Collected": nothing reaches the
+  developer or a partner; Nearby cards and chats go phone to phone), and the one required-reason API
+  the app's own code uses: UserDefaults (@AppStorage for the palm-hand choice, @SceneStorage),
+  reason CA92.1 (the app's own settings). The app reads no file timestamps, no boot time and no disk
+  space. Check Xcode's privacy report on the CI archive when dependencies change.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

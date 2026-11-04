@@ -1,9 +1,5 @@
 package com.metavirtuoso.conjunction.ui.components
 
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -16,11 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -37,6 +38,7 @@ import com.metavirtuoso.conjunction.BuildConfig
 import com.metavirtuoso.conjunction.R
 import com.metavirtuoso.conjunction.ai.Reading
 import com.metavirtuoso.conjunction.data.ReadingSource
+import com.metavirtuoso.conjunction.nearby.ReportEmail
 import com.metavirtuoso.conjunction.ui.theme.LocalReducedMotion
 import com.metavirtuoso.conjunction.ui.theme.Palette
 
@@ -65,8 +67,9 @@ fun ReadingCard(
         val target = if (ready) 0f else 180f
         if (reduced) rotation.snapTo(target) else rotation.animateTo(target, tween(900, easing = FastOutSlowInEasing))
     }
-    val context = LocalContext.current
+    var reporting by remember { mutableStateOf(false) }
     val showFront = rotation.value < 90f
+    if (reporting && state is ReadingState.Ready) ReportReadingDialog(title, state.reading.text) { reporting = false }
     Box(
         modifier
             .fillMaxWidth()
@@ -97,7 +100,7 @@ fun ReadingCard(
                 FinePrint(stringResource(R.string.entertainment_note), Modifier.padding(top = 4.dp))
                 Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (onRefresh != null) GhostButton("Write again", onClick = onRefresh, modifier = Modifier.weight(1f))
-                    GhostButton(stringResource(R.string.report_reading), onClick = { reportReading(context, title, state.reading.text) }, modifier = Modifier.weight(1f), color = Palette.RoseCopper)
+                    GhostButton(stringResource(R.string.report_reading), onClick = { reporting = true }, modifier = Modifier.weight(1f), color = Palette.RoseCopper)
                 }
             }
         } else {
@@ -124,25 +127,38 @@ fun ReadingCard(
 }
 
 /**
- * "Report this reading" (Google Play AI-generated content policy): opens an email to the support
- * address set at build time (gradle property conjunction.supportEmail), or the share sheet when no
- * address is configured. Nothing is sent without the person choosing to send it.
+ * "Report this reading" (Google Play AI-generated content policy): asks what was wrong, then opens
+ * an email to the support address with the reading and the reason (legal/IN_APP_CONSENT_COPY.md
+ * section 8: report_reading_body). Birth details are not included. Nothing is sent until the person
+ * presses Send in their email app.
  */
-fun reportReading(context: Context, title: String, text: String) {
-    val subject = "Report a ${context.getString(R.string.app_name)} reading (${BuildConfig.VERSION_NAME})"
-    val body = "What was wrong with this reading?\n\n\n---\n$title\n$text"
-    val email = BuildConfig.SUPPORT_EMAIL
-    val intent = if (email.isNotBlank()) {
-        Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).apply {
-            putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-            putExtra(Intent.EXTRA_SUBJECT, subject)
-            putExtra(Intent.EXTRA_TEXT, body)
-        }
-    } else {
-        Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, subject).putExtra(Intent.EXTRA_TEXT, body), "Report this reading")
-    }
-    try {
-        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-    } catch (_: ActivityNotFoundException) {
-    }
+@Composable
+fun ReportReadingDialog(title: String, text: String, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    var reason by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    val appName = stringResource(R.string.app_name)
+    val noEmailApp = stringResource(R.string.report_no_email_app, BuildConfig.SUPPORT_EMAIL)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Palette.InkViolet,
+        title = { GoldText(stringResource(R.string.report_reading), style = MaterialTheme.typography.titleLarge) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.report_reading_body), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
+                OrnateTextField(reason, { reason = it.take(1000) }, label = "What was wrong? (optional)", singleLine = false, minLines = 3)
+                note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Palette.RoseCopper) }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val subject = "$appName report: reading"
+                val body = "What was wrong with this reading?\n${reason.trim().ifEmpty { "(not given)" }}\n\n---\n$title\n$text\n\n" +
+                    "App: $appName ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}), Android ${android.os.Build.VERSION.RELEASE}"
+                if (ReportEmail.open(context, subject, body)) onDismiss()
+                else note = noEmailApp
+            }) { Text("WRITE EMAIL", color = Palette.Gold) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("CANCEL", color = Palette.MoonstoneDim) } },
+    )
 }

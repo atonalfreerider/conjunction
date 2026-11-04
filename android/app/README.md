@@ -2,7 +2,8 @@
 
 Jetpack Compose app for `com.metavirtuoso.conjunction` (versionCode 1, versionName 1.0.0). Engines
 (chart, Chinese zodiac, compatibility, match filter, palm features, prompts, fallback readings)
-live in `:core`; this module is UI, on-device AI, camera/palm analysis, Nearby and Firebase.
+live in `:core`; this module is UI, on-device AI, camera/palm analysis and serverless Bluetooth Nearby
+(SPEC 5c, `docs/P2P_PROTOCOL.md`). There is no Firebase, no push and no location permission.
 
 ## Build
 
@@ -13,19 +14,11 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :app:assembleDebug :app:b
 
 * **Network once per clean build:** `:app:downloadHandLandmarker` fetches Google's official
   `hand_landmarker.task` (float16, v1) into `build/generated/mlmodels/` and checks its SHA-256.
-* **Firebase is optional.** Without `app/google-services.json` the google-services plugin is not
-  applied, `FirebaseApp` is never initialised, and the Nearby tab says *"Nearby service not
-  configured in this build"*. Everything on-device works. To enable Nearby, download
-  `google-services.json` for `com.metavirtuoso.conjunction` from the Firebase console into `app/`
-  (it is git-ignored) and deploy `backend/`.
-* **Local backend:** `-Pconjunction.emulatorHost=10.0.2.2` points a debug build at the Firebase
-  Local Emulator Suite (auth 9099, functions 5001, firestore 8080, storage 9199). Debug builds allow
-  cleartext only to 10.0.2.2/localhost (`src/debug/res/xml/network_security_config.xml`).
 * **Release signing** comes from `android/keystore.properties` (same keys as Sundial:
   `storeFile`, `storePassword`, `keyAlias`, `keyPassword`). Without it `bundleRelease` produces an
   unsigned bundle. R8 (minify + shrink resources) is on; rules in `proguard-rules.pro`.
-* **"Report this reading"** (Play AI-content policy) emails `-Pconjunction.supportEmail=...` or
-  falls back to the share sheet. Set the address before release.
+* **Support address** (Report this reading, Report a person, arbitration opt-out): defaults to
+  `themetavirtuoso@gmail.com` (the store files' address); override with `-Pconjunction.supportEmail=...`.
 
 ## Generated assets (re-run when the sources change)
 
@@ -48,7 +41,7 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :app:assembleDebug :app:b
 | `ui/match` | match animation (medallions spiral in, merge, burst, count-up; twin variant with star confetti), swipe card, "It's a Conjunction!" popup |
 | `ai` | Gemini Nano wrapper (`OnDeviceModel.kt`, ML Kit GenAI Prompt API 1.0.0-beta5), `ReadingService` (core prompts → model → cleaner, or core fallback), daily reminder |
 | `palm` | MediaPipe HandLandmarker + documented ridge analysis → core `PalmAnalyzer` |
-| `nearby` | `NearbyApi.kt` (the whole backend contract), foreground location service, FCM service, notifications |
+| `nearby` | Bluetooth Nearby: `BleTransport` (advertiser + GATT server INBOX/OUTBOX + filtered scanner + GATT client, RSSI gate, reconnect back-off), `NearbyEngine` (drives core `P2pLink` per link: de-duplication, Matches inbox, swipes out of range, friends, store-and-forward encrypted chat, receipts), `P2pStore` (DataStore JSON: friends, chats, inbox, hide/block list), `KeystoreIdentity` (P-256 PURPOSE_AGREE_KEY), `ContentScreening` (Gemini Nano + rule fallback), `NearbyBluetoothService` (`connectedDevice` FGS), local notifications, report email |
 | `tz` | offline time-zone grid reader |
 | `legal` | bundled documents, versions, SHA-256, consent ledger |
 
@@ -61,10 +54,28 @@ Robolectric render of every main screen (no phone or emulator needed):
 ```
 
 On a phone, debug builds include `debug.MatchGalleryActivity` (src/debug only, absent from
-release) so the match animation and swipe card can be seen without a backend:
+release) so the match animation and swipe card can be seen without a second phone:
 
 ```
 adb shell am start -n com.metavirtuoso.conjunction/.debug.MatchGalleryActivity --es screen match   # or twin, card
+```
+
+## Bluetooth test persona (debug builds)
+
+`debug.P2pTestService` runs the real Nearby stack as a fixed test persona ("Vega") with its own
+store and Keystore alias (the owner's data is never touched), driven over adb. With
+`tools/p2p-sim` on the laptop:
+
+```
+adb shell pm grant com.metavirtuoso.conjunction android.permission.BLUETOOTH_SCAN   # + ADVERTISE, CONNECT
+PY tools/p2p-sim/sim.py both aurora -v                          # laptop: test peer Aurora
+S="-n com.metavirtuoso.conjunction/.debug.P2pTestService"
+adb shell am start-foreground-service $S -a start
+adb shell am start-foreground-service $S -a swipe --es dir right
+adb shell am start-foreground-service $S -a chat --es text "hello"
+adb shell am start-foreground-service $S -a status            # dumps cards, friends, messages
+adb shell am start-foreground-service $S -a stop               # ... and -a reset to wipe Vega's data
+adb logcat -s ConjunctionP2P ConjunctionP2PTest
 ```
 
 ## Offline time-zone grid

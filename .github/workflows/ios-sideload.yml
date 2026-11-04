@@ -1,0 +1,76 @@
+# Sideload build: the iOS app for a real iPhone, unsigned, as `Conjunction-sideload.ipa` in the
+# `conjunction-sideload-ipa` artifact. A sideloading tool (e.g. Plume Impactor, from Linux) re-signs
+# it with a free Apple Account (Personal Team) and installs it over USB; see ios/README.md.
+#
+# Nothing here needs a paid-program entitlement: Bluetooth background modes, local notifications and
+# the Keychain work with a Personal Team. The SensitiveContentAnalysis entitlement is dropped by the
+# ad hoc signature below, so on a sideloaded build received photos stay blurred until tapped.
+name: iOS sideload
+
+on:
+  push:
+    branches: [main]
+    paths: ["ios/**", "legal/**", "art/**", ".github/workflows/ios-*.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-sideload-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PROJECT: ios/App/Conjunction.xcodeproj
+  DERIVED_DATA: build/DerivedData
+
+jobs:
+  ipa:
+    name: Unsigned iOS app for sideloading
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Tools
+        run: |
+          xcodebuild -version
+          command -v xcbeautify >/dev/null || brew install xcbeautify
+          command -v xcodegen >/dev/null || brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: |
+          xcodegen generate --spec ios/App/project.yml
+          mkdir -p "$PROJECT/project.xcworkspace/xcshareddata/swiftpm"
+          cp ios/Package.resolved "$PROJECT/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+
+      - name: Build the iOS app (iOS device, Release)
+        run: |
+          xcodebuild build -project "$PROJECT" -scheme Conjunction -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO | xcbeautify --renderer github-actions
+
+      - name: Package Conjunction-sideload.ipa
+        run: |
+          app="$DERIVED_DATA/Build/Products/Release-iphoneos/Conjunction.app"
+          rm -rf build/Payload && mkdir -p build/Payload
+          cp -R "$app" build/Payload/
+          app=build/Payload/Conjunction.app
+          # Ad hoc, without entitlements, innermost first; the sideloading tool re-signs it.
+          find "$app" -depth \( -name '*.framework' -o -name '*.dylib' -o -name '*.appex' \) -print0 |
+            xargs -0 -I{} codesign --force --sign - {}
+          codesign --force --sign - "$app"
+          (cd build && zip -qry Conjunction-sideload.ipa Payload)
+          ls -l build/Conjunction-sideload.ipa
+
+      - name: Upload Conjunction-sideload.ipa
+        uses: actions/upload-artifact@v7
+        with:
+          name: conjunction-sideload-ipa
+          path: build/Conjunction-sideload.ipa
+          if-no-files-found: error

@@ -26,17 +26,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -51,104 +53,109 @@ import androidx.compose.ui.unit.dp
 import com.metavirtuoso.conjunction.AppContainer
 import com.metavirtuoso.conjunction.R
 import com.metavirtuoso.conjunction.legal.LegalDoc
-import com.metavirtuoso.conjunction.nearby.FriendProfile
-import com.metavirtuoso.conjunction.nearby.NearbyApi
-import com.metavirtuoso.conjunction.nearby.NearbyException
+import com.metavirtuoso.conjunction.nearby.ChatStatus
+import com.metavirtuoso.conjunction.nearby.Screening
 import com.metavirtuoso.conjunction.ui.ChatTarget
 import com.metavirtuoso.conjunction.ui.components.Art
 import com.metavirtuoso.conjunction.ui.components.FinePrint
 import com.metavirtuoso.conjunction.ui.components.GoldText
 import com.metavirtuoso.conjunction.ui.components.OrnateTextField
-import com.metavirtuoso.conjunction.ui.components.ProfilePhoto
+import com.metavirtuoso.conjunction.ui.components.ScreenedPhoto
 import com.metavirtuoso.conjunction.ui.components.StarfieldBackground
 import com.metavirtuoso.conjunction.ui.theme.GoldBrushes
 import com.metavirtuoso.conjunction.ui.theme.Palette
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-/** A message I sent that the server held for review or blocked (shown only to me). */
-private data class LocalNotice(val text: String, val status: String)
-
 /**
- * Chat with a mutual match: live messages, timestamps, read state, moderated sending (held /
- * blocked messages are explained), and unmatch / block / report from the shield menu.
+ * Chat with a friend (mutual match), SPEC 5c: end-to-end encrypted over Bluetooth, stored only on
+ * the two phones. Messages to a friend who is out of range are queued and delivered the next time
+ * the phones are near each other, and the bubble says so. Incoming messages are screened on this
+ * phone and hidden behind "Show anyway" when they look harmful. Unmatch / block / report from the
+ * shield menu; the "verify" button shows the safety code to compare in person.
  */
 @Composable
 fun ChatScreen(container: AppContainer, target: ChatTarget, onClose: () -> Unit) {
-    val api = container.nearbyApi
-    val me = api.uid
+    val repo = container.nearby
     val scope = rememberCoroutineScope()
-    val messages by remember(target.pairId) { api.messages(target.pairId).catch { emit(emptyList()) } }.collectAsState(initial = emptyList())
-    val readAt by remember(target.pairId) { api.readState(target.pairId).catch { emit(emptyMap()) } }.collectAsState(initial = emptyMap())
-    val friend by produceState<FriendProfile?>(initialValue = null, target.otherUid) {
-        value = runCatching { api.getFriendProfile(target.otherUid) }.getOrNull()
-    }
+    val friend by remember(target.friendId) { repo.friend(target.friendId) }.collectAsState(initial = null)
+    val messages by remember(target.friendId) { repo.messages(target.friendId) }.collectAsState(initial = emptyList())
     var draft by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
     var safety by remember { mutableStateOf(false) }
     var tips by remember { mutableStateOf(false) }
-    val notices = remember { mutableStateListOf<LocalNotice>() }
-    var error by remember { mutableStateOf<String?>(null) }
+    var verify by remember { mutableStateOf(false) }
     val list = rememberLazyListState()
-    val heldText = stringResource(R.string.chat_held)
-    val blockedText = stringResource(R.string.chat_blocked)
     BackHandler(onBack = onClose)
 
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            list.animateScrollToItem(messages.size + notices.size)
-            if (messages.last().from != me) runCatching { api.markRead(target.pairId) }
-        }
+    DisposableEffect(target.friendId) {
+        repo.openChatFriendId = target.friendId
+        onDispose { if (repo.openChatFriendId == target.friendId) repo.openChatFriendId = null }
     }
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) list.animateScrollToItem(messages.size)
+        repo.markSeen(target.friendId)
+    }
+    val f = friend
+    val name = f?.firstName ?: "Your match"
 
     StarfieldBackground(dim = 0.7f) {
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
             Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Palette.GoldPale) }
-                ProfilePhoto(friend?.photoUrl, Art.signKey(friend?.sun), contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape).border(1.dp, GoldBrushes.leaf, CircleShape))
+                ScreenedPhoto(f?.photoPath, f?.photoScreening ?: Screening.SAFE, Art.signKey(f?.sun), contentDescription = null, modifier = Modifier.size(44.dp).clip(CircleShape).border(1.dp, GoldBrushes.leaf, CircleShape), compact = true)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    GoldText(friend?.displayName ?: "Your match", style = MaterialTheme.typography.titleMedium)
+                    GoldText(name, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        listOfNotNull(friend?.sun?.let { "☉ ${Art.displaySign(it)}" }, friend?.moon?.let { "☽ ${Art.displaySign(it)}" }).joinToString("  "),
-                        style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim,
+                        if (f?.inRange == true) "Nearby now" else listOfNotNull(f?.sun?.let { "☉ ${Art.displaySign(it)}" }, f?.moon?.let { "☽ ${Art.displaySign(it)}" }).joinToString("  "),
+                        style = MaterialTheme.typography.bodySmall, color = if (f?.inRange == true) Palette.Gold else Palette.MoonstoneDim,
                     )
                 }
+                IconButton(onClick = { verify = true }) { Icon(Icons.Outlined.VerifiedUser, contentDescription = "Safety code", tint = Palette.GoldPale) }
                 IconButton(onClick = { tips = true }) { Text("?", color = Palette.GoldPale, style = MaterialTheme.typography.titleLarge) }
-                IconButton(onClick = { safety = true }) { Icon(Icons.Outlined.Shield, contentDescription = stringResource(R.string.chat_block_report), tint = Palette.RoseCopper) }
+                IconButton(onClick = { safety = true }, enabled = f != null) { Icon(Icons.Outlined.Shield, contentDescription = stringResource(R.string.chat_block_report), tint = Palette.RoseCopper) }
             }
             Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp).background(GoldBrushes.leaf).padding(top = 1.dp))
             LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { FinePrint(stringResource(R.string.chat_first_open_notice), Modifier.fillMaxWidth().padding(bottom = 8.dp)) }
-                items(messages, key = { it.id }) { m ->
-                    val mine = m.from == me
-                    val theirRead = readAt[target.otherUid]
-                    val seen = mine && theirRead != null && m.createdAt != null && !theirRead.isBefore(m.createdAt)
-                    Bubble(m.text, mine, m.createdAt?.atZone(ZoneId.systemDefault())?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), if (mine) (if (seen) "Seen" else "Sent") else null)
+                item {
+                    FinePrint(stringResource(R.string.chat_first_open_notice), Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                    FinePrint(stringResource(R.string.chat_keep_note, name), Modifier.fillMaxWidth().padding(bottom = 8.dp))
                 }
-                items(notices) { n -> Bubble(n.text, mine = true, time = null, status = if (n.status == "held") heldText else blockedText, faded = true) }
+                items(messages, key = { it.id }) { m ->
+                    val time = Instant.ofEpochMilli(m.ts).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+                    if (m.mine) {
+                        val status = when (m.status) {
+                            ChatStatus.QUEUED -> stringResource(R.string.chat_queued, name)
+                            ChatStatus.SENT -> "Sending…"
+                            ChatStatus.DELIVERED -> "Delivered"
+                            ChatStatus.READ -> "Seen"
+                            ChatStatus.RECEIVED -> null
+                        }
+                        Bubble(m.text, mine = true, time = time, status = status, faded = m.status == ChatStatus.QUEUED)
+                    } else when (m.screening) {
+                        Screening.SAFE -> Bubble(m.text, mine = false, time = time, status = null)
+                        Screening.FLAGGED -> HiddenBubble(stringResource(R.string.chat_flagged), time) { scope.launch { repo.reveal(m.id) } }
+                        else -> HiddenBubble("Checking this message on your phone…", time, onShow = null)
+                    }
+                }
             }
-            error?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp)) }
             Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) {
-                    OrnateTextField(draft, { draft = it.take(4000) }, label = "Message", singleLine = false)
+                    OrnateTextField(draft, { draft = it.take(2000) }, label = "Message", singleLine = false)
                 }
                 IconButton(
-                    enabled = draft.isNotBlank() && !sending,
+                    enabled = draft.isNotBlank() && !sending && f != null,
                     onClick = {
                         val text = draft.trim()
                         sending = true
-                        error = null
                         scope.launch {
                             try {
-                                val status = api.sendMessage(target.pairId, text, NearbyApi.newClientId())
-                                if (status != "delivered") notices += LocalNotice(text, status)
+                                repo.sendChat(target.friendId, text)
                                 draft = ""
-                            } catch (e: NearbyException) {
-                                error = e.message
                             } finally {
                                 sending = false
                             }
@@ -159,13 +166,45 @@ fun ChatScreen(container: AppContainer, target: ChatTarget, onClose: () -> Unit)
             }
         }
     }
-    if (safety) {
-        SafetyActionsDialog(container, target.otherUid, friend?.displayName?.substringBefore(' ') ?: "this person", null, target.pairId) { closed ->
+    if (safety && f != null) {
+        SafetyActionsDialog(container, SafetyTarget.friend(f), messages = messages, onDone = { closed ->
             safety = false
             if (closed) onClose()
-        }
+        })
     }
     if (tips) LegalDocDialog(LegalDoc.SAFETY, onDismiss = { tips = false })
+    if (verify && f != null) {
+        AlertDialog(
+            onDismissRequest = { verify = false },
+            containerColor = Palette.InkViolet,
+            title = { GoldText("Safety code", style = MaterialTheme.typography.titleLarge) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(f.safetyCode, style = MaterialTheme.typography.headlineSmall, color = Palette.GoldPale)
+                    FinePrint("When you meet, check that $name's phone shows the same digits. If they differ, someone may have interfered when you matched: block and report.")
+                }
+            },
+            confirmButton = { TextButton(onClick = { verify = false }) { Text("CLOSE", color = Palette.Gold) } },
+        )
+    }
+}
+
+@Composable
+private fun HiddenBubble(text: String, time: String?, onShow: (() -> Unit)?) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+        Column(
+            Modifier
+                .widthIn(max = 300.dp)
+                .clip(RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp))
+                .background(Palette.InkViolet.copy(alpha = 0.6f))
+                .border(1.dp, Palette.RoseCopper.copy(alpha = 0.6f), RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+        ) {
+            Text(text, style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic), color = Palette.MoonstoneDim)
+            if (onShow != null) TextButton(onClick = onShow) { Text(stringResource(R.string.chat_flagged_show).uppercase(), color = Palette.Gold, style = MaterialTheme.typography.labelMedium) }
+            time?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic), color = Palette.MoonstoneDim, modifier = Modifier.align(Alignment.End)) }
+        }
+    }
 }
 
 @Composable

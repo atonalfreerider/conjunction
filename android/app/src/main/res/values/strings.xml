@@ -7,8 +7,7 @@
 
     <string name="nearby_paused_until">Paused until %1$s. Nothing is shared.</string>
     <string name="nearby_turn_off">Turn off</string>
-    <string name="nearby_not_configured">Nearby service not configured in this build</string>
-    <string name="nearby_not_configured_body">This build has no backend connection, so matching people nearby is unavailable. Your chart, readings and palm reading all work on this phone.</string>
+    <string name="nearby_resume">Resume</string>
 
     <string name="daily_reminder_title">Today\'s reading is ready</string>
     <string name="daily_reminder_body">Open Conjunction to see what the sky has written for you.</string>
@@ -23,5 +22,4 @@
     <string name="entertainment_note">For entertainment only. Written on this phone; never sent anywhere.</string>
     <string name="ai_source_device">Written on this phone by Gemini Nano</string>
     <string name="ai_source_fallback">From Conjunction\'s bundled verses</string>
-    <string name="report_reading">Report this reading</string>
 </resources>

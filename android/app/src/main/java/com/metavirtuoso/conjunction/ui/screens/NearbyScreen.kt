@@ -1,15 +1,18 @@
 package com.metavirtuoso.conjunction.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,11 +23,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -35,22 +36,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.metavirtuoso.conjunction.AppContainer
+import com.metavirtuoso.conjunction.BuildConfig
 import com.metavirtuoso.conjunction.R
 import com.metavirtuoso.conjunction.data.Charts
 import com.metavirtuoso.conjunction.data.Profile
-import com.metavirtuoso.conjunction.nearby.EncounterSummary
-import com.metavirtuoso.conjunction.nearby.FriendLink
-import com.metavirtuoso.conjunction.nearby.FriendProfile
+import com.metavirtuoso.conjunction.nearby.NearbyPermissions
+import com.metavirtuoso.conjunction.nearby.ChatLine
+import com.metavirtuoso.conjunction.nearby.EncounterCard
+import com.metavirtuoso.conjunction.nearby.FriendSummary
+import com.metavirtuoso.conjunction.nearby.NearbyEvent
+import com.metavirtuoso.conjunction.nearby.NearbyEventKind
 import com.metavirtuoso.conjunction.nearby.NearbyRepository
-import com.metavirtuoso.conjunction.nearby.NearbyService
-import com.metavirtuoso.conjunction.nearby.PushEvent
-import com.metavirtuoso.conjunction.nearby.PushKind
+import com.metavirtuoso.conjunction.nearby.ReportEmail
 import com.metavirtuoso.conjunction.nearby.ReportReason
 import com.metavirtuoso.conjunction.ui.ChatTarget
 import com.metavirtuoso.conjunction.ui.components.Art
@@ -58,35 +58,38 @@ import com.metavirtuoso.conjunction.ui.components.ChoiceChips
 import com.metavirtuoso.conjunction.ui.components.FinePrint
 import com.metavirtuoso.conjunction.ui.components.GhostButton
 import com.metavirtuoso.conjunction.ui.components.GoldButton
+import com.metavirtuoso.conjunction.ui.components.GoldCheckRow
 import com.metavirtuoso.conjunction.ui.components.GoldSwitchRow
 import com.metavirtuoso.conjunction.ui.components.GoldText
 import com.metavirtuoso.conjunction.ui.components.OrnatePanel
 import com.metavirtuoso.conjunction.ui.components.OrnateTextField
-import com.metavirtuoso.conjunction.ui.components.ProfilePhoto
+import com.metavirtuoso.conjunction.ui.components.ScreenedPhoto
 import com.metavirtuoso.conjunction.ui.match.MatchExperience
 import com.metavirtuoso.conjunction.ui.theme.Palette
 import java.text.DateFormat
-import java.time.Duration
-import java.time.Instant
 import java.util.Date
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 /**
- * Nearby: the switch (off by default) with a plain explanation, live status, pause controls,
- * the Matches inbox (pending cards for 24 h) and mutual matches (open the chat).
+ * Nearby: the switch (off by default) with a plain explanation, live status (Bluetooth on/off,
+ * paused, how many Conjunction phones are close by — never a distance), pause controls, the
+ * Matches inbox (cards stay 24 h) and the friends you matched with (open the chat).
  */
 @Composable
 fun NearbyScreen(container: AppContainer, profile: Profile, charts: Charts?, openChat: (ChatTarget) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repo = container.nearby
     var setup by remember { mutableStateOf(false) }
-    var openCard by remember { mutableStateOf<EncounterSummary?>(null) }
+    var openCard by remember { mutableStateOf<EncounterCard?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    var setupSafety by remember { mutableStateOf(false) }
-    val runtime by NearbyService.state.collectAsState()
-    val api = container.nearbyApi
+    var safetyTips by remember { mutableStateOf(false) }
+    val service by repo.serviceState.collectAsState()
+    val radio by repo.radioStatus.collectAsState()
+    val enableBluetooth = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        scope.launch { repo.resumeServiceIfNeeded() }
+    }
 
     if (setup) {
         BackHandler { setup = false }
@@ -95,14 +98,18 @@ fun NearbyScreen(container: AppContainer, profile: Profile, charts: Charts?, ope
     }
 
     TabPage(stringResource(R.string.nearby_title), subtitle = stringResource(R.string.tagline)) {
-        if (!api.isConfigured) {
+        if (!repo.supported || !repo.hasBluetoothLe) {
             OrnatePanel(Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.nearby_not_configured), style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                Text(stringResource(R.string.nearby_not_configured_body), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp))
+                Text(
+                    if (!repo.supported) stringResource(R.string.nearby_android_old_version) else "This phone has no Bluetooth Low Energy, so Nearby can't run. Your charts and readings work as usual.",
+                    style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                )
             }
+            // Friends and chats made earlier (e.g. before an OS downgrade or on a restored phone) stay readable.
+            Inbox(container, onOpenCard = { openCard = it }, openChat = openChat)
             return@TabPage
         }
-        androidx.compose.foundation.Image(painterResource(R.drawable.popup_match_nearby), contentDescription = null, modifier = Modifier.size(170.dp))
+        Image(painterResource(R.drawable.popup_match_nearby), contentDescription = null, modifier = Modifier.size(170.dp))
         OrnatePanel(Modifier.fillMaxWidth()) {
             GoldSwitchRow(
                 checked = profile.nearbyEnabled,
@@ -112,14 +119,13 @@ fun NearbyScreen(container: AppContainer, profile: Profile, charts: Charts?, ope
                 onChange = { on ->
                     error = null
                     if (!on) {
-                        scope.launch { busy = true; container.nearby.disable(); busy = false }
+                        scope.launch { busy = true; repo.disable(); busy = false }
+                    } else if (!profile.nearbyConsent || !profile.nearbyEligible || !NearbyPermissions.granted(context)) {
+                        setup = true
                     } else {
-                        val permitted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        if (!profile.nearbyConsent || !permitted || !profile.nearbyEligible) setup = true
-                        else scope.launch {
+                        scope.launch {
                             busy = true
-                            try { container.nearby.enable(charts) } catch (e: Exception) { error = e.message } finally { busy = false }
+                            try { repo.enable() } catch (e: Exception) { error = e.message } finally { busy = false }
                         }
                     }
                 },
@@ -130,38 +136,39 @@ fun NearbyScreen(container: AppContainer, profile: Profile, charts: Charts?, ope
                 Text(
                     when {
                         paused -> stringResource(R.string.nearby_paused_until, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(profile.nearbyPausedUntil)))
-                        !runtime.running -> "Not running right now — it resumes while the app is open."
-                        runtime.lastReportAt != null -> "Looking for conjunctions… last checked ${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(runtime.lastReportAt!!))}."
+                        service.bluetoothOff -> stringResource(R.string.nearby_bluetooth_off)
+                        !service.running -> "Not running right now — it resumes while the app is open."
+                        radio.closeBy > 0 -> "Looking for conjunctions… ${radio.closeBy} Conjunction ${if (radio.closeBy == 1) "phone is" else "phones are"} nearby."
                         else -> "Looking for conjunctions…"
                     },
                     style = MaterialTheme.typography.bodyMedium, color = Palette.GoldPale, modifier = Modifier.padding(top = 8.dp),
                 )
+                if (service.bluetoothOff && NearbyPermissions.granted(context)) {
+                    GhostButton("Turn on Bluetooth", onClick = {
+                        runCatching { enableBluetooth.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)) }
+                    }, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
+                }
                 Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (paused) {
-                        GoldButton("Resume", onClick = { scope.launch { container.nearby.resume() } }, modifier = Modifier.weight(1f))
+                        GoldButton(stringResource(R.string.nearby_resume), onClick = { scope.launch { repo.resume() } }, modifier = Modifier.weight(1f))
                     } else {
-                        GhostButton(stringResource(R.string.nearby_pause_1h), onClick = { scope.launch { container.nearby.pause(System.currentTimeMillis() + 3_600_000L) } }, modifier = Modifier.weight(1f))
-                        GhostButton(stringResource(R.string.nearby_pause_tomorrow), onClick = { scope.launch { container.nearby.pause(NearbyRepository.tomorrowMorning()) } }, modifier = Modifier.weight(1f))
+                        GhostButton(stringResource(R.string.nearby_pause_1h), onClick = { scope.launch { repo.pause(System.currentTimeMillis() + 3_600_000L) } }, modifier = Modifier.weight(1f))
+                        GhostButton(stringResource(R.string.nearby_pause_tomorrow), onClick = { scope.launch { repo.pause(NearbyRepository.tomorrowMorning()) } }, modifier = Modifier.weight(1f))
                     }
                 }
-                runtime.error?.let { FinePrint(it) }
+                (service.error ?: radio.error)?.let { FinePrint(it) }
             }
-            if (!profile.nearbyEligible) FinePrint("Nearby needs your dating & friends profile and its consent (Profile → Who you'd like to meet).")
+            if (!profile.nearbyEligible) FinePrint("Nearby needs your birth details and your dating & friends profile with its consent (Profile → Who you'd like to meet).")
             error?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodyMedium) }
         }
-        val uid = api.uid
-        if (uid != null) {
-            Inbox(container, uid, onOpenCard = { openCard = it }, openChat = openChat)
-        } else {
-            FinePrint("Your matches appear here once Nearby has been turned on.")
-        }
-        GhostButton(stringResource(R.string.safety_tip_title), onClick = { setupSafety = true }, modifier = Modifier.fillMaxWidth())
+        Inbox(container, onOpenCard = { openCard = it }, openChat = openChat)
+        GhostButton(stringResource(R.string.safety_tip_title), onClick = { safetyTips = true }, modifier = Modifier.fillMaxWidth())
     }
     openCard?.let { encounter ->
-        val kind = when { encounter.exactTwin -> PushKind.EXACT_TWIN; encounter.birthdayTwin -> PushKind.BIRTHDAY_TWIN; encounter.status == "matched" -> PushKind.CONJUNCTION; else -> PushKind.MATCH }
+        val kind = when { encounter.exactTwin -> NearbyEventKind.EXACT_TWIN; encounter.birthdayTwin -> NearbyEventKind.BIRTHDAY_TWIN; else -> NearbyEventKind.MATCH }
         MatchExperience(
             container = container,
-            event = PushEvent(kind, encounter.id, null, encounter.kind, encounter.total, null, null),
+            event = NearbyEvent(kind, encounter.encounterId, null, encounter.kind, encounter.total),
             myCharts = charts,
             profile = profile,
             onDismiss = { openCard = null },
@@ -169,24 +176,24 @@ fun NearbyScreen(container: AppContainer, profile: Profile, charts: Charts?, ope
             skipAnimation = true,
         )
     }
-    if (setupSafety) {
-        LegalDocDialog(com.metavirtuoso.conjunction.legal.LegalDoc.SAFETY, onDismiss = { setupSafety = false })
+    if (safetyTips) {
+        LegalDocDialog(com.metavirtuoso.conjunction.legal.LegalDoc.SAFETY, onDismiss = { safetyTips = false })
     }
 }
 
 @Composable
-private fun Inbox(container: AppContainer, uid: String, onOpenCard: (EncounterSummary) -> Unit, openChat: (ChatTarget) -> Unit) {
-    val api = container.nearbyApi
-    val encounters by remember(uid) { api.encounters(uid).catch { emit(emptyList()) } }.collectAsState(initial = emptyList())
-    val friends by remember(uid) { api.friends(uid).catch { emit(emptyList()) } }.collectAsState(initial = emptyList())
-    val now = Instant.now()
-    val pending = encounters.filter { it.status == "pending" && it.mySwipe == null && (it.expiresAt == null || it.expiresAt.isAfter(now)) }
+private fun Inbox(container: AppContainer, onOpenCard: (EncounterCard) -> Unit, openChat: (ChatTarget) -> Unit) {
+    val repo = container.nearby
+    val pending by remember { repo.inbox() }.collectAsState(initial = emptyList())
+    val waiting by remember { repo.waiting() }.collectAsState(initial = emptyList())
+    val friends by remember { repo.friends() }.collectAsState(initial = emptyList())
+    val now = System.currentTimeMillis()
     GoldText("Matches", style = MaterialTheme.typography.headlineSmall, heading = true)
-    if (pending.isEmpty()) FinePrint("No cards waiting. When someone compatible is close by, their card appears here for 24 hours.")
-    pending.forEach { e ->
+    if (pending.isEmpty() && waiting.isEmpty()) FinePrint("No cards waiting. When someone compatible is close by, their card appears here for 24 hours.")
+    (pending + waiting).forEach { e ->
         OrnatePanel(Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open match card") { onOpenCard(e) }, contentPadding = 14.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.foundation.Image(painterResource(Art.signKey(e.card?.sun)), contentDescription = null, modifier = Modifier.size(56.dp).clip(CircleShape))
+                ScreenedPhoto(e.photoPath, e.photoScreening, Art.signKey(e.card?.sun), contentDescription = null, modifier = Modifier.size(56.dp).clip(CircleShape), compact = true)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -194,7 +201,8 @@ private fun Inbox(container: AppContainer, uid: String, onOpenCard: (EncounterSu
                         style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale,
                     )
                     Text("${Art.displaySign(e.card?.sun)} · ${e.total}% · ${if (e.kind == "dating") "dating" else "friends"}", style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone)
-                    e.expiresAt?.let { Text("${Duration.between(now, it).toHours().coerceAtLeast(0)} h left", style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim) }
+                    val hours = ((e.expiresAt - now) / 3_600_000L).coerceAtLeast(0)
+                    Text(if (e.mySwipe == "right") "You said yes · waiting for them · ${hours} h left" else "$hours h left", style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim)
                 }
                 Text("›", style = MaterialTheme.typography.headlineMedium, color = Palette.Gold)
             }
@@ -202,80 +210,158 @@ private fun Inbox(container: AppContainer, uid: String, onOpenCard: (EncounterSu
     }
     GoldText("Conjunctions", style = MaterialTheme.typography.headlineSmall, heading = true)
     if (friends.isEmpty()) FinePrint("When you both say yes, they appear here and you can chat.")
-    friends.forEach { link -> FriendRow(container, link, openChat) }
+    friends.forEach { f -> FriendRow(f) { openChat(ChatTarget(f.id)) } }
 }
 
 @Composable
-private fun FriendRow(container: AppContainer, link: FriendLink, openChat: (ChatTarget) -> Unit) {
-    val friend by produceState<FriendProfile?>(initialValue = null, link.otherUid) {
-        value = runCatching { container.nearbyApi.getFriendProfile(link.otherUid) }.getOrNull()
-    }
-    OrnatePanel(Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open chat") { openChat(ChatTarget(link.pairId, link.otherUid)) }, contentPadding = 14.dp) {
+private fun FriendRow(friend: FriendSummary, onOpen: () -> Unit) {
+    OrnatePanel(Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open chat", onClick = onOpen), contentPadding = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            ProfilePhoto(friend?.photoUrl, Art.signKey(friend?.sun), contentDescription = null, modifier = Modifier.size(56.dp).clip(CircleShape))
+            ScreenedPhoto(friend.photoPath, friend.photoScreening, Art.signKey(friend.sun), contentDescription = null, modifier = Modifier.size(56.dp).clip(CircleShape), compact = true)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(friend?.displayName ?: "Your match", style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale)
+                Text(friend.firstName, style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale)
                 Text(
-                    listOfNotNull(friend?.sun?.let { "☉ ${Art.displaySign(it)}" }, friend?.moon?.let { "☽ ${Art.displaySign(it)}" }, if (link.kind == "dating") "dating" else "friends").joinToString(" · "),
+                    listOfNotNull(friend.sun?.let { "☉ ${Art.displaySign(it)}" }, friend.moon?.let { "☽ ${Art.displaySign(it)}" }, if (friend.kind == "dating") "dating" else "friends").joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone,
                 )
+                Text(
+                    when {
+                        friend.inRange -> "Nearby now"
+                        friend.queued > 0 -> "${friend.queued} waiting to be delivered"
+                        else -> friend.lastMessage ?: "Say hello"
+                    },
+                    style = MaterialTheme.typography.bodySmall, color = if (friend.inRange) Palette.Gold else Palette.MoonstoneDim, maxLines = 1,
+                )
+            }
+            if (friend.unread > 0) {
+                Box(Modifier.size(26.dp).clip(CircleShape).background(Palette.Gold), contentAlignment = Alignment.Center) {
+                    Text(friend.unread.coerceAtMost(99).toString(), style = MaterialTheme.typography.labelMedium, color = Palette.Midnight)
+                }
+                Spacer(Modifier.width(6.dp))
             }
             Text("›", style = MaterialTheme.typography.headlineMedium, color = Palette.Gold)
         }
     }
 }
 
+/** Who a safety action is about: a stranger's match card (by fingerprint) or a friend. */
+data class SafetyTarget(
+    val name: String,
+    val fingerprint: String?,
+    val friendId: String?,
+    val report: ReportEmail.Subject,
+) {
+    companion object {
+        fun stranger(card: EncounterCard) = SafetyTarget(
+            name = card.card?.firstName ?: "this person",
+            fingerprint = card.encounterId,
+            friendId = null,
+            report = ReportEmail.Subject(
+                card.card?.firstName, card.card?.age, card.card?.sun, card.card?.moon, card.card?.rising, card.kind,
+                localId = card.encounterId, identityFingerprint = null, hasPhoto = card.photoPath != null,
+            ),
+        )
+
+        fun friend(f: FriendSummary) = SafetyTarget(
+            name = f.firstName,
+            fingerprint = null,
+            friendId = f.id,
+            report = ReportEmail.Subject(f.firstName, null, f.sun, f.moon, f.rising, f.kind, localId = f.id, identityFingerprint = f.safetyCode, hasPhoto = f.photoPath != null),
+        )
+    }
+}
+
 /**
- * Block / report / snooze / unmatch for one person (from a match card or a chat).
- * [onDone] gets true when the person is now hidden (blocked, reported, snoozed or unmatched).
+ * Block / report / snooze / unmatch for one person (from a match card or a chat). Report = block
+ * + an email the person writes and sends themselves (there is no server). [messages] are offered
+ * for the report only from a chat. [onDone] gets true when the person is now hidden.
  */
 @Composable
-fun SafetyActionsDialog(container: AppContainer, otherUid: String, name: String, encounterId: String?, pairId: String?, onDone: (Boolean) -> Unit) {
+fun SafetyActionsDialog(container: AppContainer, target: SafetyTarget, onDone: (Boolean) -> Unit, messages: List<ChatLine>? = null) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repo = container.nearby
     var mode by remember { mutableStateOf("menu") }
     var reason by remember { mutableStateOf<ReportReason?>(null) }
     var details by remember { mutableStateOf("") }
+    var includeMessages by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var note by remember { mutableStateOf<String?>(null) }
+    val name = target.name
+    val noEmailApp = stringResource(R.string.report_no_email_app, BuildConfig.SUPPORT_EMAIL)
+
+    suspend fun block() {
+        target.friendId?.let { repo.blockFriend(it) }
+        target.fingerprint?.let { repo.blockStranger(it) }
+    }
+
     fun run(block: suspend () -> Unit) {
         busy = true
         scope.launch {
-            try { block(); onDone(true) } catch (e: Exception) { error = e.message ?: "That didn't work. Try again." } finally { busy = false }
+            try { block(); onDone(true) } catch (e: Exception) { note = e.message ?: "That didn't work. Try again." } finally { busy = false }
         }
     }
     AlertDialog(
         onDismissRequest = { onDone(false) },
         containerColor = Palette.InkViolet,
-        title = { GoldText(if (mode == "report") "Report $name" else stringResource(R.string.chat_block_report), style = MaterialTheme.typography.titleLarge) },
+        title = {
+            GoldText(
+                when (mode) {
+                    "report" -> stringResource(R.string.report_title, name)
+                    "block" -> stringResource(R.string.block_title, name)
+                    else -> stringResource(R.string.chat_block_report)
+                },
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (mode) {
                     "menu" -> {
                         FinePrint(stringResource(R.string.safety_tip_emergency))
-                        GhostButton("Report $name", onClick = { mode = "report" }, modifier = Modifier.fillMaxWidth(), color = Palette.RoseCopper)
-                        GhostButton("Block $name", enabled = !busy, onClick = { run { container.nearbyApi.block(otherUid) } }, modifier = Modifier.fillMaxWidth())
-                        GhostButton("Snooze for 7 days", enabled = !busy, onClick = { run { container.nearbyApi.snooze(otherUid, 24 * 7) } }, modifier = Modifier.fillMaxWidth())
-                        if (pairId != null) GhostButton(stringResource(R.string.chat_unmatch), enabled = !busy, onClick = { mode = "unmatch" }, modifier = Modifier.fillMaxWidth())
+                        GhostButton(stringResource(R.string.report_title, name), onClick = { mode = "report" }, modifier = Modifier.fillMaxWidth(), color = Palette.RoseCopper)
+                        GhostButton(stringResource(R.string.block_title, name).trimEnd('?'), enabled = !busy, onClick = { mode = "block" }, modifier = Modifier.fillMaxWidth())
+                        if (target.fingerprint != null) GhostButton("Snooze for 7 days", enabled = !busy, onClick = { run { repo.snooze(target.fingerprint) } }, modifier = Modifier.fillMaxWidth())
+                        if (target.friendId != null) GhostButton(stringResource(R.string.chat_unmatch), enabled = !busy, onClick = { mode = "unmatch" }, modifier = Modifier.fillMaxWidth())
+                    }
+                    "block" -> {
+                        Text(stringResource(R.string.block_body), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
+                        GoldButton(stringResource(R.string.block_confirm), enabled = !busy, onClick = { run { block() } }, modifier = Modifier.fillMaxWidth())
                     }
                     "unmatch" -> {
                         Text(stringResource(R.string.chat_unmatch_confirm, name), style = MaterialTheme.typography.bodyMedium, color = Palette.Moonstone)
-                        GoldButton(stringResource(R.string.chat_unmatch), enabled = !busy, onClick = { run { container.nearbyApi.unmatch(pairId!!) } }, modifier = Modifier.fillMaxWidth())
+                        GoldButton(stringResource(R.string.chat_unmatch), enabled = !busy, onClick = { run { repo.unmatch(target.friendId!!) } }, modifier = Modifier.fillMaxWidth())
                     }
                     else -> {
+                        Text(stringResource(R.string.report_body, name), style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone)
+                        FinePrint(stringResource(R.string.report_emergency))
+                        Text(stringResource(R.string.report_reason_label).uppercase(), style = MaterialTheme.typography.labelMedium, color = Palette.Gold)
                         Box(Modifier.fillMaxWidth()) {
-                            ChoiceChips(ReportReason.entries.map { it to it.label }, reason, { reason = it })
+                            ChoiceChips(ReportReason.entries.map { it to stringResource(it.label) }, reason, { reason = it })
                         }
-                        OrnateTextField(details, { details = it.take(2000) }, label = "What happened? (optional)", singleLine = false, minLines = 3)
-                        FinePrint("Reporting also blocks $name. Our team reviews every report.")
-                        GoldButton("Send report", enabled = reason != null && !busy, onClick = {
-                            run { container.nearbyApi.report(otherUid, reason!!, details, pairId = pairId, encounterId = encounterId, alsoBlock = true) }
+                        OrnateTextField(details, { details = it.take(2000) }, label = "Details (optional)", singleLine = false, minLines = 3)
+                        if (messages != null && messages.isNotEmpty()) GoldCheckRow(includeMessages, { includeMessages = it }, stringResource(R.string.report_include_messages))
+                        GoldButton(stringResource(R.string.report_open_email), enabled = reason != null && !busy, onClick = {
+                            val r = reason ?: return@GoldButton
+                            val body = ReportEmail.body(context, target.report, r, details, if (includeMessages) messages else null)
+                            val subject = ReportEmail.subjectLine(context, r)
+                            busy = true
+                            scope.launch {
+                                try {
+                                    block()
+                                    if (ReportEmail.open(context, subject, body)) onDone(true)
+                                    else note = noEmailApp
+                                } finally {
+                                    busy = false
+                                }
+                            }
                         }, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                error?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodySmall) }
+                note?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodySmall) }
             }
         },
-        confirmButton = { TextButton(onClick = { onDone(false) }) { Text("CLOSE", color = Palette.MoonstoneDim) } },
+        confirmButton = { TextButton(onClick = { onDone(note != null && mode == "report") }) { Text("CLOSE", color = Palette.MoonstoneDim) } },
     )
 }

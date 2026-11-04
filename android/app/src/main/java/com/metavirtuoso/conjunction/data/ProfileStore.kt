@@ -71,9 +71,9 @@ class ProfileStore(private val store: DataStore<Preferences>) {
         val honesty = booleanPreferencesKey("honesty_confirmed")
         val displayName = stringPreferencesKey("display_name")
         val bio = stringPreferencesKey("bio")
-        val photoState = stringPreferencesKey("photo_state")
         val photoPath = stringPreferencesKey("photo_path")
-        val nearbyConsent = booleanPreferencesKey("nearby_consent")
+        /** "nearby_consent" was the server build's location consent; Bluetooth Nearby needs a new one. */
+        val nearbyConsent = booleanPreferencesKey("nearby_bluetooth_consent")
         val nearbyEnabled = booleanPreferencesKey("nearby_enabled")
         val pausedUntil = longPreferencesKey("nearby_paused_until")
         val notificationsPrompted = booleanPreferencesKey("notifications_prompted")
@@ -116,7 +116,6 @@ class ProfileStore(private val store: DataStore<Preferences>) {
                 honestyConfirmed = p[K.honesty] ?: false,
                 displayName = p[K.displayName].orEmpty(),
                 bio = p[K.bio].orEmpty(),
-                photoState = PhotoState.fromWire(p[K.photoState]),
                 localPhotoPath = p[K.photoPath],
                 nearbyConsent = p[K.nearbyConsent] ?: false,
                 nearbyEnabled = p[K.nearbyEnabled] ?: false,
@@ -151,7 +150,6 @@ class ProfileStore(private val store: DataStore<Preferences>) {
             put(K.honesty, v.honestyConfirmed)
             put(K.displayName, v.displayName)
             put(K.bio, v.bio)
-            put(K.photoState, v.photoState.wire)
             put(K.photoPath, v.localPhotoPath)
             put(K.nearbyConsent, v.nearbyConsent)
             put(K.nearbyEnabled, v.nearbyEnabled)

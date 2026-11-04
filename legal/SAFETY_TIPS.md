@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Document | `SAFETY_TIPS` |
-| Version | 1.0 (draft of 2026-11-03) |
+| Version | 2.0 (draft of 2026-11-03) |
 | Effective date | [EFFECTIVE DATE] |
 
 These tips are shown in the App before you first turn on Nearby, from every chat (shield icon), and under
@@ -18,18 +18,23 @@ Your safety is in your hands. These tips help, but they cannot remove every risk
 
 ## Before you turn on Nearby
 
-- **Think about where you are.** A match tells someone that a person with your signs is within about 50
-  metres. In a quiet place, they may be able to work out it is you. **Pause Nearby at home, at work, at
-  your gym, or anywhere you would not want a stranger to know you go.**
+- **Think about where you are.** A match card shows your photo, first name and age to someone close
+  enough for Bluetooth **before either of you accepts**, so they may recognise you in person. Your matching
+  details (including gender and who you are seeking) also reach other phones with Nearby on nearby
+  even when you are not a match. **Pause Nearby at
+  home, at work, at your gym, or anywhere you would not want a stranger to know you go.**
 - **Use Pause.** "Pause for 1 hour" and "Pause until tomorrow" are one tap away on the Nearby screen.
 - **Choose a photo that does not give away where you live or work**: no house numbers, street signs,
   car plates, uniforms, name badges or your school or office.
 - **Use your first name only.** Keep your surname, workplace and social-media handles off your profile.
+- **Remember what you send stays with them.** Cards, photos and messages you send are kept on the other
+  person's phone, and nobody — not you, not us — can delete them from there.
 
 ## Before you meet
 
-- **Chat in the App first.** Our chat has moderation, block and report tools. Scammers and abusers often
-  try to move you to another app, a phone number or email quickly; be wary of that.
+- **Chat in the App first.** Our chat is end-to-end encrypted, warns you about messages that look like
+  harassment or scams, and has block and report tools. Scammers and abusers often try to move you to
+  another app, a phone number or email quickly; be wary of that.
 - **Video call before meeting**, if you can, to check the person matches their photo.
 - **Look them up.** A quick search of their name and photo (reverse image search) can reveal a fake
   profile.
@@ -59,6 +64,13 @@ Your safety is in your hands. These tips help, but they cannot remove every risk
   compatibility score or a "birthday twin" result is **never consent** to anything.
 - Being "in a relationship" on a profile, or "looking for friends", means just that. Respect it.
 
+## Sexual health
+
+- Any sexual activity is your choice. Talk about sexual health and boundaries **before** things get
+  physical, use condoms or other protection, and get tested regularly. Ask a doctor or sexual-health
+  clinic for advice; the App cannot give it.
+- Remember that **we do not verify** anyone's age, identity, gender, relationship status or health.
+
 ## Readings are not real-world signals
 
 - A high compatibility score, a beautiful reading or a birthday-twin celebration says nothing about
@@ -72,13 +84,16 @@ Your safety is in your hands. These tips help, but they cannot remove every risk
 ## If something goes wrong
 
 1. **Get safe.** Leave, go somewhere public, call someone you trust or emergency services.
-2. **Block** the person (this ends the chat and stops future matches between you).
-3. **Report** them in the App (from the chat, match card or friend list). Reports are confidential: the
-   person is not told who reported them.
-4. **Keep evidence.** Take screenshots before blocking if you can.
+2. **Keep evidence.** Take screenshots of the card and chat **before** you block or unmatch: blocking
+   deletes the chat from your phone, and we cannot recover it because we never had a copy.
+3. **Block** the person (this ends the chat on your phone and stops future matches between you).
+4. **Report** them in the App (from the chat, match card or friend list). Report blocks them and opens
+   an email to us with their card and, if you choose, the messages; it is sent only when you press
+   Send. The person is not told that you reported them.
 5. **Get support.** In the US: RAINN 1-800-656-4673 (sexual assault), 988 (Suicide & Crisis
    Lifeline), National Domestic Violence Hotline 1-800-799-7233. Elsewhere, contact your local police or
    victim-support services. [Localise these lines per store country before launch.]
 
-If we receive a report of a credible threat to someone's life or safety, we may share information with
-the police, as described in the Privacy Policy.
+If we receive a report of a credible threat to someone's life or safety, we may share it with the
+police, as described in the Privacy Policy. Because the App has no server, **the police, not us, are
+the ones who can find a person** — report serious incidents to them.

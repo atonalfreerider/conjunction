@@ -1,73 +1,83 @@
-# Info.plist keys, entitlements and capabilities (iOS)
+# Info.plist keys, background modes and capabilities (iOS, serverless Bluetooth build)
 
-For the iOS app agent (`ios/App/project.yml` → generated Info.plist). Purpose strings are shown in
-the system permission prompts; App Review rejects vague ones (guideline 5.1.1(ii)), so each says what
-is collected, why, and what happens to it. Keep the app name out of the strings so a rename touches
-only `CFBundleDisplayName`.
+For the iOS app agent (`ios/App/project.yml` → generated Info.plist). Purpose strings appear in the
+system permission prompts; App Review rejects vague ones (guideline 5.1.1(ii)), so each says what is
+used, why, and what happens to the data. Keep the app name out of the strings where possible so a
+rename touches only `CFBundleDisplayName`. The strings must match `legal/IN_APP_CONSENT_COPY.md` §9.
 
 ## Usage descriptions
 
 | Key | String |
 |---|---|
-| `NSLocationWhenInUseUsageDescription` | `Nearby uses your precise location to find members who also turned on Nearby and are within about 50 metres. Your location is never shown to anyone, and only your latest position is kept, for 10 minutes. Location is used only while Nearby is on.` |
-| `NSCameraUsageDescription` | `The camera is used to photograph your open palm for a palm reading. The photo is analysed on your iPhone and is not uploaded.` |
-| `NSPhotoLibraryUsageDescription` | **Omit** if photos are chosen with SwiftUI `PhotosPicker` / `PHPickerViewController` (they need no permission). Only if full library access is ever used: `Choose a photo of your palm for a reading, or a profile photo. Palm photos stay on your iPhone; a profile photo is uploaded only when you set it.` |
+| `NSBluetoothAlwaysUsageDescription` | `Conjunction uses Bluetooth only while Nearby is on, to find people close by who also turned Nearby on and to exchange match cards and encrypted messages directly with their phones. It doesn't use your location.` |
+| `NSCameraUsageDescription` | `Conjunction uses the camera to photograph your palm for a reading on this phone, and to take a profile photo if you choose.` |
+| `NSPhotoLibraryUsageDescription` | **Omit** if photos are chosen with SwiftUI `PhotosPicker` / `PHPickerViewController` (they need no permission — recommended). Only if full library access is ever used: `Choose a palm photo for a reading or a profile photo.` |
 | `NSPhotoLibraryAddUsageDescription` | Only if the app offers "Save to Photos" for a reading card: `Saves your reading card to your photo library when you ask.` |
+
+**Notifications** need no Info.plist string. Request authorization (`.alert, .sound, .badge`) in
+onboarding after the in-app explanation (`perm_notifications_*`). All notifications are **local**
+(`UNUserNotificationCenter`), scheduled by the app when a match or message arrives over Bluetooth or
+for the daily horoscope.
 
 **Not included (and must not be):**
 
-- `NSLocationAlwaysAndWhenInUseUsageDescription` / `NSLocationAlwaysUsageDescription` — the app never
-  requests Always authorization (SPEC §5). Including the key invites App Review questions.
+- `NSLocationWhenInUseUsageDescription`, `NSLocationAlwaysAndWhenInUseUsageDescription`,
+  `NSLocationAlwaysUsageDescription` — **no location** in the serverless build. Remove them from
+  `project.yml` if an earlier version added them. Birth-place search with `CLGeocoder` /
+  `MKLocalSearch` (forward geocoding of typed text) needs no location permission.
+- `NSBluetoothPeripheralUsageDescription` — deprecated since iOS 13; `NSBluetoothAlwaysUsageDescription`
+  covers both central and peripheral roles.
 - `NSUserTrackingUsageDescription` — no tracking, no ATT.
-- `NSContactsUsageDescription`, `NSMicrophoneUsageDescription`, `NSBluetoothAlwaysUsageDescription`,
-  `NSLocalNetworkUsageDescription` — not used.
-- `NSFaceIDUsageDescription` — only if an app lock with Face ID is added.
+- `NSLocalNetworkUsageDescription`, `NSContactsUsageDescription`, `NSMicrophoneUsageDescription`,
+  `NSFaceIDUsageDescription` — not used (Face ID only if an app lock is added).
 
-Notifications need no Info.plist string; request authorization (`.alert, .sound, .badge`) in
-onboarding with an in-app explanation first.
-
-## Background modes and location behaviour
+## Background modes and Bluetooth behaviour
 
 ```yaml
 UIBackgroundModes:
-  - location            # Nearby continues while the app is in the background
-  - remote-notification # silent pushes from FCM (e.g. match withdrawn, chat sync)
+  - bluetooth-central      # keep scanning for / talking to peers in the background
+  - bluetooth-peripheral   # keep advertising and serving the GATT service in the background
 ```
 
-The Nearby location manager, started only from the foreground when the user switches Nearby on:
+No `location` and no `remote-notification` mode (no push).
 
-- `requestWhenInUseAuthorization()` only;
-- `allowsBackgroundLocationUpdates = true` *after* authorization, `showsBackgroundLocationIndicator =
-  true` (the blue pill), `pausesLocationUpdatesAutomatically = false`, `activityType = .other`,
-  `distanceFilter = 25`, with the ~60 s reporting interval enforced in code and by the server rate
-  limit; or, on iOS 17+, `CLLocationUpdate.liveUpdates()` with a `CLBackgroundActivitySession` held
-  while Nearby is on;
-- stop updates when Nearby is turned off or paused.
+- Create `CBCentralManager` and `CBPeripheralManager` with restore identifiers
+  (`CBCentralManagerOptionRestoreIdentifierKey`, `CBPeripheralManagerOptionRestoreIdentifierKey`) and
+  implement `willRestoreState`, so iOS can relaunch the app for Bluetooth events after it was
+  suspended or terminated by the system (not after the user force-quits it).
+- Scan **with the service UUID filter** (`scanForPeripherals(withServices: [serviceUUID])`) — iOS
+  delivers no background scan results otherwise, and coalesces duplicates.
+- **Documented limitation (SPEC §5c):** when the iPhone app is in the background, iOS moves its
+  advertised service UUID into Apple's "overflow area", which **only other iPhones scanning for that
+  UUID can see**; Android phones cannot. So two phones find each other when either one is Android and
+  the iPhone is in the foreground, or when both are iPhones. The app explains this with
+  `nearby_ios_background_note`, and the review notes say so.
+- Start Bluetooth only when the user turns Nearby on; stop scanning and advertising when Nearby is
+  paused or off, so the system Bluetooth indicator and battery use match the switch.
 
-App Review checks that background location is used for a feature the user turned on and understands
+App Review checks that background modes serve a feature the user turned on and understands
 (guideline 2.5.4); the review notes explain it.
 
 ## Other keys
 
 | Key | Value | Why |
 |---|---|---|
-| `ITSAppUsesNonExemptEncryption` | `false` | HTTPS/TLS via the OS and SDKs only — export-compliance exempt; skips the per-upload question |
+| `ITSAppUsesNonExemptEncryption` | **`true`** (YES) — see `APP_STORE_CONNECT.md` §7 | The chat uses its own end-to-end encryption (ECDH P-256, HKDF, AES-GCM). If it is implemented only with Apple's **CryptoKit**, App Store Connect's category "encryption limited to that within the Apple operating system" needs **no documentation upload**. Setting `false` would claim the app uses no non-exempt encryption, which is doubtful for E2E messaging. Confirm with counsel. |
 | `CFBundleDisplayName` | `Conjunction` | The single place the display name lives on iOS (SPEC) |
-| `LSApplicationQueriesSchemes` | none | |
-| `UIRequiredDeviceCapabilities` | `arm64` (and optionally `gps`, `location-services`, `still-camera` — **do not** add these unless the app is unusable without them; readings work without GPS) | |
-| `NSAppTransportSecurity` | default (no exceptions) | |
-| `FirebaseAppDelegateProxyEnabled` | per Firebase Messaging setup | |
-| `GIDClientID` + URL scheme | only if Google Sign-In is included | Google Sign-In config |
+| `UIRequiredDeviceCapabilities` | `arm64` only. Do **not** add `bluetooth-le` (readings work without it; every supported iPhone has BLE anyway). | |
+| `NSAppTransportSecurity` | default (no exceptions) | The app makes no network calls of its own |
+| `LSApplicationQueriesSchemes` | `mailto` only if the app checks for a mail app before falling back from `MFMailComposeViewController` | Report emails |
 
-## Entitlements / capabilities (paid program required)
+## Entitlements / capabilities
 
-| Capability | Entitlement | Why |
-|---|---|---|
-| Push Notifications | `aps-environment = production` (development for debug) | FCM → APNs for match, twin, "It's a Conjunction!" and chat notifications |
-| Sign In with Apple | `com.apple.developer.applesignin = [Default]` | Guideline 4.8 (Google Sign-In is offered) |
-| Background Modes | Info.plist `UIBackgroundModes` above | |
-| Associated Domains | only if universal links are added (e.g. `applinks:primitive.io`) | |
+| Capability | Needed? |
+|---|---|
+| Push Notifications (`aps-environment`) | **No** — local notifications only. Remove it from the App ID and entitlements. |
+| Sign In with Apple | **No** — there is no sign-in (guideline 4.8 does not apply). |
+| Background Modes | Yes, via `UIBackgroundModes` above (Info.plist; no entitlement file entry) |
+| Keychain Sharing / App Groups | No (the identity key lives in the app's own Keychain, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) |
+| Associated Domains | Only if universal links are added |
 
-A free Personal Team (the current sideload setup) cannot sign `aps-environment` or Sign in with
-Apple; a sideload build must strip both, and then Nearby notifications do not arrive — say so in any
-sideload test instructions.
+Because nothing above needs a paid-program-only entitlement, a **free Personal Team sideload build**
+(the owner's current iOS setup) can run the full Nearby feature, including notifications. Bluetooth
+background modes need no entitlement. The 7-day sideload expiry still applies.

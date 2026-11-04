@@ -8,6 +8,7 @@ import kotlin.random.Random
 import net.iakovlev.timeshape.TimeZoneEngine
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume
 import org.junit.BeforeClass
 import org.junit.Test
 
@@ -19,11 +20,16 @@ class TimeZoneGridTest {
     companion object {
         lateinit var grid: TimeZoneGrid
 
+        /**
+         * The grid asset is optional (the app falls back to zone1970.tab, see ZoneTableTest). When
+         * it has not been generated, these tests are skipped rather than failed.
+         */
         @BeforeClass
         @JvmStatic
         fun load() {
-            val asset = listOf(File("src/main/assets/tz/tzgrid.bin"), File("app/src/main/assets/tz/tzgrid.bin")).first { it.exists() }
-            grid = asset.inputStream().use(TimeZoneGrid::read)
+            val asset = listOf(File("src/main/assets/tz/tzgrid.bin"), File("app/src/main/assets/tz/tzgrid.bin")).firstOrNull { it.exists() }
+            Assume.assumeTrue("tzgrid.bin not generated (optional asset)", asset != null)
+            grid = asset!!.inputStream().use(TimeZoneGrid::read)
         }
     }
 

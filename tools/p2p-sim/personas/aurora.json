@@ -1,0 +1,14 @@
+{
+ "firstName": "Aurora",
+ "bio": "Stargazer. Tea, long walks, Saturn returns.",
+ "gender": "female",
+ "seeking": "both",
+ "relationship": "single",
+ "lookingFor": "both",
+ "bloodType": "o",
+ "birth": {"date": "1996-03-12", "time": "06:40", "latitude": 38.7223, "longitude": -9.1393, "zone": "Europe/Lisbon", "place": "Lisbon, Portugal"},
+ "compat": {"sun": 35193, "moon": 25565, "venus": 3680, "mars": 35030, "asc": 32195, "animal": "rat", "stem": "wu", "blood": "o", "birthDate": "1996-03-12", "birthHour": 6},
+ "photo": "aurora.jpg",
+ "autoSwipe": "right",
+ "replies": ["Hi! This is Aurora, the Conjunction test peer on the laptop.", "The stars say: your message arrived intact.", "Ask me anything, I only know canned lines though."]
+}

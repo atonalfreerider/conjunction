@@ -1,68 +1,75 @@
-# App Privacy ("nutrition label") and privacy manifest
+# App Privacy ("nutrition label") and privacy manifest (serverless Bluetooth build)
 
-App Store Connect → the app → **App Privacy**. Built from `SPEC.md` §5, §5b, §6 and
-`legal/PRIVACY.md`. Apple's definitions
-(https://developer.apple.com/app-store/app-privacy-details/):
+App Store Connect → the app → **App Privacy**. Built from `SPEC.md` §5c and `legal/PRIVACY.md` 2.0.
+Apple's definitions, re-read 2026-11-03 at <https://developer.apple.com/app-store/app-privacy-details/>:
 
-- **Collected** = transmitted off the device and stored longer than needed to service the request in
-  real time. On-device-only data is not collected.
-- **Linked to the user** = associated with the user's account or identity. Everything we store is
-  keyed by the account ID, so every row is **linked**.
-- **Tracking** = linking with third-party data for advertising or sharing with data brokers. **None.**
-  No ATT prompt, no `NSUserTrackingUsageDescription`.
-- Data processed by our **service providers** (Firebase, Cloud Vision, TypeSafe) on our behalf is
-  covered by our answers; it is not separately "third-party" collection for advertising.
+- **"Collect"** = "transmitting data off the device in a way that allows **you and/or your
+  third-party partners to access it** for a period longer than what is necessary to service the
+  transmitted request in real time." Data processed only on device is not collected.
+- **Optional disclosure** applies to data that is not used for tracking or advertising, is collected
+  only in infrequent cases that are not part of the app's primary functionality and are optional for
+  the user, and is provided by the user in a form where it is clear what is sent and the user
+  affirmatively chooses to send it each time. Apple's example: "data collected in optional feedback
+  forms or customer service requests".
+- Apple's FAQ says apps that "offer in-app private messaging between users" should declare *Emails
+  or Text Messages*. That FAQ assumes the developer's service carries or stores the messages.
 
-**Privacy policy URL:** `https://primitive.io/legal/conjunction-privacy/`
-**Do you or your third-party partners collect data from this app?** **Yes.**
+## Recommended answer: **Data Not Collected** — and why
 
-## Data types
+**Do you or your third-party partners collect data from this app? → No.**
 
-All rows: **Linked to you: Yes. Used for tracking: No. Purpose: App Functionality** (plus others
-where listed). "Optional" data is collected only when the user uses the feature.
+1. **No server, no SDK that phones home.** The iOS app has no Firebase, analytics, crash reporting or
+   ads, and no Google ML Kit (readings use Apple's on-device Foundation Models). Birth-place search
+   uses Apple's own `CLGeocoder` / MapKit, which is Apple's service, not a partner of ours.
+2. **Peer-to-peer data is not accessible to us or any partner.** The Nearby card goes over Bluetooth
+   directly to other users' iPhones and Android phones; chats are end-to-end encrypted and stored
+   only on the two phones. Apple's test is whether *the developer or its third-party partners* can
+   access the data. Another user who receives your card is neither, and nothing passes through
+   infrastructure we or a partner control. So the card and the chat are **not "collected"** in
+   Apple's sense, even though they leave the device. The private-messaging FAQ does not apply
+   because the messages never reach us.
+3. **Report and support emails** are written in, and sent from, the user's own mail account (iOS
+   mail sheet), only when the user taps Send, for an infrequent, optional purpose that is not the
+   app's primary functionality, showing exactly what is sent — this meets the optional-disclosure
+   criteria for customer-service requests.
 
-| Apple category → type | What exactly | Purposes |
-|---|---|---|
-| **Contact Info → Name** | First / display name | App Functionality |
-| **Contact Info → Email Address** | Only if the user links Sign in with Apple (relay address possible) or Google | App Functionality (account) |
-| **Location → Precise Location** | Lat/lon + geohash while Nearby is on, latest point only, 10-min TTL, never shown to others | App Functionality |
-| **Sensitive Info → Sensitive Info** | Gender + seeking (+ looking for), which can reveal **sexual orientation** — collected only after explicit consent | App Functionality |
-| **Health & Fitness → Health** | Blood type, only if entered *and* allowed for matching (declared conservatively; entertainment use) | App Functionality |
-| **User Content → Photos or Videos** | Profile photo (moderated). **Palm photos are not collected.** | App Functionality |
-| **User Content → Emails or Text Messages** | In-app chat messages between matches (Apple's type covers "the contents of the email or message") | App Functionality; *Other Purposes*: none. Moderation is part of providing the service safely — App Functionality. |
-| **User Content → Other User Content** | Bio; report descriptions; reported AI readings | App Functionality |
-| **Identifiers → User ID** | Firebase account ID; Apple / Google sign-in identifier | App Functionality |
-| **Identifiers → Device ID** | FCM registration token / Firebase installation ID (push routing) | App Functionality |
-| **Usage Data → Product Interaction** | Swipes, matches, unmatches, blocks, pauses (stored to make matching work and enforce the 30-day re-show rule) | App Functionality |
-| **Other Data → Other Data Types** | Birth date and hour (twins), birth year / age, relationship status, looking-for, chart summary (Sun, Moon, Venus, Mars, Ascendant longitudes; Chinese year animal; day stem) | App Functionality |
+**This differs from the Google Play answer on purpose:** Google defines collection as data leaving
+the device at all (with an exemption only for end-to-end encryption), Apple as data reaching the
+developer or its partners. See `store/play/DATA_SAFETY.md`.
 
-**Not collected:** birth time minute and place, full chart, horoscope / palm / Eastern reading text
-(unless reported), palm photos, contacts, browsing / search history, purchases, financial info,
-diagnostics and crash data (unless Crashlytics is added — then add **Diagnostics → Crash Data**),
-advertising data, audio, gameplay, fitness, physical address, phone number.
+**Conservative alternative (owner's choice).** If the owner prefers a label that mirrors Play, or if
+App Review questions "Data Not Collected" for a dating app, declare — all *Not linked to you*, *Not
+used for tracking*, purpose *App Functionality*: Contact Info → Name; Sensitive Info; Health & Fitness
+→ Health (only if blood type is sent); User Content → Photos or Videos; Other Data → Other Data Types
+(age, birth date, signs, relationship status, looking-for); and, for report emails, User Content →
+Customer Support. ("Not linked" because there is no account or identity on our side.) Do not declare
+Emails or Text Messages: they are end-to-end encrypted and never accessible to us.
 
-Apple's Foundation Models run on device and send nothing to us; the iOS app contains no Google ML
-Kit.
+**If anything changes** — a report endpoint (e.g. a Google Form, see `store/play/POLICY.md` §4), an
+analytics or crash SDK, any server — the answer becomes "Yes" for the data involved. Change this file,
+the privacy manifest, `legal/PRIVACY.md` and `store/play/DATA_SAFETY.md` together.
 
-Expected label summary: *Data Linked to You* — Contact Info, Location, Sensitive Info, Health &
-Fitness, User Content, Identifiers, Usage Data, Other Data. *Data Used to Track You* — none.
+**Privacy policy URL:** `https://primitive.io/legal/conjunction-privacy/` (still required with Data
+Not Collected).
+
+**Tracking:** none. No ATT prompt, no `NSUserTrackingUsageDescription`.
+
+Expected label: **Data Not Collected** — "The developer does not collect any data from this app."
 
 ## Privacy manifest (`PrivacyInfo.xcprivacy`)
 
-The app target ships a privacy manifest that matches the label (Xcode's privacy report aggregates it
-with the SDKs' manifests; the Firebase SDKs ship their own):
+The app target ships a privacy manifest that matches the label:
 
 - `NSPrivacyTracking` = false; `NSPrivacyTrackingDomains` = empty.
-- `NSPrivacyCollectedDataTypes`: one entry per row above (`NSPrivacyCollectedDataTypeName`,
-  `…PreciseLocation`, `…SensitiveInfo`, `…Health`, `…PhotosorVideos`, `…EmailsOrTextMessages`,
-  `…OtherUserContent`, `…UserID`, `…DeviceID`, `…ProductInteraction`, `…OtherDataTypes`,
-  `…EmailAddress`), each with `Linked = true`, `Tracking = false`, purpose
-  `NSPrivacyCollectedDataTypePurposeAppFunctionality`.
-- `NSPrivacyAccessedAPITypes` (required-reason APIs): `NSPrivacyAccessedAPICategoryUserDefaults`
-  with `CA92.1` (app's own settings); add `NSPrivacyAccessedAPICategoryFileTimestamp` (`C617.1`) if
-  the app reads file dates (e.g. cleaning up old palm photos), `NSPrivacyAccessedAPICategorySystemBootTime`
-  (`35F9.1`) if animations use `systemUptime`, `NSPrivacyAccessedAPICategoryDiskSpace` (`E174.1`) if it
-  checks space before saving photos. List only what the code uses.
+- `NSPrivacyCollectedDataTypes` = **empty array** (matching Data Not Collected). If the conservative
+  alternative is chosen, add one entry per declared type with `Linked = false`, `Tracking = false`,
+  purpose `NSPrivacyCollectedDataTypePurposeAppFunctionality`.
+- `NSPrivacyAccessedAPITypes` (required-reason APIs): `NSPrivacyAccessedAPICategoryUserDefaults` with
+  `CA92.1` (app's own settings); add `NSPrivacyAccessedAPICategoryFileTimestamp` (`C617.1`) if the app
+  reads file dates (e.g. expiring match cards or cleaning up palm photos),
+  `NSPrivacyAccessedAPICategorySystemBootTime` (`35F9.1`) if it uses `systemUptime` /
+  `mach_absolute_time` (common in BLE timing and animation code), `NSPrivacyAccessedAPICategoryDiskSpace`
+  (`E174.1`) if it checks free space. List only what the code uses; check Xcode's privacy report on the
+  CI archive.
 
-Keep `legal/PRIVACY.md`, this file, the manifest and `store/play/DATA_SAFETY.md` in step: change
-all four together.
+Keep `legal/PRIVACY.md`, this file, the manifest and `store/play/DATA_SAFETY.md` in step.

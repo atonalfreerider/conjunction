@@ -1,0 +1,14 @@
+{
+ "firstName": "Orion",
+ "bio": null,
+ "gender": "male",
+ "seeking": "female",
+ "relationship": "single",
+ "lookingFor": "dating",
+ "bloodType": null,
+ "birth": {"date": "1990-08-12", "time": null, "latitude": 40.7128, "longitude": -74.006, "zone": "America/New_York", "place": "New York, USA"},
+ "compat": {"sun": 13968, "moon": 3652, "venus": 11847, "mars": 4974, "asc": null, "animal": "horse", "stem": "ji", "blood": null, "birthDate": "1990-08-12", "birthHour": null},
+ "photo": null,
+ "autoSwipe": "right",
+ "replies": ["Orion here (laptop test peer). Received!"]
+}

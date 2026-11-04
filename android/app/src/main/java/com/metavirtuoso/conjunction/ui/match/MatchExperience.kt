@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,10 +69,8 @@ import com.metavirtuoso.conjunction.core.match.MatchKind
 import com.metavirtuoso.conjunction.data.Charts
 import com.metavirtuoso.conjunction.data.Profile
 import com.metavirtuoso.conjunction.nearby.EncounterCard
-import com.metavirtuoso.conjunction.nearby.FriendProfile
-import com.metavirtuoso.conjunction.nearby.NearbyException
-import com.metavirtuoso.conjunction.nearby.PushEvent
-import com.metavirtuoso.conjunction.nearby.PushKind
+import com.metavirtuoso.conjunction.nearby.NearbyEvent
+import com.metavirtuoso.conjunction.nearby.Screening
 import com.metavirtuoso.conjunction.ui.ChatTarget
 import com.metavirtuoso.conjunction.ui.components.Art
 import com.metavirtuoso.conjunction.ui.components.FinePrint
@@ -83,7 +82,9 @@ import com.metavirtuoso.conjunction.ui.components.OrnatePanel
 import com.metavirtuoso.conjunction.ui.components.OrnateTextField
 import com.metavirtuoso.conjunction.ui.components.OrreryLoader
 import com.metavirtuoso.conjunction.ui.components.ProfilePhoto
+import com.metavirtuoso.conjunction.ui.components.ScreenedPhoto
 import com.metavirtuoso.conjunction.ui.screens.SafetyActionsDialog
+import com.metavirtuoso.conjunction.ui.screens.SafetyTarget
 import com.metavirtuoso.conjunction.ui.theme.LocalReducedMotion
 import com.metavirtuoso.conjunction.ui.theme.Palette
 import kotlin.math.PI
@@ -92,130 +93,105 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-private sealed interface MatchStage {
-    data object Loading : MatchStage
-    data class Animating(val card: EncounterCard) : MatchStage
-    data class Card(val card: EncounterCard) : MatchStage
-    data class Waiting(val card: EncounterCard) : MatchStage
-    data class Conjunction(val card: EncounterCard?, val friend: FriendProfile?) : MatchStage
-    data class Failed(val message: String) : MatchStage
-}
+private enum class CardStage { ANIMATING, CARD, WAITING }
 
 /**
- * Full-screen match flow for a push or an inbox tap (SPEC 5b): the match animation (both sun-sign
- * medallions spiral in from opposite corners and merge into the conjunction emblem; birthday
- * twins get the lavish starburst with star confetti), then the swipe card (right = accept, left =
- * pass, with buttons too), then "It's a Conjunction!" with the other person's photo and an intro
- * box when both said yes.
+ * Full-screen match flow for a match found nearby (popup while the app is open, or a tapped local
+ * notification), SPEC 5b/5c: the match animation (both sun-sign medallions spiral in from opposite
+ * corners and merge into the conjunction emblem; birthday twins get the lavish starburst with star
+ * confetti), then the swipe card (right = accept, left = pass, with buttons too), then
+ * "It's a Conjunction!" with the other person's photo and an intro box once both said yes. All data
+ * comes from this phone's store: what the other phone sent over Bluetooth.
  */
 @Composable
 fun MatchExperience(
     container: AppContainer,
-    event: PushEvent,
+    event: NearbyEvent,
     myCharts: Charts?,
     profile: Profile,
     onDismiss: () -> Unit,
     onOpenChat: (ChatTarget) -> Unit,
     skipAnimation: Boolean = false,
 ) {
-    val api = container.nearbyApi
+    val repo = container.nearby
     val scope = rememberCoroutineScope()
-    var stage by remember(event) { mutableStateOf<MatchStage>(MatchStage.Loading) }
+    var ready by remember { mutableStateOf(repo.store.isLoaded) }
+    LaunchedEffect(Unit) { repo.store.load(); ready = true }
+    val fp = event.encounterId
+    val encounter by remember(fp) { fp?.let(repo::encounter) ?: flowOf(null) }.collectAsState(initial = fp?.let { repo.store.state.value.encounter(it)?.toCard() })
+    var stage by remember(event) { mutableStateOf(if (skipAnimation) CardStage.CARD else CardStage.ANIMATING) }
     var blurb by remember(event) { mutableStateOf<String?>(null) }
     var safety by remember { mutableStateOf<EncounterCard?>(null) }
     BackHandler(onBack = onDismiss)
+    val card = encounter
+    val friendId = event.friendId ?: card?.friendId
 
-    LaunchedEffect(event) {
-        val encounterId = event.encounterId ?: event.pairId
-        if (encounterId == null) { stage = MatchStage.Failed("This match is no longer available."); return@LaunchedEffect }
-        try {
-            val card = api.getEncounterCard(encounterId)
-            if (event.kind == PushKind.CONJUNCTION || card.status == "matched") {
-                stage = MatchStage.Conjunction(card, runCatching { api.getFriendProfile(card.otherUid) }.getOrNull())
-            } else {
-                stage = if (skipAnimation) MatchStage.Card(card) else MatchStage.Animating(card)
-                val kind = if (card.kind == "dating") MatchKind.DATING else MatchKind.FRIENDS
-                val input = MatchBlurbPrompt.Input(
-                    kind = kind,
-                    mySun = myCharts?.natal?.sunSign?.displayName ?: "",
-                    theirSun = Art.displaySign(card.card?.sun),
-                    theirMoon = card.card?.moon?.let(Art::displaySign),
-                    theirRising = card.card?.rising?.let(Art::displaySign),
-                    myAnimal = myCharts?.chinese?.yearAnimal?.displayName ?: "",
-                    theirAnimal = Art.displayAnimal(card.card?.chineseAnimal),
-                    total = card.total,
-                    western = card.western,
-                    chinese = card.chinese,
-                    blood = card.blood,
-                    birthdayTwin = card.birthdayTwin,
-                    exactTwin = card.exactTwin,
-                )
-                blurb = MatchBlurbPrompt.fallback(input)
-                blurb = container.readings.matchBlurb(input)
-            }
-        } catch (e: NearbyException) {
-            stage = MatchStage.Failed(e.message ?: "This match is no longer available.")
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            stage = MatchStage.Failed("Couldn't load this match. Check your connection.")
-        }
+    LaunchedEffect(card?.encounterId) {
+        val c = card ?: return@LaunchedEffect
+        if (c.friendId != null) return@LaunchedEffect
+        val input = MatchBlurbPrompt.Input(
+            kind = if (c.kind == "dating") MatchKind.DATING else MatchKind.FRIENDS,
+            mySun = myCharts?.natal?.sunSign?.displayName ?: "",
+            theirSun = Art.displaySign(c.card?.sun),
+            theirMoon = c.card?.moon?.let(Art::displaySign),
+            theirRising = c.card?.rising?.let(Art::displaySign),
+            myAnimal = myCharts?.chinese?.yearAnimal?.displayName ?: "",
+            theirAnimal = Art.displayAnimal(c.card?.chineseAnimal),
+            total = c.total, western = c.western, chinese = c.chinese, blood = c.blood,
+            birthdayTwin = c.birthdayTwin, exactTwin = c.exactTwin,
+        )
+        blurb = MatchBlurbPrompt.fallback(input)
+        blurb = container.readings.matchBlurb(input)
     }
 
     Box(
         Modifier.fillMaxSize().background(Palette.Midnight).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {},
     ) {
-        when (val s = stage) {
-            MatchStage.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OrreryLoader(size = 96.dp) }
-            is MatchStage.Failed -> Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Text(s.message, style = MaterialTheme.typography.titleMedium, color = Palette.Moonstone, textAlign = TextAlign.Center)
+        when {
+            friendId != null -> ConjunctionPopup(container, friendId, card, onOpenChat = onOpenChat, onClose = onDismiss)
+            !ready -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OrreryLoader(size = 96.dp) }
+            card == null || (card.mySwipe == "left") -> Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Text("This match is no longer available.", style = MaterialTheme.typography.titleMedium, color = Palette.Moonstone, textAlign = TextAlign.Center)
                 GhostButton("Close", onClick = onDismiss, modifier = Modifier.padding(top = 16.dp))
             }
-            is MatchStage.Animating -> MatchAnimation(
-                card = s.card,
+            stage == CardStage.ANIMATING && card.mySwipe == null -> MatchAnimation(
+                card = card,
                 mySignArt = myCharts?.natal?.sunSign?.let(Art::sign) ?: R.drawable.brand_mark,
                 myPhotoPath = profile.localPhotoPath,
                 blurb = blurb,
-                onFinished = { stage = MatchStage.Card(s.card) },
+                onFinished = { stage = CardStage.CARD },
             )
-            is MatchStage.Card -> SwipeCardPage(
-                card = s.card,
+            stage == CardStage.WAITING || card.mySwipe == "right" -> Column(Modifier.fillMaxSize().statusBarsPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Image(painterResource(R.drawable.popup_match_nearby), contentDescription = null, modifier = Modifier.size(220.dp))
+                GoldText("Your star is sent", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+                Text(
+                    "If ${card.card?.firstName ?: "they"} says yes too, you'll both get a notification and the chat opens. " +
+                        "If you're out of range now, your answer goes the next time your phones are near each other (within 24 hours).",
+                    style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center,
+                )
+                GoldButton("Done", onClick = onDismiss, modifier = Modifier.padding(top = 20.dp))
+            }
+            else -> SwipeCardPage(
+                card = card,
                 blurb = blurb,
                 onSwipe = { accept ->
                     scope.launch {
-                        try {
-                            val result = api.swipe(s.card.encounterId, accept)
-                            when {
-                                !accept -> onDismiss()
-                                result.outcome == "matched" -> stage = MatchStage.Conjunction(s.card, runCatching { api.getFriendProfile(s.card.otherUid) }.getOrNull())
-                                else -> stage = MatchStage.Waiting(s.card)
-                            }
-                        } catch (e: NearbyException) {
-                            stage = MatchStage.Failed(e.message ?: "Couldn't send your answer.")
-                        }
+                        repo.swipe(card.encounterId, accept)
+                        if (accept) stage = CardStage.WAITING else onDismiss()
                     }
                 },
-                onSafety = { safety = s.card },
+                onSafety = { safety = card },
                 onClose = onDismiss,
             )
-            is MatchStage.Waiting -> Column(Modifier.fillMaxSize().statusBarsPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Image(painterResource(R.drawable.popup_match_nearby), contentDescription = null, modifier = Modifier.size(220.dp))
-                GoldText("Your star is sent", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
-                Text("If ${s.card.card?.firstName ?: "they"} says yes too, you'll both get a notification and the chat opens.", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
-                GoldButton("Done", onClick = onDismiss, modifier = Modifier.padding(top = 20.dp))
-            }
-            is MatchStage.Conjunction -> ConjunctionPopup(container, s.card, s.friend, onOpenChat = onOpenChat, onClose = onDismiss)
         }
     }
-    safety?.let { card ->
+    safety?.let { c ->
         SafetyActionsDialog(
             container = container,
-            otherUid = card.otherUid,
-            name = card.card?.firstName ?: "this person",
-            encounterId = card.encounterId,
-            pairId = null,
+            target = SafetyTarget.stranger(c),
             onDone = { closed -> safety = null; if (closed) onDismiss() },
         )
     }
@@ -277,8 +253,8 @@ internal fun MatchAnimation(card: EncounterCard, @DrawableRes mySignArt: Int, my
             return IntOffset((w / 2 + radius * cos(a) - medPx / 2).roundToInt(), (h * 0.42f + radius * sin(a) - medPx / 2).roundToInt())
         }
         if (merge < 1f) {
-            Medallion(mySignArt, myPhotoPath, null, medallion, Modifier.offset { pos((225f / 180f) * PI.toFloat()) }.graphicsLayer { alpha = 1f - merge; scaleX = 1f - 0.4f * merge; scaleY = 1f - 0.4f * merge })
-            Medallion(theirSignArt, null, card.photoUrl, medallion, Modifier.offset { pos((45f / 180f) * PI.toFloat()) }.graphicsLayer { alpha = 1f - merge; scaleX = 1f - 0.4f * merge; scaleY = 1f - 0.4f * merge })
+            Medallion(mySignArt, myPhotoPath, Screening.SAFE, medallion, Modifier.offset { pos((225f / 180f) * PI.toFloat()) }.graphicsLayer { alpha = 1f - merge; scaleX = 1f - 0.4f * merge; scaleY = 1f - 0.4f * merge })
+            Medallion(theirSignArt, card.photoPath, card.photoScreening, medallion, Modifier.offset { pos((45f / 180f) * PI.toFloat()) }.graphicsLayer { alpha = 1f - merge; scaleX = 1f - 0.4f * merge; scaleY = 1f - 0.4f * merge })
         }
         // Burst + emblem.
         val emblemScale = ((p - 0.6f) / 0.15f).coerceIn(0f, 1f)
@@ -343,14 +319,17 @@ private fun starPath(c: Offset, r: Float): Path = Path().apply {
     close()
 }
 
-/** Gold medallion frame (art/match/medallion_frame) with sign art, and a profile photo inset when available. */
+/**
+ * Gold medallion frame (art/match/medallion_frame) with sign art, and a profile photo inset when
+ * there is one that screening cleared (unchecked / flagged photos are not inset here).
+ */
 @Composable
-fun Medallion(@DrawableRes signArt: Int, photoPath: String?, photoUrl: String?, size: Dp, modifier: Modifier = Modifier) {
+fun Medallion(@DrawableRes signArt: Int, photoPath: String?, screening: Screening, size: Dp, modifier: Modifier = Modifier) {
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Image(painterResource(signArt), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(size * 0.78f).clip(CircleShape))
-        if (photoPath != null || photoUrl != null) {
+        if (photoPath != null && screening == Screening.SAFE) {
             ProfilePhoto(
-                url = photoUrl, localPath = photoPath, placeholder = signArt, contentDescription = null,
+                localPath = photoPath, placeholder = signArt, contentDescription = null,
                 modifier = Modifier.size(size * 0.42f).align(Alignment.BottomEnd).offset(x = -size * 0.06f, y = -size * 0.06f).clip(CircleShape).background(Palette.Gold),
             )
         }
@@ -417,10 +396,11 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
         ) {
             Box(Modifier.fillMaxSize().padding(12.dp).background(Brush.verticalGradient(listOf(Palette.InkViolet, Palette.Midnight))))
             Column(Modifier.fillMaxSize().padding(horizontal = 30.dp, vertical = 36.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                ProfilePhoto(
-                    url = card.photoUrl,
+                ScreenedPhoto(
+                    path = card.photoPath,
+                    screening = card.photoScreening,
                     placeholder = Art.signKey(c?.sun),
-                    contentDescription = if (card.photoUrl != null) "Photo of ${c?.firstName ?: "your match"}" else "${Art.displaySign(c?.sun)} artwork",
+                    contentDescription = if (card.photoPath != null) "Photo of ${c?.firstName ?: "your match"}" else "${Art.displaySign(c?.sun)} artwork",
                     modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(CircleShape),
                 )
                 Spacer(Modifier.height(8.dp))
@@ -439,6 +419,7 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
                 )
                 Spacer(Modifier.height(6.dp))
                 Text("${card.total}% · ${if (card.kind == "dating") "Dating match" else "Friends match"}", style = MaterialTheme.typography.titleMedium, color = Palette.Gold)
+                c?.bio?.let { Text("“$it”", style = MaterialTheme.typography.bodySmall, color = Palette.Moonstone, textAlign = TextAlign.Center, maxLines = 3) }
                 blurb?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Palette.MoonstoneDim, textAlign = TextAlign.Center) }
             }
             Image(painterResource(R.drawable.frame_swipe_card), contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
@@ -463,19 +444,19 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
     }
 }
 
-/** "It's a Conjunction!": the friend's photo pops up with an intro box. */
+/** "It's a Conjunction!": the friend's photo pops up with an intro box; the message is queued if they left. */
 @Composable
-private fun ConjunctionPopup(container: AppContainer, card: EncounterCard?, friend: FriendProfile?, onOpenChat: (ChatTarget) -> Unit, onClose: () -> Unit) {
+private fun ConjunctionPopup(container: AppContainer, friendId: String, card: EncounterCard?, onOpenChat: (ChatTarget) -> Unit, onClose: () -> Unit) {
     val scope = rememberCoroutineScope()
+    val friend by remember(friendId) { container.nearby.friend(friendId) }.collectAsState(initial = null)
     var intro by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf<String?>(null) }
     var sending by remember { mutableStateOf(false) }
     val reduced = LocalReducedMotion.current
     val pop = remember { Animatable(if (reduced) 1f else 0f) }
     LaunchedEffect(Unit) { if (!reduced) pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.45f, stiffness = 140f)) }
-    val pairId = friend?.pairId ?: card?.encounterId
-    val otherUid = friend?.uid ?: card?.otherUid
-    val name = friend?.displayName?.substringBefore(' ') ?: card?.card?.firstName ?: "your match"
+    val f = friend
+    val name = f?.firstName ?: card?.card?.firstName ?: "your match"
+    val sun = f?.sun ?: card?.card?.sun
     Box(Modifier.fillMaxSize()) {
         Image(painterResource(R.drawable.popup_its_a_conjunction), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().graphicsLayer { alpha = 0.55f })
         Column(
@@ -485,42 +466,32 @@ private fun ConjunctionPopup(container: AppContainer, card: EncounterCard?, frie
         ) {
             GoldText("It's a Conjunction!", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
             OrnateDivider()
-            Medallion(
-                signArt = Art.signKey(friend?.sun ?: card?.card?.sun),
-                photoPath = null,
-                photoUrl = null,
-                size = 220.dp,
-                modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
-            )
-            if (friend?.photoUrl != null) {
-                ProfilePhoto(friend.photoUrl, Art.signKey(friend.sun), "Photo of $name", Modifier.size(150.dp).clip(CircleShape).graphicsLayer { scaleX = pop.value; scaleY = pop.value })
+            if (f?.photoPath != null) {
+                ScreenedPhoto(f.photoPath, f.photoScreening, Art.signKey(sun), "Photo of $name", Modifier.size(180.dp).clip(CircleShape).graphicsLayer { scaleX = pop.value; scaleY = pop.value })
+            } else {
+                Medallion(signArt = Art.signKey(sun), photoPath = null, screening = Screening.SAFE, size = 200.dp, modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value })
             }
-            GoldText(friend?.displayName ?: name, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-            friend?.bioFirstLine?.let { Text("“$it”", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center) }
+            GoldText(name, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+            f?.bio?.let { Text("“$it”", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center) }
             Text(
-                listOfNotNull(friend?.sun?.let { "☉ ${Art.displaySign(it)}" }, friend?.moon?.let { "☽ ${Art.displaySign(it)}" }, friend?.rising?.let { "AC ${Art.displaySign(it)}" }).joinToString("   "),
+                listOfNotNull(sun?.let { "☉ ${Art.displaySign(it)}" }, (f?.moon ?: card?.card?.moon)?.let { "☽ ${Art.displaySign(it)}" }, (f?.rising ?: card?.card?.rising)?.let { "AC ${Art.displaySign(it)}" }).joinToString("   "),
                 style = MaterialTheme.typography.titleSmall, color = Palette.GoldPale,
             )
             Text("You and $name both said yes. Say hello.", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
             OrnateTextField(intro, { intro = it.take(500) }, label = "Introduce yourself", singleLine = false, minLines = 2)
             FinePrint(stringResource(R.string.chat_first_open_notice))
-            status?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.RoseCopper, textAlign = TextAlign.Center) }
-            GoldButton(if (sending) "Sending…" else "Send & open chat", enabled = intro.isNotBlank() && !sending && pairId != null, modifier = Modifier.fillMaxWidth(), onClick = {
+            GoldButton(if (sending) "Sending…" else "Send & open chat", enabled = intro.isNotBlank() && !sending, modifier = Modifier.fillMaxWidth(), onClick = {
                 sending = true
                 scope.launch {
                     try {
-                        when (container.nearbyApi.sendMessage(pairId!!, intro.trim())) {
-                            "blocked" -> status = container.context.getString(R.string.chat_blocked)
-                            else -> onOpenChat(ChatTarget(pairId, otherUid!!))
-                        }
-                    } catch (e: NearbyException) {
-                        status = e.message
+                        container.nearby.sendChat(friendId, intro)
+                        onOpenChat(ChatTarget(friendId))
                     } finally {
                         sending = false
                     }
                 }
             })
-            if (pairId != null && otherUid != null) GhostButton("Open chat", onClick = { onOpenChat(ChatTarget(pairId, otherUid)) }, modifier = Modifier.fillMaxWidth())
+            GhostButton("Open chat", onClick = { onOpenChat(ChatTarget(friendId)) }, modifier = Modifier.fillMaxWidth())
             GhostButton("Later", onClick = onClose, modifier = Modifier.fillMaxWidth())
         }
     }
