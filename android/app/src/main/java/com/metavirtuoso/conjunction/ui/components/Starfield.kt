@@ -61,20 +61,21 @@ fun StarfieldBackground(
     val reduced = LocalReducedMotion.current
     val stars = remember { starLayer(seed = 7, count = 90) }
     val transition = rememberInfiniteTransition(label = "starfield")
-    val drift by transition.animateFloat(
+    // Keep the animated values as State and read them only in the draw phase (graphicsLayer /
+    // Canvas). Reading them here would recompose the whole screen every frame, which restarts
+    // AnimatedContent's page transitions so the old page never leaves and swallows taps.
+    val drift = transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(90_000, easing = LinearEasing), RepeatMode.Reverse),
         label = "drift",
     )
-    val twinkle by transition.animateFloat(
+    val twinkle = transition.animateFloat(
         initialValue = 0f,
         targetValue = 2f * PI.toFloat(),
         animationSpec = infiniteRepeatable(tween(7_000, easing = LinearEasing), RepeatMode.Restart),
         label = "twinkle",
     )
-    val d = if (reduced) 0.5f else drift
-    val t = if (reduced) 0f else twinkle
 
     Box(modifier.fillMaxSize()) {
         Image(
@@ -84,6 +85,7 @@ fun StarfieldBackground(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
+                    val d = if (reduced) 0.5f else drift.value
                     // Slight over-scale so the slow pan never reveals an edge.
                     scaleX = 1.08f
                     scaleY = 1.08f
@@ -92,6 +94,8 @@ fun StarfieldBackground(
                 },
         )
         Canvas(Modifier.fillMaxSize()) {
+            val d = if (reduced) 0.5f else drift.value
+            val t = if (reduced) 0f else twinkle.value
             val w = size.width
             val h = size.height
             for (star in stars) {
@@ -104,9 +108,10 @@ fun StarfieldBackground(
             }
             drawRect(
                 Brush.verticalGradient(
-                    0f to Palette.Midnight.copy(alpha = dim * 0.6f),
+                    // Heavy dims (form pages) also darken the top, where page titles sit.
+                    0f to Palette.Midnight.copy(alpha = if (dim >= 0.7f) dim else dim * 0.6f),
                     0.45f to Color.Transparent,
-                    1f to Palette.Midnight.copy(alpha = dim + 0.25f),
+                    1f to Palette.Midnight.copy(alpha = (dim + 0.25f).coerceAtMost(1f)),
                 ),
             )
         }

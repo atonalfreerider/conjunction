@@ -35,6 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -68,10 +73,17 @@ fun GoldText(
     heading: Boolean = false,
 ) {
     val phase = rememberGoldShimmer()
+    // The text is laid out once in plain gold; the moving gold-leaf band is painted over its glyphs
+    // (SrcIn) in the draw phase, so the shimmer never triggers recomposition or relayout.
     Text(
         text = text,
-        modifier = if (heading) modifier.semantics { heading() } else modifier,
-        style = style.copy(brush = GoldBrushes.shimmer(phase)),
+        modifier = (if (heading) modifier.semantics { heading() } else modifier)
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithContent {
+                drawContent()
+                drawRect(GoldBrushes.shimmer(phase.value), blendMode = BlendMode.SrcIn)
+            },
+        style = style.copy(color = Palette.Gold),
         textAlign = textAlign,
     )
 }
@@ -143,8 +155,9 @@ fun OrnatePanel(
                 Brush.verticalGradient(listOf(Palette.InkViolet.copy(alpha = 0.92f), Palette.Midnight.copy(alpha = 0.94f))),
             )
             .drawWithCache {
-                val brush = GoldBrushes.shimmer(phase, period = size.width.coerceAtLeast(300f))
+                val period = size.width.coerceAtLeast(300f)
                 onDrawWithContent {
+                    val brush = GoldBrushes.shimmer(phase.value, period = period)
                     drawContent()
                     drawFiligreeFrame(brush, inset = 4.dp.toPx(), corner = 14.dp.toPx())
                 }
@@ -188,7 +201,7 @@ fun GoldButton(
             .defaultMinSize(minHeight = 52.dp)
             .alpha(if (enabled) 1f else 0.4f)
             .clip(shape)
-            .background(GoldBrushes.shimmer(phase, period = 500f))
+            .drawBehind { drawRect(GoldBrushes.shimmer(phase.value, period = 500f)) }
             .border(1.dp, Palette.GoldPale.copy(alpha = 0.8f), shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 14.dp),

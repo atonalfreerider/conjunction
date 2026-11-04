@@ -14,6 +14,9 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.State
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -160,18 +163,23 @@ object GoldBrushes {
 /** Whether motion should be reduced (system "remove animations" / animator scale 0). */
 val LocalReducedMotion = staticCompositionLocalOf { false }
 
-/** Slow, continuous 0..1 phase for gold shimmer (6 s per sweep); frozen when motion is reduced. */
+/**
+ * Slow, continuous 0..1 phase for gold shimmer (6 s per sweep); frozen when motion is reduced.
+ *
+ * Returned as [State] so callers read it only in the draw phase (drawBehind / drawWithContent /
+ * drawWithCache). Reading it during composition re-composes and re-lays out the caller every
+ * frame, and on a real device that continuous relayout made every tap on the page get lost.
+ */
 @Composable
-fun rememberGoldShimmer(durationMillis: Int = 6000): Float {
-    if (LocalReducedMotion.current) return 0.35f
+fun rememberGoldShimmer(durationMillis: Int = 6000): State<Float> {
+    if (LocalReducedMotion.current) return remember { mutableFloatStateOf(0.35f) }
     val transition = rememberInfiniteTransition(label = "gold-shimmer")
-    val phase by transition.animateFloat(
+    return transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(durationMillis, easing = LinearEasing), RepeatMode.Restart),
         label = "gold-shimmer-phase",
     )
-    return phase
 }
 
 @Composable
