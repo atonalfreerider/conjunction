@@ -33,7 +33,12 @@ placeholder until the owner picks one from `docs/NAMES.md`; keep it in one place
    Android ML Kit / MediaPipe Hand Landmarker + edge analysis) to measure hand shape and the heart,
    head, life and fate lines; code turns measurements into a typed `PalmFeatures` description, and the
    on-device model writes the reading from it. On Android, if Gemini Nano accepts image input on the
-   device, also pass the image. The palm photo is never uploaded and is deleted after the reading
+   device, also pass the image. Guide art `palm_guide_overlay` is a LEFT palm as the rear camera sees
+   it (thumb on the left): mirror it for the right hand. Before line finding, the straightened palm
+   (240x300 grid) gets heavy contrast — CLAHE 8x8 tiles, clip 4 — then a high-pass and multi-scale
+   Hessian ridge filter, with a lower threshold for the faint fate line (see
+   `android/app/.../palm/PalmGeometry.kt`; iOS ports it with Accelerate/vImage or plain Swift). The
+   result screen shows this "scanner view". The palm photo is never uploaded and is deleted after the reading
    unless the user saves it.
 5. **Nearby compatibility ("Conjunctions").** Opt-in only, off by default, toggled from a clear
    "Nearby" switch with a plain-language explanation. When on (and the app has foreground location;
