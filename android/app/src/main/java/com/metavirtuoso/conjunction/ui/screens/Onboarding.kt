@@ -52,6 +52,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -140,7 +144,8 @@ fun OnboardingFlow(container: AppContainer, profile: Profile, onFinished: () -> 
         }
     }
 
-    StarfieldBackground(background = background, dim = 0.55f) {
+    // The welcome page shows the art; form pages dim it further so titles and fields stay legible.
+    StarfieldBackground(background = background, dim = if (step == OnboardingStep.WELCOME) 0.55f else 0.74f) {
         AnimatedContent(
             targetState = step,
             transitionSpec = { (fadeIn() + slideInHorizontally { it / 6 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 6 }) },
@@ -469,16 +474,22 @@ internal fun BirthPlaceStep(
     var latText by rememberSaveable { mutableStateOf("") }
     var lonText by rememberSaveable { mutableStateOf("") }
 
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
+
     fun search() {
+        // Close the keyboard so the results below the field are visible.
+        keyboard?.hide(); focus.clearFocus()
         searching = true; error = null
         scope.launch {
             try {
-                val grid = withContext(Dispatchers.IO) { container.timeZones }
-                results = Places.search(context, query, grid, date, time)
+                val (grid, table) = withContext(Dispatchers.IO) { container.timeZonesOrNull to container.zoneTable }
+                results = Places.search(context, query, grid, table, date, time)
                 if (results.isEmpty()) error = "No places found. Try adding the country."
             } catch (e: PlaceSearchException) {
                 error = e.message
             } catch (e: Exception) {
+                android.util.Log.w("Conjunction", "Place search failed", e)
                 error = "Place search failed. Check your connection or enter coordinates."
             } finally {
                 searching = false
@@ -503,7 +514,11 @@ internal fun BirthPlaceStep(
         },
     ) {
         Text("We look up the place on this phone and work out the time zone and daylight-saving rules in force on your birthday.", style = MaterialTheme.typography.bodyLarge, color = Palette.Moonstone, textAlign = TextAlign.Center)
-        OrnateTextField(query, { query = it }, label = "City or town of birth", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text))
+        OrnateTextField(
+            query, { query = it }, label = "City or town of birth",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { if (query.isNotBlank() && !searching) search() }),
+        )
         GoldButton(if (searching) "Searching…" else "Search", enabled = query.isNotBlank() && !searching, onClick = ::search, modifier = Modifier.fillMaxWidth())
         if (searching) OrreryLoader(size = 48.dp)
         error?.let { Text(it, color = Palette.RoseCopper, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center) }
@@ -532,9 +547,9 @@ internal fun BirthPlaceStep(
                 if (lat == null || lon == null || lat !in -90.0..90.0 || lon !in -180.0..180.0) {
                     error = "Enter a latitude between −90 and 90 and a longitude between −180 and 180."
                 } else scope.launch {
-                    val grid = withContext(Dispatchers.IO) { container.timeZones }
+                    val (grid, table) = withContext(Dispatchers.IO) { container.timeZonesOrNull to container.zoneTable }
                     val label = "%.4f, %.4f".format(java.util.Locale.ROOT, lat, lon)
-                    chosen = Places.resolve(query.ifBlank { label }, lat, lon, grid, date, time)
+                    chosen = Places.resolve(query.ifBlank { label }, lat, lon, grid, table, date, time)
                     error = null
                 }
             })
@@ -673,11 +688,12 @@ fun NearbyConsentContent(container: AppContainer, profile: Profile, progress: Fl
     var error by remember { mutableStateOf<String?>(null) }
     var safety by remember { mutableStateOf(false) }
     val checkboxText = stringResource(R.string.nearby_checkbox)
+    val locationDenied = stringResource(R.string.perm_location_denied)
 
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
         val ok = granted[Manifest.permission.ACCESS_FINE_LOCATION] == true || granted[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (!ok) {
-            error = context.getString(R.string.perm_location_denied)
+            error = locationDenied
             return@rememberLauncherForActivityResult
         }
         busy = true

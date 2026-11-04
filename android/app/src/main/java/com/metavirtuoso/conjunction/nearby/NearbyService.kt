@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.Build
 import android.location.Location
 import android.os.Looper
 import androidx.core.app.NotificationCompat
@@ -78,7 +79,10 @@ class NearbyService : LifecycleService() {
             return START_NOT_STICKY
         }
         try {
-            ServiceCompat.startForeground(this, Notifications.ID_NEARBY_SERVICE, buildNotification(null), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+            ServiceCompat.startForeground(this, Notifications.ID_NEARBY_SERVICE, buildNotification(null),
+                // Service types exist from API 29; ServiceCompat ignores the argument below that.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0,
+            )
         } catch (e: Exception) {
             // ForegroundServiceStartNotAllowedException / SecurityException when not started from the foreground.
             _state.value = _state.value.copy(running = false, error = "Open the app to resume Nearby.")

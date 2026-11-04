@@ -4,10 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.core.app.ApplicationProvider
 import com.metavirtuoso.conjunction.AppContainer
 import com.metavirtuoso.conjunction.R
@@ -66,7 +63,7 @@ private class NoNanoModel : TextModel {
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "w411dp-h914dp-xxhdpi", application = android.app.Application::class)
 class ScreenCaptureTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
     private val outDir = System.getProperty("conjunction.screenshots").orEmpty().takeIf { it.isNotBlank() }?.let(::File)
 
@@ -94,7 +91,11 @@ class ScreenCaptureTest {
     )
 
     private fun capture(name: String) {
-        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        // Draw the window directly: captureToImage() waits for a new frame, which never comes while
+        // the test clock is paused (the screens run infinite shimmer/parallax animations).
+        val view = compose.activity.window.decorView
+        val bitmap = Bitmap.createBitmap(view.width.coerceAtLeast(1), view.height.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+        compose.runOnUiThread { view.draw(android.graphics.Canvas(bitmap)) }
         assertTrue("$name rendered empty", bitmap.width > 0 && bitmap.height > 0)
         outDir?.let { dir ->
             dir.mkdirs()

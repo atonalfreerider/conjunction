@@ -347,8 +347,9 @@ class NearbyApi(private val context: Context) {
             "venus" to c.venus,
             "mars" to c.mars,
             "ascendant" to c.ascendant,
-            "chineseYearAnimal" to c.chineseAnimal.key,
-            "dayPillarStem" to c.dayStem.hanzi,
+            "chineseAnimal" to c.chineseAnimal.key,
+            // schemas.ts STEMS: lower-case ASCII pinyin ("jia" .. "gui").
+            "dayStem" to c.dayStem.name.lowercase(java.util.Locale.ROOT),
             "bloodType" to c.bloodType?.name,
             "birthDate" to c.birthDate.toString(),
             "birthHour" to c.birthHour,

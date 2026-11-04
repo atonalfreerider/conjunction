@@ -141,8 +141,9 @@ fun PalmScreen(container: AppContainer) {
             }
         }
     }
+    val cameraDenied = stringResource(R.string.perm_camera_denied)
     val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) stage = PalmStage.Camera else error = context.getString(R.string.perm_camera_denied)
+        if (granted) stage = PalmStage.Camera else error = cameraDenied
     }
     // The photo lives only in this composition's state: leaving the tab drops it (privacy: photos
     // are not kept unless saved).

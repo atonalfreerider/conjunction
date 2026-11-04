@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: a gallery of the match experience for on-phone checks (no backend needed). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name=".debug.MatchGalleryActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Conjunction" />
+    </application>
+</manifest>

@@ -15,10 +15,10 @@ class NearbyWireTest {
     fun compatProfileMatchesSchema() {
         val charts = Charts.compute(BirthInput(LocalDate.of(1992, 3, 4), LocalTime.of(6, 45), 51.5, -0.12, "Europe/London", "London"), null)
         val wire = NearbyApi.compatToWire(charts.compatProfile(includeBlood = false))
-        assertEquals(setOf("sun", "moon", "venus", "mars", "ascendant", "chineseYearAnimal", "dayPillarStem", "bloodType", "birthDate", "birthHour"), wire.keys)
+        assertEquals(setOf("sun", "moon", "venus", "mars", "ascendant", "chineseAnimal", "dayStem", "bloodType", "birthDate", "birthHour"), wire.keys)
         listOf("sun", "moon", "venus", "mars", "ascendant").forEach { assertTrue(it, (wire[it] as Double) in 0.0..360.0) }
-        assertTrue(wire["chineseYearAnimal"] in listOf("rat", "ox", "tiger", "rabbit", "dragon", "snake", "horse", "goat", "monkey", "rooster", "dog", "pig"))
-        assertTrue(wire["dayPillarStem"] in listOf("甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"))
+        assertTrue(wire["chineseAnimal"] in listOf("rat", "ox", "tiger", "rabbit", "dragon", "snake", "horse", "goat", "monkey", "rooster", "dog", "pig"))
+        assertTrue(wire["dayStem"] in listOf("jia", "yi", "bing", "ding", "wu", "ji", "geng", "xin", "ren", "gui"))
         assertEquals("1992-03-04", wire["birthDate"])
         assertEquals(6, wire["birthHour"])
         assertNull(wire["bloodType"])

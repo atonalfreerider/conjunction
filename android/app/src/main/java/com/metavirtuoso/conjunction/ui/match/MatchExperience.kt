@@ -311,7 +311,10 @@ internal fun MatchAnimation(card: EncounterCard, @DrawableRes mySignArt: Int, my
         // Score and blurb.
         val countT = ((p - 0.68f) / 0.3f).coerceIn(0f, 1f)
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(24.dp).graphicsLayer { alpha = countT },
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().graphicsLayer { alpha = countT }
+                // Ink scrim so the score stays readable over the bright popup art and burst.
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Palette.Midnight.copy(alpha = 0.78f), Palette.Midnight.copy(alpha = 0.9f), Palette.Midnight.copy(alpha = 0.95f))))
+                .navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = 96.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             GoldText(
@@ -375,7 +378,7 @@ internal fun SwipeCardPage(card: EncounterCard, blurb: String?, onSwipe: (Boolea
     val acceptLabel = stringResource(R.string.match_card_accept)
     val rejectLabel = stringResource(R.string.match_card_reject)
     Column(
-        Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().background(Palette.Midnight).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
