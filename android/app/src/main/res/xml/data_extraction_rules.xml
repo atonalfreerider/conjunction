@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ cloud backup and device-to-device transfer.
+     Only the non-sensitive appearance preferences are backed up. Birth data, blood type, consent
+     records, cached readings, palm photos, Firebase sign-in state and FCM tokens are NOT: they stay
+     on this phone (Privacy Policy: birth data never leaves the device). -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="datastore/ui_prefs.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="datastore/ui_prefs.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>

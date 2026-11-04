@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// Conjunction Storage rules.
+//
+// The only client access is uploading a candidate profile photo to uploads/{uid}/{uploadId}.jpg.
+// Nobody can read anything directly: approved photos (profilePhotos/{uid}.jpg) are served only as
+// short-lived signed URLs by Cloud Functions after checking the relationship; held photos
+// (moderation/…) are visible only to moderators through the console / Admin SDK.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /uploads/{uid}/{fileName} {
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && fileName.matches('^[A-Za-z0-9_-]{8,64}[.]jpg$')
+        && request.resource.size > 0
+        && request.resource.size <= 8 * 1024 * 1024
+        && request.resource.contentType == 'image/jpeg';
+      allow read, delete: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

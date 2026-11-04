@@ -1,0 +1,1496 @@
+{
+ "description": "Compatibility.score golden vectors. Kotlin is the reference; Swift and the TypeScript backend must return identical values for every field. Algorithm: docs/COMPATIBILITY.md.",
+ "generator": "./gradlew :core:writeGoldens (android/core/src/test/.../GoldenWriter.kt)",
+ "cases": [
+  {
+   "id": "pair-01-ava-1990-jade-1990",
+   "note": "same date, 14:20 vs 14:50: same clock hour -> exact twins",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 139.92,
+    "moon": 39.96,
+    "venus": 118.77,
+    "mars": 49.88,
+    "ascendant": 241.48,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "B",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 76,
+    "western": 82,
+    "chinese": 64,
+    "blood": 75,
+    "highlights": [
+     "Exact twins: same day, same hour",
+     "Moon–Moon conjunction",
+     "Sun–Sun conjunction",
+     "Both Horses"
+    ],
+    "isBirthdayTwin": true,
+    "isExactTwin": true,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-02-ava-1990-sam-1990",
+   "note": "exact twins (same date, same hour 14)",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 139.77,
+    "moon": 37.75,
+    "venus": 118.58,
+    "mars": 49.79,
+    "ascendant": 233.64,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "A",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 77,
+    "western": 81,
+    "chinese": 64,
+    "blood": 85,
+    "highlights": [
+     "Exact twins: same day, same hour",
+     "Moon–Moon conjunction",
+     "Sun–Sun conjunction",
+     "Both Horses"
+    ],
+    "isBirthdayTwin": true,
+    "isExactTwin": true,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-03-ava-1990-kai-1990",
+   "note": "birthday twins, different hours",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 139.65,
+    "moon": 36.03,
+    "venus": 118.43,
+    "mars": 49.72,
+    "ascendant": 179.22,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 9
+   },
+   "expected": {
+    "total": 77,
+    "western": 84,
+    "chinese": 64,
+    "blood": 80,
+    "highlights": ["Birthday twins", "Moon–Moon conjunction", "Sun–Sun conjunction", "Both Horses"],
+    "isBirthdayTwin": true,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-04-ava-1990-lena-1990",
+   "note": "birthday twins, one unknown time",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 139.44,
+    "moon": 32.99,
+    "venus": 118.17,
+    "mars": 49.59,
+    "ascendant": null,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "AB",
+    "birthDate": "1990-08-12",
+    "birthHour": null
+   },
+   "expected": {
+    "total": 71,
+    "western": 77,
+    "chinese": 64,
+    "blood": 60,
+    "highlights": ["Birthday twins", "Sun–Sun conjunction", "Venus–Venus conjunction", "Both Horses"],
+    "isBirthdayTwin": true,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-05-ava-1990-omar-1975",
+   "note": "same birthday (month/day), different year",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 139.14,
+    "moon": 208.14,
+    "venus": 160.95,
+    "mars": 58.51,
+    "ascendant": 241.23,
+    "chineseAnimal": "rabbit",
+    "dayStem": "geng",
+    "bloodType": "A",
+    "birthDate": "1975-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 74,
+    "western": 74,
+    "chinese": 68,
+    "blood": 85,
+    "highlights": ["Same birthday", "Sun–Sun conjunction", "Venus–Mars sextile", "Blood types A + O"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": true,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-06-ava-1990-ben-1988",
+   "note": "",
+   "a": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 339.88,
+    "moon": 122.9,
+    "venus": 23,
+    "mars": 274.6,
+    "ascendant": 315.53,
+    "chineseAnimal": "dragon",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1988-02-29",
+    "birthHour": 6
+   },
+   "expected": {
+    "total": 69,
+    "western": 61,
+    "chinese": 74,
+    "blood": 85,
+    "highlights": [
+     "Sun–Moon sextile",
+     "Moon–Venus conjunction",
+     "Day Masters combine (甲己)",
+     "Blood types A + O"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-07-ben-1988-chen-1992",
+   "note": "leap-day birth",
+   "a": {
+    "sun": 339.88,
+    "moon": 122.9,
+    "venus": 23,
+    "mars": 274.6,
+    "ascendant": 315.53,
+    "chineseAnimal": "dragon",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1988-02-29",
+    "birthHour": 6
+   },
+   "b": {
+    "sun": 315.08,
+    "moon": 324.44,
+    "venus": 282.71,
+    "mars": 289.69,
+    "ascendant": 214.7,
+    "chineseAnimal": "monkey",
+    "dayStem": "xin",
+    "bloodType": "AB",
+    "birthDate": "1992-02-04",
+    "birthHour": 23
+   },
+   "expected": {
+    "total": 67,
+    "western": 61,
+    "chinese": 75,
+    "blood": 70,
+    "highlights": [
+     "Sun–Ascendant conjunction",
+     "Moon–Venus sextile",
+     "Dragon & Monkey: San He trine"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "TRINE",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-08-chen-1992-milo-1984",
+   "note": "late zi hour vs pre-Lichun birth",
+   "a": {
+    "sun": 315.08,
+    "moon": 324.44,
+    "venus": 282.71,
+    "mars": 289.69,
+    "ascendant": 214.7,
+    "chineseAnimal": "monkey",
+    "dayStem": "xin",
+    "bloodType": "AB",
+    "birthDate": "1992-02-04",
+    "birthHour": 23
+   },
+   "b": {
+    "sun": 313.38,
+    "moon": 324.86,
+    "venus": 280.12,
+    "mars": 221.17,
+    "ascendant": 358.6,
+    "chineseAnimal": "pig",
+    "dayStem": "ding",
+    "bloodType": "B",
+    "birthDate": "1984-02-03",
+    "birthHour": 9
+   },
+   "expected": {
+    "total": 73,
+    "western": 86,
+    "chinese": 42,
+    "blood": 85,
+    "highlights": ["Moon–Moon conjunction", "Sun–Sun conjunction", "Blood types B + AB"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARM",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-09-dara-1995-eli-1985",
+   "note": "unknown time, unknown blood",
+   "a": {
+    "sun": 220.13,
+    "moon": 349.96,
+    "venus": 239.52,
+    "mars": 249.51,
+    "ascendant": null,
+    "chineseAnimal": "pig",
+    "dayStem": "wu",
+    "bloodType": null,
+    "birthDate": "1995-11-03",
+    "birthHour": null
+   },
+   "b": {
+    "sun": 90.33,
+    "moon": 129.58,
+    "venus": 44.85,
+    "mars": 98.2,
+    "ascendant": 168.78,
+    "chineseAnimal": "ox",
+    "dayStem": "xin",
+    "bloodType": "B",
+    "birthDate": "1985-06-21",
+    "birthHour": 12
+   },
+   "expected": {
+    "total": 60,
+    "western": 56,
+    "chinese": 68,
+    "blood": null,
+    "highlights": [
+     "Moon–Ascendant opposition",
+     "Sun–Venus opposition"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-10-eli-1985-fatima-1999",
+   "note": "",
+   "a": {
+    "sun": 90.33,
+    "moon": 129.58,
+    "venus": 44.85,
+    "mars": 98.2,
+    "ascendant": 168.78,
+    "chineseAnimal": "ox",
+    "dayStem": "xin",
+    "bloodType": "B",
+    "birthDate": "1985-06-21",
+    "birthHour": 12
+   },
+   "b": {
+    "sun": 279.69,
+    "moon": 215.27,
+    "venus": 240.76,
+    "mars": 327.45,
+    "ascendant": 184.36,
+    "chineseAnimal": "rabbit",
+    "dayStem": "wu",
+    "bloodType": "O",
+    "birthDate": "1999-12-31",
+    "birthHour": 23
+   },
+   "expected": {
+    "total": 60,
+    "western": 52,
+    "chinese": 68,
+    "blood": 75,
+    "highlights": ["Sun–Moon trine", "Sun–Venus trine"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-11-fatima-1999-gus-1978",
+   "note": "",
+   "a": {
+    "sun": 279.69,
+    "moon": 215.27,
+    "venus": 240.76,
+    "mars": 327.45,
+    "ascendant": 184.36,
+    "chineseAnimal": "rabbit",
+    "dayStem": "wu",
+    "bloodType": "O",
+    "birthDate": "1999-12-31",
+    "birthHour": 23
+   },
+   "b": {
+    "sun": 11,
+    "moon": 287.1,
+    "venus": 27.79,
+    "mars": 116.93,
+    "ascendant": 275,
+    "chineseAnimal": "horse",
+    "dayStem": "gui",
+    "bloodType": "A",
+    "birthDate": "1978-04-01",
+    "birthHour": 3
+   },
+   "expected": {
+    "total": 71,
+    "western": 66,
+    "chinese": 74,
+    "blood": 85,
+    "highlights": [
+     "Venus–Mars sextile",
+     "Venus–Mars trine",
+     "Day Masters combine (戊癸)",
+     "Blood types A + O"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-12-gus-1978-hana-2001",
+   "note": "",
+   "a": {
+    "sun": 11,
+    "moon": 287.1,
+    "venus": 27.79,
+    "mars": 116.93,
+    "ascendant": 275,
+    "chineseAnimal": "horse",
+    "dayStem": "gui",
+    "bloodType": "A",
+    "birthDate": "1978-04-01",
+    "birthHour": 3
+   },
+   "b": {
+    "sun": 104.88,
+    "moon": 299.28,
+    "venus": 61.33,
+    "mars": 256.29,
+    "ascendant": 135.88,
+    "chineseAnimal": "snake",
+    "dayStem": "xin",
+    "bloodType": "A",
+    "birthDate": "2001-07-07",
+    "birthHour": 7
+   },
+   "expected": {
+    "total": 61,
+    "western": 52,
+    "chinese": 68,
+    "blood": 80,
+    "highlights": ["Sun–Moon opposition", "Sun–Ascendant trine", "Blood types A + A"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-13-hana-2001-ivan-1993",
+   "note": "blood unknown on one side",
+   "a": {
+    "sun": 104.88,
+    "moon": 299.28,
+    "venus": 61.33,
+    "mars": 256.29,
+    "ascendant": 135.88,
+    "chineseAnimal": "snake",
+    "dayStem": "xin",
+    "bloodType": "A",
+    "birthDate": "2001-07-07",
+    "birthHour": 7
+   },
+   "b": {
+    "sun": 303.65,
+    "moon": 313.38,
+    "venus": 350.66,
+    "mars": 102.03,
+    "ascendant": 142.34,
+    "chineseAnimal": "monkey",
+    "dayStem": "jia",
+    "bloodType": null,
+    "birthDate": "1993-01-23",
+    "birthHour": 18
+   },
+   "expected": {
+    "total": 59,
+    "western": 52,
+    "chinese": 72,
+    "blood": null,
+    "highlights": [
+     "Sun–Moon conjunction",
+     "Sun–Venus trine",
+     "Snake & Monkey: Liu He secret friends"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARMONY",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-14-ivan-1993-jade-1990",
+   "note": "",
+   "a": {
+    "sun": 303.65,
+    "moon": 313.38,
+    "venus": 350.66,
+    "mars": 102.03,
+    "ascendant": 142.34,
+    "chineseAnimal": "monkey",
+    "dayStem": "jia",
+    "bloodType": null,
+    "birthDate": "1993-01-23",
+    "birthHour": 18
+   },
+   "b": {
+    "sun": 139.92,
+    "moon": 39.96,
+    "venus": 118.77,
+    "mars": 49.88,
+    "ascendant": 241.48,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "B",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 68,
+    "western": 65,
+    "chinese": 74,
+    "blood": null,
+    "highlights": [
+     "Venus–Mars sextile",
+     "Sun–Ascendant conjunction",
+     "Day Masters combine (甲己)"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-15-milo-1984-nia-2000",
+   "note": "",
+   "a": {
+    "sun": 313.38,
+    "moon": 324.86,
+    "venus": 280.12,
+    "mars": 221.17,
+    "ascendant": 358.6,
+    "chineseAnimal": "pig",
+    "dayStem": "ding",
+    "bloodType": "B",
+    "birthDate": "1984-02-03",
+    "birthHour": 9
+   },
+   "b": {
+    "sun": 315.23,
+    "moon": 306.31,
+    "venus": 283.42,
+    "mars": 354.42,
+    "ascendant": 170.15,
+    "chineseAnimal": "dragon",
+    "dayStem": "ren",
+    "bloodType": "O",
+    "birthDate": "2000-02-04",
+    "birthHour": 21
+   },
+   "expected": {
+    "total": 76,
+    "western": 78,
+    "chinese": 74,
+    "blood": 75,
+    "highlights": [
+     "Sun–Sun conjunction",
+     "Venus–Mars sextile",
+     "Day Masters combine (丁壬)"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-16-nia-2000-omar-1975",
+   "note": "",
+   "a": {
+    "sun": 315.23,
+    "moon": 306.31,
+    "venus": 283.42,
+    "mars": 354.42,
+    "ascendant": 170.15,
+    "chineseAnimal": "dragon",
+    "dayStem": "ren",
+    "bloodType": "O",
+    "birthDate": "2000-02-04",
+    "birthHour": 21
+   },
+   "b": {
+    "sun": 139.14,
+    "moon": 208.14,
+    "venus": 160.95,
+    "mars": 58.51,
+    "ascendant": 241.23,
+    "chineseAnimal": "rabbit",
+    "dayStem": "geng",
+    "bloodType": "A",
+    "birthDate": "1975-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 71,
+    "western": 76,
+    "chinese": 56,
+    "blood": 85,
+    "highlights": ["Venus–Venus trine", "Sun–Sun opposition", "Blood types A + O"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARM",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-17-omar-1975-pia-2003",
+   "note": "",
+   "a": {
+    "sun": 139.14,
+    "moon": 208.14,
+    "venus": 160.95,
+    "mars": 58.51,
+    "ascendant": 241.23,
+    "chineseAnimal": "rabbit",
+    "dayStem": "geng",
+    "bloodType": "A",
+    "birthDate": "1975-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 353.75,
+    "moon": 124.52,
+    "venus": 314.47,
+    "mars": 276.27,
+    "ascendant": 115.96,
+    "chineseAnimal": "goat",
+    "dayStem": "bing",
+    "bloodType": null,
+    "birthDate": "2003-03-14",
+    "birthHour": 15
+   },
+   "expected": {
+    "total": 63,
+    "western": 57,
+    "chinese": 75,
+    "blood": null,
+    "highlights": [
+     "Venus–Mars trine",
+     "Moon–Ascendant trine",
+     "Rabbit & Goat: San He trine"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "TRINE",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-18-pia-2003-quinn-1982",
+   "note": "",
+   "a": {
+    "sun": 353.75,
+    "moon": 124.52,
+    "venus": 314.47,
+    "mars": 276.27,
+    "ascendant": 115.96,
+    "chineseAnimal": "goat",
+    "dayStem": "bing",
+    "bloodType": null,
+    "birthDate": "2003-03-14",
+    "birthHour": 15
+   },
+   "b": {
+    "sun": 218.17,
+    "moon": 30.18,
+    "venus": 217.37,
+    "mars": 269.98,
+    "ascendant": 124.56,
+    "chineseAnimal": "dog",
+    "dayStem": "ding",
+    "bloodType": "AB",
+    "birthDate": "1982-10-31",
+    "birthHour": 22
+   },
+   "expected": {
+    "total": 60,
+    "western": 56,
+    "chinese": 66,
+    "blood": null,
+    "highlights": [
+     "Venus–Mars sextile",
+     "Moon–Ascendant conjunction"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "SAME_ELEMENT"
+   }
+  },
+  {
+   "id": "pair-19-quinn-1982-rosa-1996",
+   "note": "",
+   "a": {
+    "sun": 218.17,
+    "moon": 30.18,
+    "venus": 217.37,
+    "mars": 269.98,
+    "ascendant": 124.56,
+    "chineseAnimal": "dog",
+    "dayStem": "ding",
+    "bloodType": "AB",
+    "birthDate": "1982-10-31",
+    "birthHour": 22
+   },
+   "b": {
+    "sun": 44.91,
+    "moon": 246.58,
+    "venus": 84.3,
+    "mars": 31.78,
+    "ascendant": 2.98,
+    "chineseAnimal": "rat",
+    "dayStem": "ren",
+    "bloodType": "B",
+    "birthDate": "1996-05-05",
+    "birthHour": 5
+   },
+   "expected": {
+    "total": 68,
+    "western": 60,
+    "chinese": 74,
+    "blood": 85,
+    "highlights": [
+     "Moon–Ascendant trine",
+     "Ascendant–Ascendant trine",
+     "Day Masters combine (丁壬)",
+     "Blood types B + AB"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-20-rosa-1996-sam-1990",
+   "note": "",
+   "a": {
+    "sun": 44.91,
+    "moon": 246.58,
+    "venus": 84.3,
+    "mars": 31.78,
+    "ascendant": 2.98,
+    "chineseAnimal": "rat",
+    "dayStem": "ren",
+    "bloodType": "B",
+    "birthDate": "1996-05-05",
+    "birthHour": 5
+   },
+   "b": {
+    "sun": 139.77,
+    "moon": 37.75,
+    "venus": 118.58,
+    "mars": 49.79,
+    "ascendant": 233.64,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "A",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 48,
+    "western": 56,
+    "chinese": 33,
+    "blood": 50,
+    "highlights": [
+     "Sun–Moon conjunction",
+     "Sun–Venus sextile",
+     "Rat & Horse: opposites attract"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "CLASH",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-21-sam-1990-tara-1970",
+   "note": "",
+   "a": {
+    "sun": 139.77,
+    "moon": 37.75,
+    "venus": 118.58,
+    "mars": 49.79,
+    "ascendant": 233.64,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "A",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "b": {
+    "sun": 279.92,
+    "moon": 187.84,
+    "venus": 274.17,
+    "mars": 342.07,
+    "ascendant": 184.38,
+    "chineseAnimal": "rooster",
+    "dayStem": "xin",
+    "bloodType": "O",
+    "birthDate": "1970-01-01",
+    "birthHour": 0
+   },
+   "expected": {
+    "total": 79,
+    "western": 84,
+    "chinese": 68,
+    "blood": 85,
+    "highlights": ["Sun–Moon trine", "Moon–Venus trine", "Blood types A + O"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-22-tara-1970-ava-1990",
+   "note": "",
+   "a": {
+    "sun": 279.92,
+    "moon": 187.84,
+    "venus": 274.17,
+    "mars": 342.07,
+    "ascendant": 184.38,
+    "chineseAnimal": "rooster",
+    "dayStem": "xin",
+    "bloodType": "O",
+    "birthDate": "1970-01-01",
+    "birthHour": 0
+   },
+   "b": {
+    "sun": 139.78,
+    "moon": 37.89,
+    "venus": 118.59,
+    "mars": 49.79,
+    "ascendant": 236.6,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 79,
+    "western": 84,
+    "chinese": 68,
+    "blood": 80,
+    "highlights": ["Sun–Moon trine", "Moon–Venus trine", "Blood types O + O"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-23-dara-1995-lena-1990",
+   "note": "both unknown time",
+   "a": {
+    "sun": 220.13,
+    "moon": 349.96,
+    "venus": 239.52,
+    "mars": 249.51,
+    "ascendant": null,
+    "chineseAnimal": "pig",
+    "dayStem": "wu",
+    "bloodType": null,
+    "birthDate": "1995-11-03",
+    "birthHour": null
+   },
+   "b": {
+    "sun": 139.44,
+    "moon": 32.99,
+    "venus": 118.17,
+    "mars": 49.59,
+    "ascendant": null,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "AB",
+    "birthDate": "1990-08-12",
+    "birthHour": null
+   },
+   "expected": {
+    "total": 62,
+    "western": 60,
+    "chinese": 66,
+    "blood": null,
+    "highlights": ["Venus–Venus trine", "Sun–Moon opposition"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "SAME_ELEMENT"
+   }
+  },
+  {
+   "id": "pair-24-chen-1992-hana-2001",
+   "note": "",
+   "a": {
+    "sun": 315.08,
+    "moon": 324.44,
+    "venus": 282.71,
+    "mars": 289.69,
+    "ascendant": 214.7,
+    "chineseAnimal": "monkey",
+    "dayStem": "xin",
+    "bloodType": "AB",
+    "birthDate": "1992-02-04",
+    "birthHour": 23
+   },
+   "b": {
+    "sun": 104.88,
+    "moon": 299.28,
+    "venus": 61.33,
+    "mars": 256.29,
+    "ascendant": 135.88,
+    "chineseAnimal": "snake",
+    "dayStem": "xin",
+    "bloodType": "A",
+    "birthDate": "2001-07-07",
+    "birthHour": 7
+   },
+   "expected": {
+    "total": 63,
+    "western": 51,
+    "chinese": 82,
+    "blood": 70,
+    "highlights": [
+     "Sun–Ascendant opposition",
+     "Sun–Venus opposition",
+     "Snake & Monkey: Liu He secret friends"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARMONY",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-25-eli-1985-rosa-1996",
+   "note": "",
+   "a": {
+    "sun": 90.33,
+    "moon": 129.58,
+    "venus": 44.85,
+    "mars": 98.2,
+    "ascendant": 168.78,
+    "chineseAnimal": "ox",
+    "dayStem": "xin",
+    "bloodType": "B",
+    "birthDate": "1985-06-21",
+    "birthHour": 12
+   },
+   "b": {
+    "sun": 44.91,
+    "moon": 246.58,
+    "venus": 84.3,
+    "mars": 31.78,
+    "ascendant": 2.98,
+    "chineseAnimal": "rat",
+    "dayStem": "ren",
+    "bloodType": "B",
+    "birthDate": "1996-05-05",
+    "birthHour": 5
+   },
+   "expected": {
+    "total": 73,
+    "western": 64,
+    "chinese": 86,
+    "blood": 80,
+    "highlights": [
+     "Sun–Venus conjunction",
+     "Moon–Moon trine",
+     "Rat & Ox: Liu He secret friends",
+     "Blood types B + B"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARMONY",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-26-kai-1990-jade-1990",
+   "note": "birthday twins",
+   "a": {
+    "sun": 139.65,
+    "moon": 36.03,
+    "venus": 118.43,
+    "mars": 49.72,
+    "ascendant": 179.22,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1990-08-12",
+    "birthHour": 9
+   },
+   "b": {
+    "sun": 139.92,
+    "moon": 39.96,
+    "venus": 118.77,
+    "mars": 49.88,
+    "ascendant": 241.48,
+    "chineseAnimal": "horse",
+    "dayStem": "ji",
+    "bloodType": "B",
+    "birthDate": "1990-08-12",
+    "birthHour": 14
+   },
+   "expected": {
+    "total": 76,
+    "western": 83,
+    "chinese": 64,
+    "blood": 75,
+    "highlights": ["Birthday twins", "Sun–Sun conjunction", "Moon–Moon conjunction", "Both Horses"],
+    "isBirthdayTwin": true,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-27-ben-1988-ben-1988",
+   "note": "self-pair (identical profiles)",
+   "a": {
+    "sun": 339.88,
+    "moon": 122.9,
+    "venus": 23,
+    "mars": 274.6,
+    "ascendant": 315.53,
+    "chineseAnimal": "dragon",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1988-02-29",
+    "birthHour": 6
+   },
+   "b": {
+    "sun": 339.88,
+    "moon": 122.9,
+    "venus": 23,
+    "mars": 274.6,
+    "ascendant": 315.53,
+    "chineseAnimal": "dragon",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1988-02-29",
+    "birthHour": 6
+   },
+   "expected": {
+    "total": 72,
+    "western": 75,
+    "chinese": 64,
+    "blood": 80,
+    "highlights": [
+     "Exact twins: same day, same hour",
+     "Moon–Moon conjunction",
+     "Sun–Sun conjunction",
+     "Both Dragons"
+    ],
+    "isBirthdayTwin": true,
+    "isExactTwin": true,
+    "sharesBirthday": false,
+    "chineseRelation": "SAME_SELF_PUNISHMENT",
+    "stemRelation": "SAME_STEM"
+   }
+  },
+  {
+   "id": "pair-28-gus-1978-quinn-1982",
+   "note": "",
+   "a": {
+    "sun": 11,
+    "moon": 287.1,
+    "venus": 27.79,
+    "mars": 116.93,
+    "ascendant": 275,
+    "chineseAnimal": "horse",
+    "dayStem": "gui",
+    "bloodType": "A",
+    "birthDate": "1978-04-01",
+    "birthHour": 3
+   },
+   "b": {
+    "sun": 218.17,
+    "moon": 30.18,
+    "venus": 217.37,
+    "mars": 269.98,
+    "ascendant": 124.56,
+    "chineseAnimal": "dog",
+    "dayStem": "ding",
+    "bloodType": "AB",
+    "birthDate": "1982-10-31",
+    "birthHour": 22
+   },
+   "expected": {
+    "total": 79,
+    "western": 84,
+    "chinese": 75,
+    "blood": 70,
+    "highlights": [
+     "Venus–Mars trine",
+     "Moon–Venus conjunction",
+     "Horse & Dog: San He trine"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "TRINE",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-29-fatima-1999-nia-2000",
+   "note": "",
+   "a": {
+    "sun": 279.69,
+    "moon": 215.27,
+    "venus": 240.76,
+    "mars": 327.45,
+    "ascendant": 184.36,
+    "chineseAnimal": "rabbit",
+    "dayStem": "wu",
+    "bloodType": "O",
+    "birthDate": "1999-12-31",
+    "birthHour": 23
+   },
+   "b": {
+    "sun": 315.23,
+    "moon": 306.31,
+    "venus": 283.42,
+    "mars": 354.42,
+    "ascendant": 170.15,
+    "chineseAnimal": "dragon",
+    "dayStem": "ren",
+    "bloodType": "O",
+    "birthDate": "2000-02-04",
+    "birthHour": 21
+   },
+   "expected": {
+    "total": 49,
+    "western": 45,
+    "chinese": 42,
+    "blood": 80,
+    "highlights": ["Moon–Ascendant trine", "Sun–Venus conjunction", "Blood types O + O"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARM",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-30-ivan-1993-pia-2003",
+   "note": "both blood unknown",
+   "a": {
+    "sun": 303.65,
+    "moon": 313.38,
+    "venus": 350.66,
+    "mars": 102.03,
+    "ascendant": 142.34,
+    "chineseAnimal": "monkey",
+    "dayStem": "jia",
+    "bloodType": null,
+    "birthDate": "1993-01-23",
+    "birthHour": 18
+   },
+   "b": {
+    "sun": 353.75,
+    "moon": 124.52,
+    "venus": 314.47,
+    "mars": 276.27,
+    "ascendant": 115.96,
+    "chineseAnimal": "goat",
+    "dayStem": "bing",
+    "bloodType": null,
+    "birthDate": "2003-03-14",
+    "birthHour": 15
+   },
+   "expected": {
+    "total": 68,
+    "western": 68,
+    "chinese": 68,
+    "blood": null,
+    "highlights": ["Moon–Venus conjunction", "Sun–Moon opposition"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "GENERATING"
+   }
+  },
+  {
+   "id": "pair-31-edge-zero-edge-orb-limit",
+   "note": "orb exactly at limit -> aspect part 0",
+   "a": {
+    "sun": 0,
+    "moon": 0,
+    "venus": 0,
+    "mars": 0,
+    "ascendant": 0,
+    "chineseAnimal": "rat",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1990-01-01",
+    "birthHour": 0
+   },
+   "b": {
+    "sun": 127,
+    "moon": 7,
+    "venus": 248,
+    "mars": 60,
+    "ascendant": 90,
+    "chineseAnimal": "dragon",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1991-01-01",
+    "birthHour": 12
+   },
+   "expected": {
+    "total": 91,
+    "western": 90,
+    "chinese": 95,
+    "blood": 85,
+    "highlights": [
+     "Same birthday",
+     "Venus–Mars sextile",
+     "Mars–Mars sextile",
+     "Rat & Dragon: San He trine"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": true,
+    "chineseRelation": "TRINE",
+    "stemRelation": "COMBINATION"
+   }
+  },
+  {
+   "id": "pair-32-edge-zero-edge-wrap",
+   "note": "359.995 rounds to 0.00; 29.995 rounds into Taurus",
+   "a": {
+    "sun": 0,
+    "moon": 0,
+    "venus": 0,
+    "mars": 0,
+    "ascendant": 0,
+    "chineseAnimal": "rat",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1990-01-01",
+    "birthHour": 0
+   },
+   "b": {
+    "sun": 359.995,
+    "moon": 29.995,
+    "venus": 359.994,
+    "mars": 180,
+    "ascendant": null,
+    "chineseAnimal": "horse",
+    "dayStem": "geng",
+    "bloodType": null,
+    "birthDate": "1992-06-06",
+    "birthHour": null
+   },
+   "expected": {
+    "total": 76,
+    "western": 100,
+    "chinese": 33,
+    "blood": null,
+    "highlights": [
+     "Sun–Moon conjunction",
+     "Venus–Mars conjunction",
+     "Rat & Horse: opposites attract"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "CLASH",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-33-edge-zero-edge-square",
+   "note": "negative aspect parts truncate toward zero",
+   "a": {
+    "sun": 0,
+    "moon": 0,
+    "venus": 0,
+    "mars": 0,
+    "ascendant": 0,
+    "chineseAnimal": "rat",
+    "dayStem": "jia",
+    "bloodType": "A",
+    "birthDate": "1990-01-01",
+    "birthHour": 0
+   },
+   "b": {
+    "sun": 91.23,
+    "moon": 268.77,
+    "venus": 181.23,
+    "mars": 1.23,
+    "ascendant": 271.23,
+    "chineseAnimal": "rooster",
+    "dayStem": "yi",
+    "bloodType": "AB",
+    "birthDate": "1993-03-03",
+    "birthHour": 3
+   },
+   "expected": {
+    "total": 46,
+    "western": 28,
+    "chinese": 66,
+    "blood": 70,
+    "highlights": ["Venus–Mars conjunction", "Venus–Mars opposition"],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "SAME_ELEMENT"
+   }
+  },
+  {
+   "id": "pair-34-edge-orb-limit-edge-square",
+   "note": "",
+   "a": {
+    "sun": 127,
+    "moon": 7,
+    "venus": 248,
+    "mars": 60,
+    "ascendant": 90,
+    "chineseAnimal": "dragon",
+    "dayStem": "ji",
+    "bloodType": "O",
+    "birthDate": "1991-01-01",
+    "birthHour": 12
+   },
+   "b": {
+    "sun": 91.23,
+    "moon": 268.77,
+    "venus": 181.23,
+    "mars": 1.23,
+    "ascendant": 271.23,
+    "chineseAnimal": "rooster",
+    "dayStem": "yi",
+    "bloodType": "AB",
+    "birthDate": "1993-03-03",
+    "birthHour": 3
+   },
+   "expected": {
+    "total": 76,
+    "western": 82,
+    "chinese": 72,
+    "blood": 60,
+    "highlights": [
+     "Venus–Mars trine",
+     "Sun–Ascendant conjunction",
+     "Dragon & Rooster: Liu He secret friends"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "HARMONY",
+    "stemRelation": "CONTROLLING"
+   }
+  },
+  {
+   "id": "pair-35-edge-wrap-edge-square",
+   "note": "blood unknown, asc unknown",
+   "a": {
+    "sun": 359.995,
+    "moon": 29.995,
+    "venus": 359.994,
+    "mars": 180,
+    "ascendant": null,
+    "chineseAnimal": "horse",
+    "dayStem": "geng",
+    "bloodType": null,
+    "birthDate": "1992-06-06",
+    "birthHour": null
+   },
+   "b": {
+    "sun": 91.23,
+    "moon": 268.77,
+    "venus": 181.23,
+    "mars": 1.23,
+    "ascendant": 271.23,
+    "chineseAnimal": "rooster",
+    "dayStem": "yi",
+    "bloodType": "AB",
+    "birthDate": "1993-03-03",
+    "birthHour": 3
+   },
+   "expected": {
+    "total": 77,
+    "western": 79,
+    "chinese": 74,
+    "blood": null,
+    "highlights": [
+     "Venus–Mars conjunction",
+     "Moon–Moon trine",
+     "Day Masters combine (乙庚)"
+    ],
+    "isBirthdayTwin": false,
+    "isExactTwin": false,
+    "sharesBirthday": false,
+    "chineseRelation": "NEUTRAL",
+    "stemRelation": "COMBINATION"
+   }
+  }
+ ]
+}

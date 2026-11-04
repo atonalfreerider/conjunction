@@ -1,0 +1,1019 @@
+{
+ "description": "Chinese zodiac / BaZi reference cases. Defaults: civil clock time, day starts at 23:00 (Zi hour), year boundary at the Lichun instant (Sun 315 deg), lunar animal from HKO new-year table.",
+ "generator": "testdata/tools/make_golden_chinese.py",
+ "independentSources": [
+  "Swiss Ephemeris 2.10.03 (solar terms)",
+  "Wikipedia 'Sexagenary cycle' day algorithm (anchors 1949-10-01, 1912-02-18 = 甲子)",
+  "Hong Kong Observatory new-year dates (chinese_calendar.json)"
+ ],
+ "cases": [
+  {
+   "id": "anchor-1949-10-01",
+   "date": "1949-10-01",
+   "time": "15:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 116.4,
+   "note": "Wikipedia anchor: 甲子 day",
+   "expected": {
+    "yearPillar": "己丑",
+    "monthPillar": "癸酉",
+    "dayPillar": "甲子",
+    "hourPillar": "壬申",
+    "yearAnimal": "ox",
+    "lunarYearAnimal": "ox",
+    "solarYear": 1949,
+    "lichunUtc": "1949-02-04T03:22:50Z"
+   }
+  },
+  {
+   "id": "anchor-1912-02-18",
+   "date": "1912-02-18",
+   "time": "10:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 116.4,
+   "note": "Wikipedia anchor: 甲子 day",
+   "expected": {
+    "yearPillar": "壬子",
+    "monthPillar": "壬寅",
+    "dayPillar": "甲子",
+    "hourPillar": "己巳",
+    "yearAnimal": "rat",
+    "lunarYearAnimal": "rat",
+    "solarYear": 1912,
+    "lichunUtc": "1912-02-05T03:53:30Z"
+   }
+  },
+  {
+   "id": "day-1900-01-31",
+   "date": "1900-01-31",
+   "time": "12:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 116.4,
+   "note": "1900-01-31 (CNY 1900) is 甲辰 day",
+   "expected": {
+    "yearPillar": "己亥",
+    "monthPillar": "丁丑",
+    "dayPillar": "甲辰",
+    "hourPillar": "庚午",
+    "yearAnimal": "pig",
+    "lunarYearAnimal": "rat",
+    "solarYear": 1899,
+    "lichunUtc": "1900-02-04T05:51:29Z"
+   }
+  },
+  {
+   "id": "day-2000-01-01",
+   "date": "2000-01-01",
+   "time": "12:00",
+   "zoneId": "UTC",
+   "longitude": 0.0,
+   "note": "2000-01-01 is 戊午 day",
+   "expected": {
+    "yearPillar": "己卯",
+    "monthPillar": "丙子",
+    "dayPillar": "戊午",
+    "hourPillar": "戊午",
+    "yearAnimal": "rabbit",
+    "lunarYearAnimal": "rabbit",
+    "solarYear": 1999,
+    "lichunUtc": "2000-02-04T12:40:23Z"
+   }
+  },
+  {
+   "id": "1962-feb-04-after-lichun",
+   "date": "1962-02-04",
+   "time": "18:00",
+   "zoneId": "Asia/Hong_Kong",
+   "longitude": 114.17,
+   "note": "after Lichun, before CNY 1962-02-05: solar Tiger, lunar Ox",
+   "expected": {
+    "yearPillar": "壬寅",
+    "monthPillar": "壬寅",
+    "dayPillar": "癸酉",
+    "hourPillar": "辛酉",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "ox",
+    "solarYear": 1962,
+    "lichunUtc": "1962-02-04T07:17:20Z"
+   }
+  },
+  {
+   "id": "1984-feb-01",
+   "date": "1984-02-01",
+   "time": "11:11",
+   "zoneId": "Asia/Taipei",
+   "longitude": 121.56,
+   "note": "before CNY (02-02) and Lichun (02-04/05): Pig both",
+   "expected": {
+    "yearPillar": "癸亥",
+    "monthPillar": "乙丑",
+    "dayPillar": "乙丑",
+    "hourPillar": "壬午",
+    "yearAnimal": "pig",
+    "lunarYearAnimal": "pig",
+    "solarYear": 1983,
+    "lichunUtc": "1984-02-04T15:18:44Z"
+   }
+  },
+  {
+   "id": "1984-feb-03",
+   "date": "1984-02-03",
+   "time": "09:00",
+   "zoneId": "Asia/Taipei",
+   "longitude": 121.56,
+   "note": "after CNY, before Lichun: lunar Rat, solar Pig",
+   "expected": {
+    "yearPillar": "癸亥",
+    "monthPillar": "乙丑",
+    "dayPillar": "丁卯",
+    "hourPillar": "乙巳",
+    "yearAnimal": "pig",
+    "lunarYearAnimal": "rat",
+    "solarYear": 1983,
+    "lichunUtc": "1984-02-04T15:18:44Z"
+   }
+  },
+  {
+   "id": "1985-feb-19",
+   "date": "1985-02-19",
+   "time": "12:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "after Lichun 02-04, before CNY 02-20: solar Ox, lunar Rat",
+   "expected": {
+    "yearPillar": "乙丑",
+    "monthPillar": "戊寅",
+    "dayPillar": "己丑",
+    "hourPillar": "庚午",
+    "yearAnimal": "ox",
+    "lunarYearAnimal": "rat",
+    "solarYear": 1985,
+    "lichunUtc": "1985-02-03T21:11:47Z"
+   }
+  },
+  {
+   "id": "1985-feb-20",
+   "date": "1985-02-20",
+   "time": "12:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "CNY 1985 (Yushui-rule exception year)",
+   "expected": {
+    "yearPillar": "乙丑",
+    "monthPillar": "戊寅",
+    "dayPillar": "庚寅",
+    "hourPillar": "壬午",
+    "yearAnimal": "ox",
+    "lunarYearAnimal": "ox",
+    "solarYear": 1985,
+    "lichunUtc": "1985-02-03T21:11:47Z"
+   }
+  },
+  {
+   "id": "2033-jan-31",
+   "date": "2033-01-31",
+   "time": "08:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "CNY 2033 is 01-31 before Lichun: lunar Ox, solar Rat",
+   "expected": {
+    "yearPillar": "壬子",
+    "monthPillar": "癸丑",
+    "dayPillar": "壬午",
+    "hourPillar": "甲辰",
+    "yearAnimal": "rat",
+    "lunarYearAnimal": "ox",
+    "solarYear": 2032,
+    "lichunUtc": "2033-02-03T12:41:34Z"
+   }
+  },
+  {
+   "id": "2034-feb-18",
+   "date": "2034-02-18",
+   "time": "20:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "after Lichun, day before CNY 2034-02-19",
+   "expected": {
+    "yearPillar": "甲寅",
+    "monthPillar": "丙寅",
+    "dayPillar": "乙巳",
+    "hourPillar": "丙戌",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "ox",
+    "solarYear": 2034,
+    "lichunUtc": "2034-02-03T18:41:09Z"
+   }
+  },
+  {
+   "id": "2053-feb-19",
+   "date": "2053-02-19",
+   "time": "07:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "CNY 2053 (Yushui-rule exception year)",
+   "expected": {
+    "yearPillar": "癸酉",
+    "monthPillar": "甲寅",
+    "dayPillar": "丙戌",
+    "hourPillar": "壬辰",
+    "yearAnimal": "rooster",
+    "lunarYearAnimal": "rooster",
+    "solarYear": 2053,
+    "lichunUtc": "2053-02-03T09:13:11Z"
+   }
+  },
+  {
+   "id": "1990-jan-26",
+   "date": "1990-01-26",
+   "time": "14:00",
+   "zoneId": "America/New_York",
+   "longitude": -74.0,
+   "note": "lunar new year day 1990-01-27 tomorrow: still Snake",
+   "expected": {
+    "yearPillar": "己巳",
+    "monthPillar": "丁丑",
+    "dayPillar": "辛卯",
+    "hourPillar": "乙未",
+    "yearAnimal": "snake",
+    "lunarYearAnimal": "snake",
+    "solarYear": 1989,
+    "lichunUtc": "1990-02-04T02:14:00Z"
+   }
+  },
+  {
+   "id": "1990-jan-27",
+   "date": "1990-01-27",
+   "time": "14:00",
+   "zoneId": "America/New_York",
+   "longitude": -74.0,
+   "note": "CNY 1990: Horse lunar, still Snake solar",
+   "expected": {
+    "yearPillar": "己巳",
+    "monthPillar": "丁丑",
+    "dayPillar": "壬辰",
+    "hourPillar": "丁未",
+    "yearAnimal": "snake",
+    "lunarYearAnimal": "horse",
+    "solarYear": 1989,
+    "lichunUtc": "1990-02-04T02:14:00Z"
+   }
+  },
+  {
+   "id": "2023-jan-21-late-zi",
+   "date": "2023-01-21",
+   "time": "23:45",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "late Zi hour: day pillar of 01-22",
+   "expected": {
+    "yearPillar": "壬寅",
+    "monthPillar": "癸丑",
+    "dayPillar": "庚辰",
+    "hourPillar": "丙子",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2022,
+    "lichunUtc": "2023-02-04T02:42:33Z"
+   }
+  },
+  {
+   "id": "2023-jan-22-early-zi",
+   "date": "2023-01-22",
+   "time": "00:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "early Zi hour, CNY 2023",
+   "expected": {
+    "yearPillar": "壬寅",
+    "monthPillar": "癸丑",
+    "dayPillar": "庚辰",
+    "hourPillar": "丙子",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "rabbit",
+    "solarYear": 2022,
+    "lichunUtc": "2023-02-04T02:42:33Z"
+   }
+  },
+  {
+   "id": "2008-feb-06",
+   "date": "2008-02-06",
+   "time": "21:00",
+   "zoneId": "Europe/London",
+   "longitude": -0.13,
+   "note": "CNY eve 2008 (CNY 02-07), after Lichun",
+   "expected": {
+    "yearPillar": "戊子",
+    "monthPillar": "甲寅",
+    "dayPillar": "丙子",
+    "hourPillar": "己亥",
+    "yearAnimal": "rat",
+    "lunarYearAnimal": "pig",
+    "solarYear": 2008,
+    "lichunUtc": "2008-02-04T11:00:24Z"
+   }
+  },
+  {
+   "id": "1996-feb-19",
+   "date": "1996-02-19",
+   "time": "03:00",
+   "zoneId": "Australia/Sydney",
+   "longitude": 151.2,
+   "note": "CNY 1996-02-19, southern hemisphere",
+   "expected": {
+    "yearPillar": "丙子",
+    "monthPillar": "庚寅",
+    "dayPillar": "丙戌",
+    "hourPillar": "庚寅",
+    "yearAnimal": "rat",
+    "lunarYearAnimal": "rat",
+    "solarYear": 1996,
+    "lichunUtc": "1996-02-04T13:07:52Z"
+   }
+  },
+  {
+   "id": "1971-jan-26",
+   "date": "1971-01-26",
+   "time": "06:30",
+   "zoneId": "America/Los_Angeles",
+   "longitude": -118.24,
+   "note": "before CNY 1971-01-27",
+   "expected": {
+    "yearPillar": "庚戌",
+    "monthPillar": "己丑",
+    "dayPillar": "辛亥",
+    "hourPillar": "辛卯",
+    "yearAnimal": "dog",
+    "lunarYearAnimal": "dog",
+    "solarYear": 1970,
+    "lichunUtc": "1971-02-04T11:25:23Z"
+   }
+  },
+  {
+   "id": "2061-jan-21",
+   "date": "2061-01-21",
+   "time": "12:00",
+   "zoneId": "Asia/Tokyo",
+   "longitude": 139.69,
+   "note": "CNY 2061-01-21",
+   "expected": {
+    "yearPillar": "庚辰",
+    "monthPillar": "己丑",
+    "dayPillar": "己亥",
+    "hourPillar": "庚午",
+    "yearAnimal": "dragon",
+    "lunarYearAnimal": "snake",
+    "solarYear": 2060,
+    "lichunUtc": "2061-02-03T07:54:03Z"
+   }
+  },
+  {
+   "id": "2100-feb-09",
+   "date": "2100-02-09",
+   "time": "12:00",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "CNY 2100",
+   "expected": {
+    "yearPillar": "庚申",
+    "monthPillar": "戊寅",
+    "dayPillar": "壬午",
+    "hourPillar": "丙午",
+    "yearAnimal": "monkey",
+    "lunarYearAnimal": "monkey",
+    "solarYear": 2100,
+    "lichunUtc": "2100-02-03T19:01:49Z"
+   }
+  },
+  {
+   "id": "unknown-time-1950-02-04",
+   "date": "1950-02-04",
+   "time": null,
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "unknown time on Lichun date: noon used, hour null",
+   "expected": {
+    "yearPillar": "己丑",
+    "monthPillar": "丁丑",
+    "dayPillar": "庚午",
+    "hourPillar": null,
+    "yearAnimal": "ox",
+    "lunarYearAnimal": "ox",
+    "solarYear": 1949,
+    "lichunUtc": "1950-02-04T09:20:45Z"
+   }
+  },
+  {
+   "id": "unknown-time-1975-07-07",
+   "date": "1975-07-07",
+   "time": null,
+   "zoneId": "Europe/Paris",
+   "longitude": 2.35,
+   "note": "unknown time: hour pillar null",
+   "expected": {
+    "yearPillar": "乙卯",
+    "monthPillar": "壬午",
+    "dayPillar": "甲寅",
+    "hourPillar": null,
+    "yearAnimal": "rabbit",
+    "lunarYearAnimal": "rabbit",
+    "solarYear": 1975,
+    "lichunUtc": "1975-02-04T10:59:11Z"
+   }
+  },
+  {
+   "id": "lichun-1920-before",
+   "date": "1920-02-05",
+   "time": "10:23",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "3 min before Lichun 1920",
+   "expected": {
+    "yearPillar": "己未",
+    "monthPillar": "丁丑",
+    "dayPillar": "癸巳",
+    "hourPillar": "丁巳",
+    "yearAnimal": "goat",
+    "lunarYearAnimal": "goat",
+    "solarYear": 1919,
+    "lichunUtc": "1920-02-05T02:26:25Z"
+   }
+  },
+  {
+   "id": "lichun-1920-after",
+   "date": "1920-02-05",
+   "time": "10:29",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "3 min after Lichun 1920",
+   "expected": {
+    "yearPillar": "庚申",
+    "monthPillar": "戊寅",
+    "dayPillar": "癸巳",
+    "hourPillar": "丁巳",
+    "yearAnimal": "monkey",
+    "lunarYearAnimal": "goat",
+    "solarYear": 1920,
+    "lichunUtc": "1920-02-05T02:26:25Z"
+   }
+  },
+  {
+   "id": "lichun-1955-before",
+   "date": "1955-02-04",
+   "time": "08:14",
+   "zoneId": "America/Chicago",
+   "longitude": -87.63,
+   "note": "3 min before Lichun 1955",
+   "expected": {
+    "yearPillar": "甲午",
+    "monthPillar": "丁丑",
+    "dayPillar": "丙申",
+    "hourPillar": "壬辰",
+    "yearAnimal": "horse",
+    "lunarYearAnimal": "goat",
+    "solarYear": 1954,
+    "lichunUtc": "1955-02-04T14:17:35Z"
+   }
+  },
+  {
+   "id": "lichun-1955-after",
+   "date": "1955-02-04",
+   "time": "08:20",
+   "zoneId": "America/Chicago",
+   "longitude": -87.63,
+   "note": "3 min after Lichun 1955",
+   "expected": {
+    "yearPillar": "乙未",
+    "monthPillar": "戊寅",
+    "dayPillar": "丙申",
+    "hourPillar": "壬辰",
+    "yearAnimal": "goat",
+    "lunarYearAnimal": "goat",
+    "solarYear": 1955,
+    "lichunUtc": "1955-02-04T14:17:35Z"
+   }
+  },
+  {
+   "id": "lichun-1989-before",
+   "date": "1989-02-03",
+   "time": "21:24",
+   "zoneId": "Europe/Berlin",
+   "longitude": 13.4,
+   "note": "3 min before Lichun 1989",
+   "expected": {
+    "yearPillar": "戊辰",
+    "monthPillar": "乙丑",
+    "dayPillar": "甲午",
+    "hourPillar": "乙亥",
+    "yearAnimal": "dragon",
+    "lunarYearAnimal": "dragon",
+    "solarYear": 1988,
+    "lichunUtc": "1989-02-03T20:27:09Z"
+   }
+  },
+  {
+   "id": "lichun-1989-after",
+   "date": "1989-02-03",
+   "time": "21:30",
+   "zoneId": "Europe/Berlin",
+   "longitude": 13.4,
+   "note": "3 min after Lichun 1989",
+   "expected": {
+    "yearPillar": "己巳",
+    "monthPillar": "丙寅",
+    "dayPillar": "甲午",
+    "hourPillar": "乙亥",
+    "yearAnimal": "snake",
+    "lunarYearAnimal": "dragon",
+    "solarYear": 1989,
+    "lichunUtc": "1989-02-03T20:27:09Z"
+   }
+  },
+  {
+   "id": "lichun-2004-before",
+   "date": "2004-02-04",
+   "time": "19:53",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "3 min before Lichun 2004",
+   "expected": {
+    "yearPillar": "癸未",
+    "monthPillar": "乙丑",
+    "dayPillar": "癸丑",
+    "hourPillar": "壬戌",
+    "yearAnimal": "goat",
+    "lunarYearAnimal": "monkey",
+    "solarYear": 2003,
+    "lichunUtc": "2004-02-04T11:56:11Z"
+   }
+  },
+  {
+   "id": "lichun-2004-after",
+   "date": "2004-02-04",
+   "time": "19:59",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "3 min after Lichun 2004",
+   "expected": {
+    "yearPillar": "甲申",
+    "monthPillar": "丙寅",
+    "dayPillar": "癸丑",
+    "hourPillar": "壬戌",
+    "yearAnimal": "monkey",
+    "lunarYearAnimal": "monkey",
+    "solarYear": 2004,
+    "lichunUtc": "2004-02-04T11:56:11Z"
+   }
+  },
+  {
+   "id": "lichun-2017-before",
+   "date": "2017-02-04",
+   "time": "04:31",
+   "zoneId": "Pacific/Auckland",
+   "longitude": 174.76,
+   "note": "3 min before Lichun 2017",
+   "expected": {
+    "yearPillar": "丙申",
+    "monthPillar": "辛丑",
+    "dayPillar": "壬戌",
+    "hourPillar": "壬寅",
+    "yearAnimal": "monkey",
+    "lunarYearAnimal": "rooster",
+    "solarYear": 2016,
+    "lichunUtc": "2017-02-03T15:34:03Z"
+   }
+  },
+  {
+   "id": "lichun-2017-after",
+   "date": "2017-02-04",
+   "time": "04:37",
+   "zoneId": "Pacific/Auckland",
+   "longitude": 174.76,
+   "note": "3 min after Lichun 2017",
+   "expected": {
+    "yearPillar": "丁酉",
+    "monthPillar": "壬寅",
+    "dayPillar": "壬戌",
+    "hourPillar": "壬寅",
+    "yearAnimal": "rooster",
+    "lunarYearAnimal": "rooster",
+    "solarYear": 2017,
+    "lichunUtc": "2017-02-03T15:34:03Z"
+   }
+  },
+  {
+   "id": "lichun-2044-before",
+   "date": "2044-02-04",
+   "time": "01:41",
+   "zoneId": "America/Sao_Paulo",
+   "longitude": -46.63,
+   "note": "3 min before Lichun 2044",
+   "expected": {
+    "yearPillar": "癸亥",
+    "monthPillar": "乙丑",
+    "dayPillar": "癸未",
+    "hourPillar": "癸丑",
+    "yearAnimal": "pig",
+    "lunarYearAnimal": "rat",
+    "solarYear": 2043,
+    "lichunUtc": "2044-02-04T04:44:17Z"
+   }
+  },
+  {
+   "id": "lichun-2044-after",
+   "date": "2044-02-04",
+   "time": "01:47",
+   "zoneId": "America/Sao_Paulo",
+   "longitude": -46.63,
+   "note": "3 min after Lichun 2044",
+   "expected": {
+    "yearPillar": "甲子",
+    "monthPillar": "丙寅",
+    "dayPillar": "癸未",
+    "hourPillar": "癸丑",
+    "yearAnimal": "rat",
+    "lunarYearAnimal": "rat",
+    "solarYear": 2044,
+    "lichunUtc": "2044-02-04T04:44:17Z"
+   }
+  },
+  {
+   "id": "lichun-2088-before",
+   "date": "2088-02-03",
+   "time": "11:56",
+   "zoneId": "America/Anchorage",
+   "longitude": -149.9,
+   "note": "3 min before Lichun 2088",
+   "expected": {
+    "yearPillar": "丁未",
+    "monthPillar": "癸丑",
+    "dayPillar": "癸酉",
+    "hourPillar": "戊午",
+    "yearAnimal": "goat",
+    "lunarYearAnimal": "monkey",
+    "solarYear": 2087,
+    "lichunUtc": "2088-02-03T20:59:17Z"
+   }
+  },
+  {
+   "id": "lichun-2088-after",
+   "date": "2088-02-03",
+   "time": "12:02",
+   "zoneId": "America/Anchorage",
+   "longitude": -149.9,
+   "note": "3 min after Lichun 2088",
+   "expected": {
+    "yearPillar": "戊申",
+    "monthPillar": "甲寅",
+    "dayPillar": "癸酉",
+    "hourPillar": "戊午",
+    "yearAnimal": "monkey",
+    "lunarYearAnimal": "monkey",
+    "solarYear": 2088,
+    "lichunUtc": "2088-02-03T20:59:17Z"
+   }
+  },
+  {
+   "id": "term345-1977-before",
+   "date": "1977-03-06",
+   "time": "00:39",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 345.0 deg",
+   "expected": {
+    "yearPillar": "丁巳",
+    "monthPillar": "壬寅",
+    "dayPillar": "壬戌",
+    "hourPillar": "庚子",
+    "yearAnimal": "snake",
+    "lunarYearAnimal": "snake",
+    "solarYear": 1977,
+    "lichunUtc": "1977-02-03T22:33:24Z"
+   }
+  },
+  {
+   "id": "term345-1977-after",
+   "date": "1977-03-06",
+   "time": "00:49",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 345.0 deg",
+   "expected": {
+    "yearPillar": "丁巳",
+    "monthPillar": "癸卯",
+    "dayPillar": "壬戌",
+    "hourPillar": "庚子",
+    "yearAnimal": "snake",
+    "lunarYearAnimal": "snake",
+    "solarYear": 1977,
+    "lichunUtc": "1977-02-03T22:33:24Z"
+   }
+  },
+  {
+   "id": "term15-2012-before",
+   "date": "2012-04-04",
+   "time": "18:00",
+   "zoneId": "Asia/Seoul",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 15.0 deg",
+   "expected": {
+    "yearPillar": "壬辰",
+    "monthPillar": "癸卯",
+    "dayPillar": "乙未",
+    "hourPillar": "乙酉",
+    "yearAnimal": "dragon",
+    "lunarYearAnimal": "dragon",
+    "solarYear": 2012,
+    "lichunUtc": "2012-02-04T10:22:23Z"
+   }
+  },
+  {
+   "id": "term15-2012-after",
+   "date": "2012-04-04",
+   "time": "18:10",
+   "zoneId": "Asia/Seoul",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 15.0 deg",
+   "expected": {
+    "yearPillar": "壬辰",
+    "monthPillar": "甲辰",
+    "dayPillar": "乙未",
+    "hourPillar": "乙酉",
+    "yearAnimal": "dragon",
+    "lunarYearAnimal": "dragon",
+    "solarYear": 2012,
+    "lichunUtc": "2012-02-04T10:22:23Z"
+   }
+  },
+  {
+   "id": "term285-1999-before",
+   "date": "1999-01-06",
+   "time": "03:12",
+   "zoneId": "Asia/Singapore",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 285.0 deg",
+   "expected": {
+    "yearPillar": "戊寅",
+    "monthPillar": "甲子",
+    "dayPillar": "戊午",
+    "hourPillar": "甲寅",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 1998,
+    "lichunUtc": "1999-02-04T06:57:02Z"
+   }
+  },
+  {
+   "id": "term285-1999-after",
+   "date": "1999-01-06",
+   "time": "03:22",
+   "zoneId": "Asia/Singapore",
+   "longitude": 120.0,
+   "note": "5 min from Sun at 285.0 deg",
+   "expected": {
+    "yearPillar": "戊寅",
+    "monthPillar": "乙丑",
+    "dayPillar": "戊午",
+    "hourPillar": "甲寅",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 1998,
+    "lichunUtc": "1999-02-04T06:57:02Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-00",
+   "date": "2010-06-15",
+   "time": "00:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "戊子",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-02",
+   "date": "2010-06-15",
+   "time": "02:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "己丑",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-04",
+   "date": "2010-06-15",
+   "time": "04:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "庚寅",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-06",
+   "date": "2010-06-15",
+   "time": "06:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "辛卯",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-08",
+   "date": "2010-06-15",
+   "time": "08:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "壬辰",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-10",
+   "date": "2010-06-15",
+   "time": "10:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "癸巳",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-12",
+   "date": "2010-06-15",
+   "time": "12:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "甲午",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-14",
+   "date": "2010-06-15",
+   "time": "14:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "乙未",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-16",
+   "date": "2010-06-15",
+   "time": "16:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "丙申",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-18",
+   "date": "2010-06-15",
+   "time": "18:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "丁酉",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-20",
+   "date": "2010-06-15",
+   "time": "20:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "戊戌",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-22",
+   "date": "2010-06-15",
+   "time": "22:30",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "hour branch sweep",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丙申",
+    "hourPillar": "己亥",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  },
+  {
+   "id": "hours-2010-06-15-23",
+   "date": "2010-06-15",
+   "time": "23:10",
+   "zoneId": "Asia/Shanghai",
+   "longitude": 121.47,
+   "note": "23:10 -> next day's 甲/己 Zi",
+   "expected": {
+    "yearPillar": "庚寅",
+    "monthPillar": "壬午",
+    "dayPillar": "丁酉",
+    "hourPillar": "庚子",
+    "yearAnimal": "tiger",
+    "lunarYearAnimal": "tiger",
+    "solarYear": 2010,
+    "lichunUtc": "2010-02-03T22:47:50Z"
+   }
+  }
+ ]
+}

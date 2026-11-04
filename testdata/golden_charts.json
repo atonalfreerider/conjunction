@@ -1,0 +1,5219 @@
+{
+ "description": "Swiss Ephemeris reference positions for Conjunction's shared engines. Apparent geocentric tropical longitudes, true ecliptic/equinox of date, degrees. Tolerances: planets 0.05 deg, ascendant/midheaven 0.1 deg, Placidus cusps 0.1 deg.",
+ "generator": "testdata/tools/make_golden.py",
+ "swissEphemerisVersion": "2.10.03",
+ "ephemeris": [
+  "SWIEPH"
+ ],
+ "conventions": {
+  "timeUnknown": "positions at 12:00 local civil time; ascendant/midheaven/houses null",
+  "dstGap": "non-existent local time shifted forward by the gap (java.time / zoneinfo fold=0)",
+  "dstOverlap": "ambiguous local time uses the earlier offset (first occurrence)",
+  "placidusPolar": "placidusCusps null for |latitude| >= 66 (Placidus undefined; engines fall back to Porphyry)"
+ },
+ "charts": [
+  {
+   "id": "greenwich-1900",
+   "date": "1900-01-01",
+   "time": "00:00",
+   "latitude": 51.4779,
+   "longitude": -0.0015,
+   "zoneId": "Europe/London",
+   "placeName": "Greenwich, UK",
+   "note": "start of range, LMT-free GMT",
+   "utc": "1900-01-01T00:00:00Z",
+   "jdUt": 2415020.5,
+   "deltaTSeconds": -1.953,
+   "bodies": {
+    "sun": {
+     "longitude": 280.153361,
+     "latitude": 5.3e-05,
+     "speed": 1.01985,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 272.416332,
+     "latitude": 1.108256,
+     "speed": 14.322848,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 258.99777,
+     "latitude": 1.126412,
+     "speed": 1.276599,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 306.37444,
+     "latitude": -1.683103,
+     "speed": 1.243509,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 283.867743,
+     "latitude": -0.925414,
+     "speed": 0.770425,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 241.135946,
+     "latitude": 0.814283,
+     "speed": 0.195622,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 267.716809,
+     "latitude": 1.007683,
+     "speed": 0.11636,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 250.139315,
+     "latitude": 0.063394,
+     "speed": 0.055359,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 85.218715,
+     "latitude": -1.299642,
+     "speed": -0.027201,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 75.251455,
+     "latitude": -9.776958,
+     "speed": -0.017268,
+     "retrograde": true
+    }
+   },
+   "ascendant": 187.185337,
+   "midheaven": 99.360874,
+   "placidusCusps": [
+    187.185337,
+    211.905844,
+    242.784648,
+    279.360874,
+    314.934545,
+    344.18893,
+    7.185337,
+    31.905844,
+    62.784648,
+    99.360874,
+    134.934545,
+    164.18893
+   ],
+   "armc": 100.186798,
+   "wholeSignCusps": [
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0
+   ]
+  },
+  {
+   "id": "tokyo-1900",
+   "date": "1900-01-31",
+   "time": "09:15",
+   "latitude": 35.6895,
+   "longitude": 139.6917,
+   "zoneId": "Asia/Tokyo",
+   "placeName": "Tokyo, Japan",
+   "note": "1900-01-31 day pillar reference",
+   "utc": "1900-01-31T00:15:00Z",
+   "jdUt": 2415050.51041667,
+   "deltaTSeconds": -1.859,
+   "bodies": {
+    "sun": {
+     "longitude": 310.703969,
+     "latitude": 0.000157,
+     "speed": 1.015466,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 310.041723,
+     "latitude": 3.968875,
+     "speed": 15.112048,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 303.769843,
+     "latitude": -1.951427,
+     "speed": 1.6561,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 343.454451,
+     "latitude": -1.315506,
+     "speed": 1.225462,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 307.22591,
+     "latitude": -1.054067,
+     "speed": 0.784962,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 246.373672,
+     "latitude": 0.831371,
+     "speed": 0.149375,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 271.001011,
+     "latitude": 0.995256,
+     "speed": 0.099761,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 251.57039,
+     "latitude": 0.059836,
+     "speed": 0.038483,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 84.522128,
+     "latitude": -1.284007,
+     "speed": -0.017786,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 74.833762,
+     "latitude": -9.687019,
+     "speed": -0.009767,
+     "retrograde": true
+    }
+   },
+   "ascendant": 5.07842,
+   "midheaven": 272.945288,
+   "placidusCusps": [
+    5.07842,
+    43.546521,
+    70.45128,
+    92.945288,
+    115.889134,
+    144.325022,
+    185.07842,
+    223.546521,
+    250.45128,
+    272.945288,
+    295.889134,
+    324.325022
+   ],
+   "armc": 273.209957,
+   "wholeSignCusps": [
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0
+   ]
+  },
+  {
+   "id": "paris-1905",
+   "date": "1905-07-14",
+   "time": "18:00",
+   "latitude": 48.8566,
+   "longitude": 2.3522,
+   "zoneId": "Europe/Paris",
+   "placeName": "Paris, France",
+   "note": "pre-1911 Paris Mean Time offset",
+   "utc": "1905-07-14T17:50:39Z",
+   "jdUt": 2417041.24350694,
+   "deltaTSeconds": 5.656,
+   "bodies": {
+    "sun": {
+     "longitude": 111.575431,
+     "latitude": 3.7e-05,
+     "speed": 0.953536,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 267.490831,
+     "latitude": 4.616359,
+     "speed": 13.843957,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 131.98581,
+     "latitude": 1.412904,
+     "speed": 1.645613,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 66.153262,
+     "latitude": -3.183871,
+     "speed": 1.003714,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 222.912453,
+     "latitude": -2.039981,
+     "speed": 0.313485,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 58.870126,
+     "latitude": -0.902289,
+     "speed": 0.185113,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 332.131477,
+     "latitude": -1.56994,
+     "speed": -0.047367,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 271.447657,
+     "latitude": -0.263567,
+     "speed": -0.037251,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 98.415955,
+     "latitude": -0.93199,
+     "speed": 0.036458,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 81.921056,
+     "latitude": -8.015606,
+     "speed": 0.020873,
+     "retrograde": false
+    }
+   },
+   "ascendant": 263.070932,
+   "midheaven": 203.701806,
+   "placidusCusps": [
+    263.070932,
+    303.869538,
+    349.494514,
+    23.701806,
+    47.54295,
+    66.11325,
+    83.070932,
+    123.869538,
+    169.494514,
+    203.701806,
+    227.54295,
+    246.11325
+   ],
+   "armc": 201.937154,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "newyork-1912",
+   "date": "1912-04-15",
+   "time": "02:20",
+   "latitude": 40.7128,
+   "longitude": -74.006,
+   "zoneId": "America/New_York",
+   "placeName": "New York, USA",
+   "note": "",
+   "utc": "1912-04-15T07:20:00Z",
+   "jdUt": 2419507.80555556,
+   "deltaTSeconds": 14.147,
+   "bodies": {
+    "sun": {
+     "longitude": 24.955955,
+     "latitude": -0.000138,
+     "speed": 0.978628,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 358.442922,
+     "latitude": -2.078154,
+     "speed": 12.809372,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 25.321653,
+     "latitude": 1.998421,
+     "speed": -0.720621,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 3.297504,
+     "latitude": -1.542339,
+     "speed": 1.22688,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 95.365277,
+     "latitude": 1.787829,
+     "speed": 0.552302,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 255.101426,
+     "latitude": 0.814362,
+     "speed": -0.042703,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 49.795724,
+     "latitude": -1.973555,
+     "speed": 0.121462,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 303.240793,
+     "latitude": -0.559319,
+     "speed": 0.018981,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 111.040888,
+     "latitude": -0.544832,
+     "speed": 0.007598,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 87.170019,
+     "latitude": -6.193323,
+     "speed": 0.012543,
+     "retrograde": false
+    }
+   },
+   "ascendant": 310.858833,
+   "midheaven": 241.209126,
+   "placidusCusps": [
+    310.858833,
+    358.660361,
+    35.279782,
+    61.209126,
+    82.512951,
+    103.795369,
+    130.858833,
+    178.660361,
+    215.279782,
+    241.209126,
+    262.512951,
+    283.795369
+   ],
+   "armc": 239.076862,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "beijing-1918",
+   "date": "1918-02-04",
+   "time": "23:30",
+   "latitude": 39.9042,
+   "longitude": 116.4074,
+   "zoneId": "Asia/Shanghai",
+   "placeName": "Beijing, China",
+   "note": "near Lichun",
+   "utc": "1918-02-04T15:30:00Z",
+   "jdUt": 2421629.14583333,
+   "deltaTSeconds": 20.339,
+   "bodies": {
+    "sun": {
+     "longitude": 315.025988,
+     "latitude": -0.000132,
+     "speed": 1.013775,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 228.636621,
+     "latitude": -3.447897,
+     "speed": 12.397499,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 292.063529,
+     "latitude": -0.374344,
+     "speed": 1.324408,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 323.796479,
+     "latitude": 7.346662,
+     "speed": -0.565298,
+     "retrograde": true
+    },
+    "mars": {
+     "longitude": 183.062058,
+     "latitude": 3.502811,
+     "speed": -0.00856,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 61.610366,
+     "latitude": -0.646252,
+     "speed": 0.030753,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 130.784507,
+     "latitude": 0.87415,
+     "speed": -0.081511,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 323.206814,
+     "latitude": -0.692154,
+     "speed": 0.057435,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 125.465266,
+     "latitude": -0.163637,
+     "speed": -0.027733,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 93.755677,
+     "latitude": -4.52402,
+     "speed": -0.014574,
+     "retrograde": true
+    }
+   },
+   "ascendant": 206.209005,
+   "midheaven": 120.679564,
+   "placidusCusps": [
+    206.209005,
+    234.214187,
+    266.164426,
+    300.679564,
+    333.844364,
+    2.536707,
+    26.209005,
+    54.214187,
+    86.164426,
+    120.679564,
+    153.844364,
+    182.536707
+   ],
+   "armc": 122.890146,
+   "wholeSignCusps": [
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0
+   ]
+  },
+  {
+   "id": "london-1918-dst",
+   "date": "1918-03-24",
+   "time": "02:30",
+   "latitude": 51.5074,
+   "longitude": -0.1278,
+   "zoneId": "Europe/London",
+   "placeName": "London, UK",
+   "note": "inside 1918 BST gap -> shifted forward",
+   "utc": "1918-03-24T02:30:00Z",
+   "jdUt": 2421676.60416667,
+   "deltaTSeconds": 20.436,
+   "bodies": {
+    "sun": {
+     "longitude": 2.647536,
+     "latitude": -0.000171,
+     "speed": 0.990844,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 144.036109,
+     "latitude": -4.22579,
+     "speed": 11.939191,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 13.533283,
+     "latitude": 0.099715,
+     "speed": 1.953392,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 320.463139,
+     "latitude": 3.832734,
+     "speed": 0.641879,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 170.469386,
+     "latitude": 3.583103,
+     "speed": -0.370473,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 66.36572,
+     "latitude": -0.479242,
+     "speed": 0.158213,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 127.857743,
+     "latitude": 0.912159,
+     "speed": -0.029388,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 325.835485,
+     "latitude": -0.700542,
+     "speed": 0.048942,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 124.445036,
+     "latitude": -0.152246,
+     "speed": -0.012067,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 93.441401,
+     "latitude": -4.407743,
+     "speed": 0.002226,
+     "retrograde": false
+    }
+   },
+   "ascendant": 274.800122,
+   "midheaven": 220.552663,
+   "placidusCusps": [
+    274.800122,
+    324.116148,
+    10.805177,
+    40.552663,
+    60.996265,
+    77.81191,
+    94.800122,
+    144.116148,
+    190.805177,
+    220.552663,
+    240.996265,
+    257.81191
+   ],
+   "armc": 218.131909,
+   "wholeSignCusps": [
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0
+   ]
+  },
+  {
+   "id": "buenosaires-1923",
+   "date": "1923-10-30",
+   "time": "07:45",
+   "latitude": -34.6037,
+   "longitude": -58.3816,
+   "zoneId": "America/Argentina/Buenos_Aires",
+   "placeName": "Buenos Aires, Argentina",
+   "note": "southern hemisphere",
+   "utc": "1923-10-30T11:45:00Z",
+   "jdUt": 2423722.98958333,
+   "deltaTSeconds": 23.438,
+   "bodies": {
+    "sun": {
+     "longitude": 216.0247,
+     "latitude": -0.000185,
+     "speed": 0.999635,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 98.660778,
+     "latitude": -4.456644,
+     "speed": 12.218107,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 205.63963,
+     "latitude": 1.563005,
+     "speed": 1.660489,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 229.090016,
+     "latitude": 0.229432,
+     "speed": 1.24882,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 187.852911,
+     "latitude": 1.049934,
+     "speed": 0.638548,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 234.435445,
+     "latitude": 0.745014,
+     "speed": 0.21587,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 204.630235,
+     "latitude": 2.261947,
+     "speed": 0.120319,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 343.881895,
+     "latitude": -0.796228,
+     "speed": -0.019697,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 140.224326,
+     "latitude": 0.228622,
+     "speed": 0.013622,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 102.329946,
+     "latitude": -2.536681,
+     "speed": -0.006429,
+     "retrograde": true
+    }
+   },
+   "ascendant": 263.490602,
+   "midheaven": 153.72807,
+   "placidusCusps": [
+    263.490602,
+    285.423919,
+    307.638632,
+    333.72807,
+    6.817439,
+    46.039173,
+    83.490602,
+    105.423919,
+    127.638632,
+    153.72807,
+    186.817439,
+    226.039173
+   ],
+   "armc": 155.635991,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "reykjavik-1929",
+   "date": "1929-12-21",
+   "time": "12:00",
+   "latitude": 64.1466,
+   "longitude": -21.9426,
+   "zoneId": "Etc/GMT+1",
+   "placeName": "Reykjavik, Iceland",
+   "note": "high latitude winter solstice; fixed UTC-1 zone (see ENGINES.md tz note)",
+   "utc": "1929-12-21T13:00:00Z",
+   "jdUt": 2425967.04166667,
+   "deltaTSeconds": 24.423,
+   "bodies": {
+    "sun": {
+     "longitude": 269.19893,
+     "latitude": 0.000243,
+     "speed": 1.01834,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 159.28623,
+     "latitude": 4.524551,
+     "speed": 14.112089,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 282.44217,
+     "latitude": -2.221154,
+     "speed": 1.561221,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 257.906937,
+     "latitude": 0.346803,
+     "speed": 1.257528,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 264.092091,
+     "latitude": -0.583944,
+     "speed": 0.74408,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 69.023952,
+     "latitude": -0.725664,
+     "speed": -0.119973,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 272.476083,
+     "latitude": 0.785838,
+     "speed": 0.118125,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 7.461292,
+     "latitude": -0.696903,
+     "speed": 0.003682,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 153.520678,
+     "latitude": 0.641086,
+     "speed": -0.008554,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 108.938362,
+     "latitude": -0.278723,
+     "speed": -0.019845,
+     "retrograde": true
+    }
+   },
+   "ascendant": 304.788701,
+   "midheaven": 263.268069,
+   "placidusCusps": [
+    304.788701,
+    55.52952,
+    73.539435,
+    83.268069,
+    91.379894,
+    100.937852,
+    124.788701,
+    235.52952,
+    253.539435,
+    263.268069,
+    271.379894,
+    280.937852
+   ],
+   "armc": 262.668322,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "helsinki-1931",
+   "date": "1931-06-21",
+   "time": "03:10",
+   "latitude": 60.1699,
+   "longitude": 24.9384,
+   "zoneId": "Europe/Helsinki",
+   "placeName": "Helsinki, Finland",
+   "note": "~60N midsummer",
+   "utc": "1931-06-21T01:10:00Z",
+   "jdUt": 2426513.54861111,
+   "deltaTSeconds": 24.402,
+   "bodies": {
+    "sun": {
+     "longitude": 88.715784,
+     "latitude": 9.2e-05,
+     "speed": 0.95436,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 152.733536,
+     "latitude": 3.120989,
+     "speed": 14.180937,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 78.234213,
+     "latitude": -0.1545,
+     "speed": 2.059993,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 67.378918,
+     "latitude": -0.995152,
+     "speed": 1.212988,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 155.653048,
+     "latitude": 1.082102,
+     "speed": 0.552127,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 114.277632,
+     "latitude": 0.369445,
+     "speed": 0.211471,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 291.541542,
+     "latitude": 0.182061,
+     "speed": -0.064931,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 18.890832,
+     "latitude": -0.641325,
+     "speed": 0.027357,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 153.360846,
+     "latitude": 0.715097,
+     "speed": 0.019303,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 109.833056,
+     "latitude": 0.291875,
+     "speed": 0.02489,
+     "retrograde": false
+    }
+   },
+   "ascendant": 89.882468,
+   "midheaven": 308.290833,
+   "placidusCusps": [
+    89.882468,
+    101.460228,
+    113.278504,
+    128.290833,
+    152.360944,
+    203.124508,
+    269.882468,
+    281.460228,
+    293.278504,
+    308.290833,
+    332.360944,
+    23.124508
+   ],
+   "armc": 310.714385,
+   "wholeSignCusps": [
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0
+   ]
+  },
+  {
+   "id": "sydney-1936",
+   "date": "1936-01-26",
+   "time": "16:40",
+   "latitude": -33.8688,
+   "longitude": 151.2093,
+   "zoneId": "Australia/Sydney",
+   "placeName": "Sydney, Australia",
+   "note": "southern hemisphere",
+   "utc": "1936-01-26T06:40:00Z",
+   "jdUt": 2428193.77777778,
+   "deltaTSeconds": 24.083,
+   "bodies": {
+    "sun": {
+     "longitude": 305.150059,
+     "latitude": 0.000139,
+     "speed": 1.016995,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 331.89185,
+     "latitude": 3.970761,
+     "speed": 14.703326,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 316.610153,
+     "latitude": 2.298669,
+     "speed": -0.613022,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 267.205303,
+     "latitude": 1.506331,
+     "speed": 1.211345,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 339.146267,
+     "latitude": -0.895012,
+     "speed": 0.780859,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 256.662975,
+     "latitude": 0.606912,
+     "speed": 0.182997,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 338.412172,
+     "latitude": -1.720668,
+     "speed": 0.109179,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 31.655572,
+     "latitude": -0.487826,
+     "speed": 0.013611,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 166.399402,
+     "latitude": 1.020228,
+     "speed": -0.019259,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 116.105564,
+     "latitude": 2.166591,
+     "speed": -0.02177,
+     "retrograde": true
+    }
+   },
+   "ascendant": 88.792586,
+   "midheaven": 16.931347,
+   "placidusCusps": [
+    88.792586,
+    124.260982,
+    162.725974,
+    196.931347,
+    224.33241,
+    247.191536,
+    268.792586,
+    304.260982,
+    342.725974,
+    16.931347,
+    44.33241,
+    67.191536
+   ],
+   "armc": 15.604099,
+   "wholeSignCusps": [
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0
+   ]
+  },
+  {
+   "id": "london-1941-double-summer",
+   "date": "1941-06-15",
+   "time": "12:00",
+   "latitude": 51.5074,
+   "longitude": -0.1278,
+   "zoneId": "Europe/London",
+   "placeName": "London, UK",
+   "note": "British Double Summer Time UTC+2",
+   "utc": "1941-06-15T10:00:00Z",
+   "jdUt": 2430160.91666667,
+   "deltaTSeconds": 25.055,
+   "bodies": {
+    "sun": {
+     "longitude": 83.89251,
+     "latitude": 5.7e-05,
+     "speed": 0.95483,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 339.762618,
+     "latitude": 1.546903,
+     "speed": 12.555344,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 104.911296,
+     "latitude": -0.351056,
+     "speed": 0.337934,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 99.089166,
+     "latitude": 1.042031,
+     "speed": 1.223971,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 349.802351,
+     "latitude": -2.792346,
+     "speed": 0.629801,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 64.621811,
+     "latitude": -0.693646,
+     "speed": 0.228339,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 52.679784,
+     "latitude": -2.041111,
+     "speed": 0.116507,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 57.826884,
+     "latitude": -0.219051,
+     "speed": 0.053685,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 174.932407,
+     "latitude": 1.272925,
+     "speed": 0.005082,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 122.794942,
+     "latitude": 4.253476,
+     "speed": 0.022935,
+     "retrograde": false
+    }
+   },
+   "ascendant": 154.100772,
+   "midheaven": 55.504932,
+   "placidusCusps": [
+    154.100772,
+    174.539505,
+    201.261432,
+    235.504932,
+    273.808808,
+    307.300262,
+    334.100772,
+    354.539505,
+    21.261432,
+    55.504932,
+    93.808808,
+    127.300262
+   ],
+   "armc": 53.167366,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "chicago-1945-war",
+   "date": "1945-08-14",
+   "time": "18:00",
+   "latitude": 41.8781,
+   "longitude": -87.6298,
+   "zoneId": "America/Chicago",
+   "placeName": "Chicago, USA",
+   "note": "US war time",
+   "utc": "1945-08-14T23:00:00Z",
+   "jdUt": 2431682.45833333,
+   "deltaTSeconds": 27.342,
+   "bodies": {
+    "sun": {
+     "longitude": 141.756665,
+     "latitude": 0.00013,
+     "speed": 0.960988,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 220.174548,
+     "latitude": 4.37784,
+     "speed": 11.858819,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 151.843696,
+     "latitude": -4.770199,
+     "speed": -0.695262,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 101.910232,
+     "latitude": -1.382012,
+     "speed": 1.14547,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 75.114295,
+     "latitude": -0.433297,
+     "speed": 0.648401,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 177.96835,
+     "latitude": 1.137221,
+     "speed": 0.192657,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 109.283655,
+     "latitude": -0.291032,
+     "speed": 0.116559,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 76.804194,
+     "latitude": 0.004119,
+     "speed": 0.03199,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 184.599733,
+     "latitude": 1.415039,
+     "speed": 0.02899,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 130.226702,
+     "latitude": 5.963319,
+     "speed": 0.028965,
+     "retrograde": false
+    }
+   },
+   "ascendant": 287.309289,
+   "midheaven": 222.815438,
+   "placidusCusps": [
+    287.309289,
+    331.758872,
+    12.933764,
+    42.815438,
+    65.488618,
+    85.564979,
+    107.309289,
+    151.758872,
+    192.933764,
+    222.815438,
+    245.488618,
+    265.564979
+   ],
+   "armc": 220.364971,
+   "wholeSignCusps": [
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0
+   ]
+  },
+  {
+   "id": "delhi-1947",
+   "date": "1947-08-15",
+   "time": "00:00",
+   "latitude": 28.6139,
+   "longitude": 77.209,
+   "zoneId": "Asia/Kolkata",
+   "placeName": "New Delhi, India",
+   "note": "midnight, half-hour zone",
+   "utc": "1947-08-14T18:30:00Z",
+   "jdUt": 2432412.27083333,
+   "deltaTSeconds": 28.109,
+   "bodies": {
+    "sun": {
+     "longitude": 141.110839,
+     "latitude": 2.6e-05,
+     "speed": 0.960969,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 117.10539,
+     "latitude": 4.267247,
+     "speed": 15.086675,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 126.796099,
+     "latitude": 0.773369,
+     "speed": 1.804843,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 135.683017,
+     "latitude": 1.114561,
+     "speed": 1.23511,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 90.578059,
+     "latitude": 0.248151,
+     "speed": 0.657802,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 228.999508,
+     "latitude": 0.850959,
+     "speed": 0.085421,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 133.594872,
+     "latitude": 0.751375,
+     "speed": 0.12788,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 85.175248,
+     "latitude": 0.116165,
+     "speed": 0.038941,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 188.829148,
+     "latitude": 1.489163,
+     "speed": 0.027183,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 133.229793,
+     "latitude": 6.803545,
+     "speed": 0.029799,
+     "retrograde": false
+    }
+   },
+   "ascendant": 60.854091,
+   "midheaven": 314.575081,
+   "placidusCusps": [
+    60.854091,
+    86.46307,
+    109.670135,
+    134.575081,
+    164.735858,
+    201.811101,
+    240.854091,
+    266.46307,
+    289.670135,
+    314.575081,
+    344.735858,
+    21.811101
+   ],
+   "armc": 317.042326,
+   "wholeSignCusps": [
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0
+   ]
+  },
+  {
+   "id": "capetown-1950",
+   "date": "1950-03-05",
+   "time": null,
+   "latitude": -33.9249,
+   "longitude": 18.4241,
+   "zoneId": "Africa/Johannesburg",
+   "placeName": "Cape Town, South Africa",
+   "note": "unknown birth time",
+   "utc": "1950-03-05T10:00:00Z",
+   "jdUt": 2433345.91666667,
+   "deltaTSeconds": 28.998,
+   "bodies": {
+    "sun": {
+     "longitude": 344.266375,
+     "latitude": -4.4e-05,
+     "speed": 1.001118,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 177.551144,
+     "latitude": 0.909032,
+     "speed": 14.680453,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 325.982618,
+     "latitude": -2.04769,
+     "speed": 1.581886,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 306.031607,
+     "latitude": 5.716294,
+     "speed": 0.436413,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 188.171954,
+     "latitude": 3.585236,
+     "speed": -0.267128,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 321.397146,
+     "latitude": -0.668716,
+     "speed": 0.229348,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 166.193817,
+     "latitude": 2.216185,
+     "speed": -0.079772,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 90.946458,
+     "latitude": 0.269175,
+     "speed": -0.003972,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 196.811653,
+     "latitude": 1.648248,
+     "speed": -0.022058,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 136.382865,
+     "latitude": 8.30256,
+     "speed": -0.020763,
+     "retrograde": true
+    }
+   },
+   "ascendant": null,
+   "midheaven": null,
+   "placidusCusps": null
+  },
+  {
+   "id": "anchorage-1955",
+   "date": "1955-11-30",
+   "time": "05:05",
+   "latitude": 61.2181,
+   "longitude": -149.9003,
+   "zoneId": "America/Anchorage",
+   "placeName": "Anchorage, USA",
+   "note": "~61N",
+   "utc": "1955-11-30T15:05:00Z",
+   "jdUt": 2435442.12847222,
+   "deltaTSeconds": 31.326,
+   "bodies": {
+    "sun": {
+     "longitude": 247.633299,
+     "latitude": -4.7e-05,
+     "speed": 1.013044,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 80.738311,
+     "latitude": -0.316682,
+     "speed": 15.154194,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 245.421992,
+     "latitude": -0.501746,
+     "speed": 1.574215,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 270.590526,
+     "latitude": -1.170072,
+     "speed": 1.245075,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 211.013282,
+     "latitude": 0.826653,
+     "speed": 0.648111,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 151.01064,
+     "latitude": 0.881008,
+     "speed": 0.055685,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 235.426722,
+     "latitude": 1.945896,
+     "speed": 0.117592,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 122.114384,
+     "latitude": 0.57254,
+     "speed": -0.019565,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 209.367682,
+     "latitude": 1.685302,
+     "speed": 0.030947,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 148.612644,
+     "latitude": 10.626839,
+     "speed": 0.000285,
+     "retrograde": false
+    }
+   },
+   "ascendant": 213.264547,
+   "midheaven": 142.711837,
+   "placidusCusps": [
+    213.264547,
+    239.508734,
+    277.27071,
+    322.711837,
+    355.739515,
+    17.839891,
+    33.264547,
+    59.508734,
+    97.27071,
+    142.711837,
+    175.739515,
+    197.839891
+   ],
+   "armc": 145.061551,
+   "wholeSignCusps": [
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0
+   ]
+  },
+  {
+   "id": "mexicocity-1960",
+   "date": "1960-05-01",
+   "time": "21:21",
+   "latitude": 19.4326,
+   "longitude": -99.1332,
+   "zoneId": "America/Mexico_City",
+   "placeName": "Mexico City, Mexico",
+   "note": "",
+   "utc": "1960-05-02T03:21:00Z",
+   "jdUt": 2437056.63958333,
+   "deltaTSeconds": 33.301,
+   "bodies": {
+    "sun": {
+     "longitude": 41.728433,
+     "latitude": -0.000173,
+     "speed": 0.969981,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 110.748539,
+     "latitude": -4.560347,
+     "speed": 11.886647,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 25.259261,
+     "latitude": -2.083278,
+     "speed": 1.81467,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 27.922204,
+     "latitude": -1.371214,
+     "speed": 1.22906,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 352.994034,
+     "latitude": -1.404662,
+     "speed": 0.766362,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 273.391903,
+     "latitude": 0.396046,
+     "speed": -0.037239,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 288.412231,
+     "latitude": 0.460457,
+     "speed": -0.007407,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 136.957773,
+     "latitude": 0.712232,
+     "speed": 0.007097,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 217.664003,
+     "latitude": 1.830668,
+     "speed": -0.027175,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 153.629755,
+     "latitude": 12.546892,
+     "speed": -0.006345,
+     "retrograde": true
+    }
+   },
+   "ascendant": 254.109231,
+   "midheaven": 170.381554,
+   "placidusCusps": [
+    254.109231,
+    284.28573,
+    316.798873,
+    350.381554,
+    21.80438,
+    49.340247,
+    74.109231,
+    104.28573,
+    136.798873,
+    170.381554,
+    201.80438,
+    229.340247
+   ],
+   "armc": 171.162341,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "hongkong-1962",
+   "date": "1962-02-05",
+   "time": "08:00",
+   "latitude": 22.3193,
+   "longitude": 114.1694,
+   "zoneId": "Asia/Hong_Kong",
+   "placeName": "Hong Kong",
+   "note": "Lichun 1962-02-04 vs CNY 1962-02-05",
+   "utc": "1962-02-05T00:00:00Z",
+   "jdUt": 2437700.5,
+   "deltaTSeconds": 34.042,
+   "bodies": {
+    "sun": {
+     "longitude": 315.706269,
+     "latitude": -9e-06,
+     "speed": 1.014211,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 315.60984,
+     "latitude": 0.224481,
+     "speed": 15.051912,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 316.934294,
+     "latitude": 3.52967,
+     "speed": -1.192059,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 317.766558,
+     "latitude": -1.299913,
+     "speed": 1.255087,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 302.359564,
+     "latitude": -0.9966,
+     "speed": 0.77749,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 318.61333,
+     "latitude": -0.689598,
+     "speed": 0.239291,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 303.805054,
+     "latitude": -0.367075,
+     "speed": 0.11744,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 149.047588,
+     "latitude": 0.785765,
+     "speed": -0.042296,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 223.469696,
+     "latitude": 1.776263,
+     "speed": 0.005042,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 159.424455,
+     "latitude": 13.452611,
+     "speed": -0.0232,
+     "retrograde": true
+    }
+   },
+   "ascendant": 332.45212,
+   "midheaven": 250.441929,
+   "placidusCusps": [
+    332.45212,
+    10.895582,
+    43.527472,
+    70.441929,
+    94.984303,
+    120.898718,
+    152.45212,
+    190.895582,
+    223.527472,
+    250.441929,
+    274.984303,
+    300.898718
+   ],
+   "armc": 248.832583,
+   "wholeSignCusps": [
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0
+   ]
+  },
+  {
+   "id": "london-1969-bst-all-year",
+   "date": "1969-12-25",
+   "time": "10:00",
+   "latitude": 51.5074,
+   "longitude": -0.1278,
+   "zoneId": "Europe/London",
+   "placeName": "London, UK",
+   "note": "British Standard Time 1968-71 (UTC+1 in winter)",
+   "utc": "1969-12-25T09:00:00Z",
+   "jdUt": 2440580.875,
+   "deltaTSeconds": 40.163,
+   "bodies": {
+    "sun": {
+     "longitude": 273.406094,
+     "latitude": 0.000205,
+     "speed": 1.018544,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 111.419304,
+     "latitude": 4.017733,
+     "speed": 11.899326,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 292.827336,
+     "latitude": -1.705651,
+     "speed": 1.212822,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 266.117437,
+     "latitude": 0.004693,
+     "speed": 1.258172,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 337.294029,
+     "latitude": -0.933816,
+     "speed": 0.746193,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 211.3746,
+     "latitude": 1.191461,
+     "speed": 0.149949,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 32.138682,
+     "latitude": -2.556473,
+     "speed": -0.017564,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 188.623116,
+     "latitude": 0.715643,
+     "speed": 0.017803,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 239.676907,
+     "latitude": 1.649082,
+     "speed": 0.032585,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 177.385849,
+     "latitude": 15.749612,
+     "speed": 0.002871,
+     "retrograde": false
+    }
+   },
+   "ascendant": 285.826692,
+   "midheaven": 231.006453,
+   "placidusCusps": [
+    285.826692,
+    340.671274,
+    24.411917,
+    51.006453,
+    70.051783,
+    86.865936,
+    105.826692,
+    160.671274,
+    204.411917,
+    231.006453,
+    250.051783,
+    266.865936
+   ],
+   "armc": 228.573091,
+   "wholeSignCusps": [
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0
+   ]
+  },
+  {
+   "id": "lima-1971",
+   "date": "1971-09-09",
+   "time": "13:13",
+   "latitude": -12.0464,
+   "longitude": -77.0428,
+   "zoneId": "America/Lima",
+   "placeName": "Lima, Peru",
+   "note": "near equator, southern",
+   "utc": "1971-09-09T18:13:00Z",
+   "jdUt": 2441204.25902778,
+   "deltaTSeconds": 41.892,
+   "bodies": {
+    "sun": {
+     "longitude": 166.404398,
+     "latitude": 6.3e-05,
+     "speed": 0.971386,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 50.422315,
+     "latitude": 5.174007,
+     "speed": 14.33026,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 148.846302,
+     "latitude": -0.261851,
+     "speed": 0.654097,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 169.940283,
+     "latitude": 1.403151,
+     "speed": 1.242267,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 311.890484,
+     "latitude": -5.697168,
+     "speed": 0.002418,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 239.755426,
+     "latitude": 0.629126,
+     "speed": 0.127426,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 66.448614,
+     "latitude": -2.046303,
+     "speed": 0.017035,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 192.223547,
+     "latitude": 0.639903,
+     "speed": 0.058297,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 240.517055,
+     "latitude": 1.642135,
+     "speed": 0.015014,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 179.04444,
+     "latitude": 15.63393,
+     "speed": 0.03691,
+     "retrograde": false
+    }
+   },
+   "ascendant": 278.804617,
+   "midheaven": 184.736467,
+   "placidusCusps": [
+    278.804617,
+    304.819916,
+    333.153827,
+    4.736467,
+    37.731694,
+    69.30478,
+    98.804617,
+    124.819916,
+    153.153827,
+    184.736467,
+    217.731694,
+    249.30478
+   ],
+   "armc": 184.347008,
+   "wholeSignCusps": [
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0
+   ]
+  },
+  {
+   "id": "moscow-1975",
+   "date": "1975-04-12",
+   "time": "06:30",
+   "latitude": 55.7558,
+   "longitude": 37.6173,
+   "zoneId": "Europe/Moscow",
+   "placeName": "Moscow, Russia",
+   "note": "",
+   "utc": "1975-04-12T03:30:00Z",
+   "jdUt": 2442514.64583333,
+   "deltaTSeconds": 45.743,
+   "bodies": {
+    "sun": {
+     "longitude": 21.614369,
+     "latitude": 5.4e-05,
+     "speed": 0.981293,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 26.719221,
+     "latitude": 2.939306,
+     "speed": 12.307235,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 14.409158,
+     "latitude": -1.540843,
+     "speed": 1.980385,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 57.883771,
+     "latitude": 1.212697,
+     "speed": 1.184534,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 330.261783,
+     "latitude": -1.335989,
+     "speed": 0.761776,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 5.886946,
+     "latitude": -1.084999,
+     "speed": 0.23746,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 102.701384,
+     "latitude": -0.192298,
+     "speed": 0.051484,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 210.831923,
+     "latitude": 0.56289,
+     "speed": -0.042026,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 251.576128,
+     "latitude": 1.590287,
+     "speed": -0.014834,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 187.512949,
+     "latitude": 17.330162,
+     "speed": -0.026825,
+     "retrograde": true
+    }
+   },
+   "ascendant": 50.610688,
+   "midheaven": 288.313282,
+   "placidusCusps": [
+    50.610688,
+    76.350851,
+    92.75628,
+    108.313282,
+    127.709153,
+    160.988747,
+    230.610688,
+    256.350851,
+    272.75628,
+    288.313282,
+    307.709153,
+    340.988747
+   ],
+   "armc": 289.836877,
+   "wholeSignCusps": [
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0
+   ]
+  },
+  {
+   "id": "nairobi-1978",
+   "date": "1978-08-08",
+   "time": "15:00",
+   "latitude": -1.2921,
+   "longitude": 36.8219,
+   "zoneId": "Africa/Nairobi",
+   "placeName": "Nairobi, Kenya",
+   "note": "equator",
+   "utc": "1978-08-08T12:00:00Z",
+   "jdUt": 2443729.0,
+   "deltaTSeconds": 49.171,
+   "bodies": {
+    "sun": {
+     "longitude": 135.587502,
+     "latitude": 1.7e-05,
+     "speed": 0.958883,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 185.451742,
+     "latitude": 0.733684,
+     "speed": 12.502269,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 152.45901,
+     "latitude": -4.358995,
+     "speed": -0.312964,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 180.395175,
+     "latitude": -0.179233,
+     "speed": 1.069837,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 182.559336,
+     "latitude": 0.460698,
+     "speed": 0.623601,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 114.276564,
+     "latitude": 0.192575,
+     "speed": 0.216404,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 151.572853,
+     "latitude": 1.441709,
+     "speed": 0.123633,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 222.457361,
+     "latitude": 0.366742,
+     "speed": 0.015656,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 255.646859,
+     "latitude": 1.46356,
+     "speed": -0.010184,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 194.456383,
+     "latitude": 16.825459,
+     "speed": 0.023914,
+     "retrograde": false
+    }
+   },
+   "ascendant": 264.510502,
+   "midheaven": 172.880783,
+   "placidusCusps": [
+    264.510502,
+    292.035499,
+    321.188808,
+    352.880783,
+    25.396926,
+    56.084134,
+    84.510502,
+    112.035499,
+    141.188808,
+    172.880783,
+    205.396926,
+    236.084134
+   ],
+   "armc": 173.462946,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "losangeles-1980",
+   "date": "1980-10-26",
+   "time": "01:30",
+   "latitude": 34.0522,
+   "longitude": -118.2437,
+   "zoneId": "America/Los_Angeles",
+   "placeName": "Los Angeles, USA",
+   "note": "ambiguous DST overlap -> earlier (PDT)",
+   "utc": "1980-10-26T08:30:00Z",
+   "jdUt": 2444538.85416667,
+   "deltaTSeconds": 51.235,
+   "bodies": {
+    "sun": {
+     "longitude": 213.081027,
+     "latitude": -0.000149,
+     "speed": 0.997362,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 68.170646,
+     "latitude": -4.681591,
+     "speed": 14.71457,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 229.170096,
+     "latitude": -2.611216,
+     "speed": -0.472355,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 175.098477,
+     "latitude": 1.357672,
+     "speed": 1.195155,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 250.143736,
+     "latitude": -0.900694,
+     "speed": 0.728422,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 179.789389,
+     "latitude": 1.092268,
+     "speed": 0.197398,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 184.220709,
+     "latitude": 2.111838,
+     "speed": 0.113954,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 234.474832,
+     "latitude": 0.232344,
+     "speed": 0.058839,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 260.710232,
+     "latitude": 1.318107,
+     "speed": 0.027715,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 202.150084,
+     "latitude": 16.598946,
+     "speed": 0.03941,
+     "retrograde": false
+    }
+   },
+   "ascendant": 141.6592,
+   "midheaven": 46.5907,
+   "placidusCusps": [
+    141.6592,
+    165.552838,
+    193.990725,
+    226.5907,
+    260.542991,
+    292.633088,
+    321.6592,
+    345.552838,
+    13.990725,
+    46.5907,
+    80.542991,
+    112.633088
+   ],
+   "armc": 44.124284,
+   "wholeSignCusps": [
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0
+   ]
+  },
+  {
+   "id": "taipei-1984",
+   "date": "1984-02-01",
+   "time": "11:11",
+   "latitude": 25.033,
+   "longitude": 121.5654,
+   "zoneId": "Asia/Taipei",
+   "placeName": "Taipei, Taiwan",
+   "note": "before CNY (1984-02-02) and before Lichun: Pig year",
+   "utc": "1984-02-01T03:11:00Z",
+   "jdUt": 2445731.63263889,
+   "deltaTSeconds": 53.844,
+   "bodies": {
+    "sun": {
+     "longitude": 311.441918,
+     "latitude": -0.00012,
+     "speed": 1.015584,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 302.009078,
+     "latitude": -3.745911,
+     "speed": 12.047629,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 288.877463,
+     "latitude": -0.229848,
+     "speed": 1.326654,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 277.779147,
+     "latitude": 0.884203,
+     "speed": 1.227018,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 220.295135,
+     "latitude": 1.683356,
+     "speed": 0.460371,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 272.598304,
+     "latitude": 0.286135,
+     "speed": 0.201477,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 225.911554,
+     "latitude": 2.374645,
+     "speed": 0.039973,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 252.638463,
+     "latitude": 0.051068,
+     "speed": 0.038746,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 270.422287,
+     "latitude": 1.166175,
+     "speed": 0.030426,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 212.133859,
+     "latitude": 16.984937,
+     "speed": 0.00183,
+     "retrograde": false
+    }
+   },
+   "ascendant": 39.205078,
+   "midheaven": 297.75921,
+   "placidusCusps": [
+    39.205078,
+    68.726066,
+    93.421168,
+    117.75921,
+    145.509767,
+    179.800993,
+    219.205078,
+    248.726066,
+    273.421168,
+    297.75921,
+    325.509767,
+    359.800993
+   ],
+   "armc": 299.842067,
+   "wholeSignCusps": [
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0
+   ]
+  },
+  {
+   "id": "saopaulo-1985",
+   "date": "1985-02-20",
+   "time": "19:00",
+   "latitude": -23.5505,
+   "longitude": -46.6333,
+   "zoneId": "America/Sao_Paulo",
+   "placeName": "Sao Paulo, Brazil",
+   "note": "southern summer DST",
+   "utc": "1985-02-20T22:00:00Z",
+   "jdUt": 2446117.41666667,
+   "deltaTSeconds": 54.42,
+   "bodies": {
+    "sun": {
+     "longitude": 332.221796,
+     "latitude": -0.000212,
+     "speed": 1.007928,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 345.04479,
+     "latitude": -4.593944,
+     "speed": 12.184088,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 333.540256,
+     "latitude": -1.859097,
+     "speed": 1.847586,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 14.83138,
+     "latitude": 3.939476,
+     "speed": 0.644763,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 13.611919,
+     "latitude": -0.207824,
+     "speed": 0.742788,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 303.210041,
+     "latitude": -0.337635,
+     "speed": 0.219959,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 237.944095,
+     "latitude": 2.207773,
+     "speed": 0.024855,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 257.588734,
+     "latitude": -0.009856,
+     "speed": 0.026124,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 273.1073,
+     "latitude": 1.122912,
+     "speed": 0.02291,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 214.682786,
+     "latitude": 17.000023,
+     "speed": -0.008758,
+     "retrograde": true
+    }
+   },
+   "ascendant": 158.925503,
+   "midheaven": 75.391765,
+   "placidusCusps": [
+    158.925503,
+    197.51754,
+    229.233555,
+    255.391765,
+    279.716647,
+    306.089678,
+    338.925503,
+    17.51754,
+    49.233555,
+    75.391765,
+    99.716647,
+    126.089678
+   ],
+   "armc": 74.141051,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "oslo-1988",
+   "date": "1988-01-15",
+   "time": null,
+   "latitude": 59.9139,
+   "longitude": 10.7522,
+   "zoneId": "Europe/Oslo",
+   "placeName": "Oslo, Norway",
+   "note": "unknown time, ~60N",
+   "utc": "1988-01-15T11:00:00Z",
+   "jdUt": 2447175.95833333,
+   "deltaTSeconds": 55.839,
+   "bodies": {
+    "sun": {
+     "longitude": 294.50761,
+     "latitude": -5.9e-05,
+     "speed": 1.018904,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 242.904805,
+     "latitude": -4.704177,
+     "speed": 13.913957,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 308.584844,
+     "latitude": -1.790263,
+     "speed": 1.619196,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 329.742556,
+     "latitude": -1.612707,
+     "speed": 1.22095,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 244.539923,
+     "latitude": 0.333355,
+     "speed": 0.666927,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 21.377892,
+     "latitude": -1.217452,
+     "speed": 0.100877,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 267.099666,
+     "latitude": 1.111809,
+     "speed": 0.109592,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 268.501863,
+     "latitude": -0.169295,
+     "speed": 0.056052,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 278.327434,
+     "latitude": 0.956654,
+     "speed": 0.036752,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 222.312788,
+     "latitude": 15.982571,
+     "speed": 0.017907,
+     "retrograde": false
+    }
+   },
+   "ascendant": null,
+   "midheaven": null,
+   "placidusCusps": null
+  },
+  {
+   "id": "seoul-1988",
+   "date": "1988-09-17",
+   "time": "10:30",
+   "latitude": 37.5665,
+   "longitude": 126.978,
+   "zoneId": "Asia/Seoul",
+   "placeName": "Seoul, South Korea",
+   "note": "Korean DST 1987-88",
+   "utc": "1988-09-17T00:30:00Z",
+   "jdUt": 2447421.52083333,
+   "deltaTSeconds": 56.159,
+   "bodies": {
+    "sun": {
+     "longitude": 174.341441,
+     "latitude": -0.000205,
+     "speed": 0.975814,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 238.989733,
+     "latitude": -5.103129,
+     "speed": 12.62049,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 200.838163,
+     "latitude": -2.78779,
+     "speed": 0.913906,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 130.268021,
+     "latitude": -1.011507,
+     "speed": 1.095985,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 8.407907,
+     "latitude": -5.080549,
+     "speed": -0.261374,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 66.034763,
+     "latitude": -1.010508,
+     "speed": 0.025093,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 266.181274,
+     "latitude": 0.925161,
+     "speed": 0.028585,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 267.101442,
+     "latitude": -0.215169,
+     "speed": 0.009959,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 277.420478,
+     "latitude": 0.956664,
+     "speed": -0.000975,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 220.705918,
+     "latitude": 15.603333,
+     "speed": 0.030418,
+     "retrograde": false
+    }
+   },
+   "ascendant": 213.021867,
+   "midheaven": 128.222564,
+   "placidusCusps": [
+    213.021867,
+    241.619913,
+    273.823788,
+    308.222564,
+    341.094086,
+    9.482939,
+    33.021867,
+    61.619913,
+    93.823788,
+    128.222564,
+    161.094086,
+    189.482939
+   ],
+   "armc": 130.643426,
+   "wholeSignCusps": [
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0
+   ]
+  },
+  {
+   "id": "auckland-1990",
+   "date": "1990-10-07",
+   "time": "02:30",
+   "latitude": -36.8485,
+   "longitude": 174.7633,
+   "zoneId": "Pacific/Auckland",
+   "placeName": "Auckland, New Zealand",
+   "note": "inside NZ DST gap",
+   "utc": "1990-10-06T14:30:00Z",
+   "jdUt": 2448171.10416667,
+   "deltaTSeconds": 57.39,
+   "bodies": {
+    "sun": {
+     "longitude": 193.079338,
+     "latitude": 0.000117,
+     "speed": 0.985811,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 41.968774,
+     "latitude": 4.996894,
+     "speed": 14.816586,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 181.504013,
+     "latitude": 1.899688,
+     "speed": 1.744031,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 186.356205,
+     "latitude": 1.411406,
+     "speed": 1.24835,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 73.153442,
+     "latitude": -0.929988,
+     "speed": 0.191808,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 129.16878,
+     "latitude": 0.396139,
+     "speed": 0.149163,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 288.852562,
+     "latitude": -0.043313,
+     "speed": 0.022096,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 275.803619,
+     "latitude": -0.321604,
+     "speed": 0.018525,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 281.843022,
+     "latitude": 0.830115,
+     "speed": 0.007093,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 226.364158,
+     "latitude": 14.915758,
+     "speed": 0.035076,
+     "retrograde": false
+    }
+   },
+   "ascendant": 118.962356,
+   "midheaven": 49.704592,
+   "placidusCusps": [
+    118.962356,
+    162.41266,
+    200.904828,
+    229.704592,
+    252.73027,
+    274.274262,
+    298.962356,
+    342.41266,
+    20.904828,
+    49.704592,
+    72.73027,
+    94.274262
+   ],
+   "armc": 47.255728,
+   "wholeSignCusps": [
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0
+   ]
+  },
+  {
+   "id": "newyork-1993",
+   "date": "1993-03-21",
+   "time": "04:44",
+   "latitude": 40.7128,
+   "longitude": -74.006,
+   "zoneId": "America/New_York",
+   "placeName": "New York, USA",
+   "note": "",
+   "utc": "1993-03-21T09:44:00Z",
+   "jdUt": 2449067.90555556,
+   "deltaTSeconds": 59.312,
+   "bodies": {
+    "sun": {
+     "longitude": 0.788781,
+     "latitude": 4e-05,
+     "speed": 0.993202,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 340.156113,
+     "latitude": 4.985147,
+     "speed": 11.85512,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 340.359023,
+     "latitude": 1.161864,
+     "speed": -0.11623,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 17.971205,
+     "latitude": 8.117757,
+     "speed": -0.403332,
+     "retrograde": true
+    },
+    "mars": {
+     "longitude": 104.703561,
+     "latitude": 2.767448,
+     "speed": 0.316648,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 190.96036,
+     "latitude": 1.591597,
+     "speed": -0.125191,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 325.526038,
+     "latitude": -1.101276,
+     "speed": 0.105855,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 291.649652,
+     "latitude": -0.43471,
+     "speed": 0.029569,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 290.862468,
+     "latitude": 0.673876,
+     "speed": 0.017589,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 235.374739,
+     "latitude": 14.701481,
+     "speed": -0.012723,
+     "retrograde": true
+    }
+   },
+   "ascendant": 328.076528,
+   "midheaven": 252.390864,
+   "placidusCusps": [
+    328.076528,
+    15.728858,
+    48.57543,
+    72.390864,
+    93.331743,
+    116.107675,
+    148.076528,
+    195.728858,
+    228.57543,
+    252.390864,
+    273.331743,
+    296.107675
+   ],
+   "armc": 250.917363,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "tromso-1995",
+   "date": "1995-12-01",
+   "time": "14:00",
+   "latitude": 69.6492,
+   "longitude": 18.9553,
+   "zoneId": "Europe/Oslo",
+   "placeName": "Tromso, Norway",
+   "note": "above polar circle: no Placidus",
+   "utc": "1995-12-01T13:00:00Z",
+   "jdUt": 2450053.04166667,
+   "deltaTSeconds": 61.562,
+   "bodies": {
+    "sun": {
+     "longitude": 248.856339,
+     "latitude": 4.9e-05,
+     "speed": 1.013457,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 6.536073,
+     "latitude": 1.711155,
+     "speed": 12.836427,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 253.493192,
+     "latitude": -1.305418,
+     "speed": 1.562758,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 274.947354,
+     "latitude": -1.376185,
+     "speed": 1.241366,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 270.727255,
+     "latitude": -0.955237,
+     "speed": 0.757902,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 262.559178,
+     "latitude": 0.29242,
+     "speed": 0.22417,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 348.079789,
+     "latitude": -2.207678,
+     "speed": 0.017351,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 297.806863,
+     "latitude": -0.538076,
+     "speed": 0.043273,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 293.655721,
+     "latitude": 0.499027,
+     "speed": 0.02897,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 240.822031,
+     "latitude": 12.819532,
+     "speed": 0.039487,
+     "retrograde": false
+    }
+   },
+   "ascendant": 307.139315,
+   "midheaven": 282.767242,
+   "placidusCusps": null,
+   "armc": 283.872698,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "singapore-1999",
+   "date": "1999-12-31",
+   "time": "23:59",
+   "latitude": 1.3521,
+   "longitude": 103.8198,
+   "zoneId": "Asia/Singapore",
+   "placeName": "Singapore",
+   "note": "",
+   "utc": "1999-12-31T15:59:00Z",
+   "jdUt": 2451544.16597222,
+   "deltaTSeconds": 63.828,
+   "bodies": {
+    "sun": {
+     "longitude": 279.518718,
+     "latitude": 0.00023,
+     "speed": 1.019347,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 213.240074,
+     "latitude": 5.239527,
+     "speed": 12.166756,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 270.59314,
+     "latitude": -0.912434,
+     "speed": 1.551902,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 240.557815,
+     "latitude": 2.089322,
+     "speed": 1.208076,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 327.316381,
+     "latitude": -1.078173,
+     "speed": 0.775645,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 25.220268,
+     "latitude": -1.26651,
+     "speed": 0.037938,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 40.412933,
+     "latitude": -2.448804,
+     "speed": -0.021466,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 314.767356,
+     "latitude": -0.658543,
+     "speed": 0.049969,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 303.163423,
+     "latitude": 0.235183,
+     "speed": 0.035386,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 251.425375,
+     "latitude": 10.854044,
+     "speed": 0.035357,
+     "retrograde": false
+    }
+   },
+   "ascendant": 172.674899,
+   "midheaven": 83.760847,
+   "placidusCusps": [
+    172.674899,
+    204.882298,
+    235.388103,
+    263.760847,
+    291.639924,
+    321.049999,
+    352.674899,
+    24.882298,
+    55.388103,
+    83.760847,
+    111.639924,
+    141.049999
+   ],
+   "armc": 83.204816,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "j2000-greenwich",
+   "date": "2000-01-01",
+   "time": "12:00",
+   "latitude": 51.4779,
+   "longitude": -0.0015,
+   "zoneId": "Europe/London",
+   "placeName": "Greenwich, UK",
+   "note": "J2000.0 (UT)",
+   "utc": "2000-01-01T12:00:00Z",
+   "jdUt": 2451545.0,
+   "deltaTSeconds": 63.829,
+   "bodies": {
+    "sun": {
+     "longitude": 280.368919,
+     "latitude": 0.000227,
+     "speed": 1.019434,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 223.323751,
+     "latitude": 5.170741,
+     "speed": 12.021304,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 271.889277,
+     "latitude": -0.994829,
+     "speed": 1.556258,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 241.565788,
+     "latitude": 2.066349,
+     "speed": 1.209043,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 327.963303,
+     "latitude": -1.067785,
+     "speed": 0.775674,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 25.253087,
+     "latitude": -1.262188,
+     "speed": 0.040761,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 40.395663,
+     "latitude": -2.444855,
+     "speed": -0.019945,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 314.809188,
+     "latitude": -0.658335,
+     "speed": 0.050343,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 303.193013,
+     "latitude": 0.234992,
+     "speed": 0.03557,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 251.454779,
+     "latitude": 10.855232,
+     "speed": 0.035153,
+     "retrograde": false
+    }
+   },
+   "ascendant": 24.262912,
+   "midheaven": 279.609704,
+   "placidusCusps": [
+    24.262912,
+    61.14058,
+    82.019387,
+    99.609704,
+    119.060301,
+    147.698339,
+    204.262912,
+    241.14058,
+    262.019387,
+    279.609704,
+    299.060301,
+    327.698339
+   ],
+   "armc": 280.455572,
+   "wholeSignCusps": [
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0
+   ]
+  },
+  {
+   "id": "berlin-2004",
+   "date": "2004-02-04",
+   "time": "20:00",
+   "latitude": 52.52,
+   "longitude": 13.405,
+   "zoneId": "Europe/Berlin",
+   "placeName": "Berlin, Germany",
+   "note": "Lichun 2004-02-04 ~19:56 Beijing",
+   "utc": "2004-02-04T19:00:00Z",
+   "jdUt": 2453040.29166667,
+   "deltaTSeconds": 64.583,
+   "bodies": {
+    "sun": {
+     "longitude": 315.298381,
+     "latitude": 0.000174,
+     "speed": 1.013794,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 116.963425,
+     "latitude": 4.725982,
+     "speed": 12.47019,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 296.448562,
+     "latitude": -1.085949,
+     "speed": 1.469774,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 355.389597,
+     "latitude": -0.754945,
+     "speed": 1.189075,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 30.87162,
+     "latitude": 0.680643,
+     "speed": 0.635524,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 167.329118,
+     "latitude": 1.359066,
+     "speed": -0.094536,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 97.205444,
+     "latitude": -0.595314,
+     "speed": -0.055302,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 331.798582,
+     "latitude": -0.723027,
+     "speed": 0.055821,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 312.958707,
+     "latitude": -0.031726,
+     "speed": 0.038017,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 261.598376,
+     "latitude": 8.668518,
+     "speed": 0.025535,
+     "retrograde": false
+    }
+   },
+   "ascendant": 167.95956,
+   "midheaven": 74.045808,
+   "placidusCusps": [
+    167.95956,
+    190.039287,
+    218.571389,
+    254.045808,
+    291.406807,
+    322.889391,
+    347.95956,
+    10.039287,
+    38.571389,
+    74.045808,
+    111.406807,
+    142.889391
+   ],
+   "armc": 72.693218,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "mumbai-2007",
+   "date": "2007-06-30",
+   "time": "05:55",
+   "latitude": 19.076,
+   "longitude": 72.8777,
+   "zoneId": "Asia/Kolkata",
+   "placeName": "Mumbai, India",
+   "note": "",
+   "utc": "2007-06-30T00:25:00Z",
+   "jdUt": 2454281.51736111,
+   "deltaTSeconds": 65.3,
+   "bodies": {
+    "sun": {
+     "longitude": 97.879863,
+     "latitude": -7.9e-05,
+     "speed": 0.953196,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 271.242787,
+     "latitude": -4.68024,
+     "speed": 12.780197,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 95.969172,
+     "latitude": -4.474006,
+     "speed": -0.579755,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 141.2352,
+     "latitude": 0.76636,
+     "speed": 0.732303,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 33.697322,
+     "latitude": -1.453578,
+     "speed": 0.718421,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 252.037517,
+     "latitude": 0.637109,
+     "speed": -0.103396,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 142.216085,
+     "latitude": 1.256972,
+     "speed": 0.103047,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 348.676166,
+     "latitude": -0.785622,
+     "speed": -0.005047,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 321.703667,
+     "latitude": -0.268005,
+     "speed": -0.017531,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 267.364362,
+     "latitude": 7.010237,
+     "speed": -0.025455,
+     "retrograde": true
+    }
+   },
+   "ascendant": 94.970881,
+   "midheaven": 356.5466,
+   "placidusCusps": [
+    94.970881,
+    119.553285,
+    146.089927,
+    176.5466,
+    210.287044,
+    243.898365,
+    274.970881,
+    299.553285,
+    326.089927,
+    356.5466,
+    30.287044,
+    63.898365
+   ],
+   "armc": 356.83099,
+   "wholeSignCusps": [
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0
+   ]
+  },
+  {
+   "id": "ushuaia-2009",
+   "date": "2009-06-21",
+   "time": "09:00",
+   "latitude": -54.8019,
+   "longitude": -68.303,
+   "zoneId": "America/Argentina/Ushuaia",
+   "placeName": "Ushuaia, Argentina",
+   "note": "far south",
+   "utc": "2009-06-21T12:00:00Z",
+   "jdUt": 2455004.0,
+   "deltaTSeconds": 65.92,
+   "bodies": {
+    "sun": {
+     "longitude": 90.248264,
+     "latitude": 0.0001,
+     "speed": 0.954656,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 71.705396,
+     "latitude": 3.928026,
+     "speed": 14.908476,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 68.819178,
+     "latitude": -2.403701,
+     "speed": 1.403201,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 45.209521,
+     "latitude": -2.752326,
+     "speed": 1.043086,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 45.224703,
+     "latitude": -0.776995,
+     "speed": 0.72846,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 326.956207,
+     "latitude": -0.889588,
+     "speed": -0.019839,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 165.969933,
+     "latitude": 2.071426,
+     "speed": 0.058082,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 356.583124,
+     "latitude": -0.7647,
+     "speed": 0.008003,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 326.334721,
+     "latitude": -0.400732,
+     "speed": -0.011981,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 272.032952,
+     "latitude": 5.763965,
+     "speed": -0.025719,
+     "retrograde": true
+    }
+   },
+   "ascendant": 76.262412,
+   "midheaven": 23.252177,
+   "placidusCusps": [
+    76.262412,
+    118.005183,
+    168.405283,
+    203.252177,
+    225.684439,
+    242.147157,
+    256.262412,
+    298.005183,
+    348.405283,
+    23.252177,
+    45.684439,
+    62.147157
+   ],
+   "armc": 21.515495,
+   "wholeSignCusps": [
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0
+   ]
+  },
+  {
+   "id": "perth-2012",
+   "date": "2012-02-29",
+   "time": "18:20",
+   "latitude": -31.9505,
+   "longitude": 115.8605,
+   "zoneId": "Australia/Perth",
+   "placeName": "Perth, Australia",
+   "note": "leap day",
+   "utc": "2012-02-29T10:20:00Z",
+   "jdUt": 2455986.93055556,
+   "deltaTSeconds": 66.649,
+   "bodies": {
+    "sun": {
+     "longitude": 340.236318,
+     "latitude": 6.4e-05,
+     "speed": 1.004077,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 63.402274,
+     "latitude": 0.536716,
+     "speed": 11.874841,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 357.126391,
+     "latitude": 0.621881,
+     "speed": 1.484376,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 24.42727,
+     "latitude": 0.981276,
+     "speed": 1.122985,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 164.998865,
+     "latitude": 4.207524,
+     "speed": -0.390039,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 36.927871,
+     "latitude": -0.964382,
+     "speed": 0.179801,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 209.096249,
+     "latitude": 2.673746,
+     "speed": -0.036887,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 3.149847,
+     "latitude": -0.693502,
+     "speed": 0.05368,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 330.967202,
+     "latitude": -0.550547,
+     "speed": 0.037642,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 279.126669,
+     "latitude": 3.880772,
+     "speed": 0.020684,
+     "retrograde": false
+    }
+   },
+   "ascendant": 150.1972,
+   "midheaven": 71.068514,
+   "placidusCusps": [
+    150.1972,
+    192.585013,
+    225.512795,
+    251.068514,
+    273.936333,
+    298.412116,
+    330.1972,
+    12.585013,
+    45.512795,
+    71.068514,
+    93.936333,
+    118.412116
+   ],
+   "armc": 69.502629,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "chicago-2015",
+   "date": "2015-03-08",
+   "time": "02:15",
+   "latitude": 41.8781,
+   "longitude": -87.6298,
+   "zoneId": "America/Chicago",
+   "placeName": "Chicago, USA",
+   "note": "inside US DST gap",
+   "utc": "2015-03-08T08:15:00Z",
+   "jdUt": 2457089.84375,
+   "deltaTSeconds": 67.721,
+   "bodies": {
+    "sun": {
+     "longitude": 347.431781,
+     "latitude": -4e-06,
+     "speed": 1.000096,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 195.536706,
+     "latitude": 0.509405,
+     "speed": 11.934184,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 323.102979,
+     "latitude": -1.588272,
+     "speed": 1.376276,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 18.989358,
+     "latitude": -0.371258,
+     "speed": 1.217012,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 12.486125,
+     "latitude": -0.401248,
+     "speed": 0.758766,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 134.106691,
+     "latitude": 0.983774,
+     "speed": -0.093166,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 244.896703,
+     "latitude": 2.077949,
+     "speed": 0.010598,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 14.831284,
+     "latitude": -0.626912,
+     "speed": 0.052153,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 337.648594,
+     "latitude": -0.734213,
+     "speed": 0.037531,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 285.146385,
+     "latitude": 2.089977,
+     "speed": 0.019584,
+     "retrograde": false
+    }
+   },
+   "ascendant": 269.061714,
+   "midheaven": 203.598995,
+   "placidusCusps": [
+    269.061714,
+    307.944515,
+    349.808655,
+    23.598995,
+    48.849653,
+    69.45834,
+    89.061714,
+    127.944515,
+    169.808655,
+    203.598995,
+    228.849653,
+    249.45834
+   ],
+   "armc": 201.842497,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "tehran-2016",
+   "date": "2016-09-21",
+   "time": "16:16",
+   "latitude": 35.6892,
+   "longitude": 51.389,
+   "zoneId": "Asia/Tehran",
+   "placeName": "Tehran, Iran",
+   "note": "half-hour zone with DST",
+   "utc": "2016-09-21T12:46:00Z",
+   "jdUt": 2457653.03194444,
+   "deltaTSeconds": 68.463,
+   "bodies": {
+    "sun": {
+     "longitude": 178.957205,
+     "latitude": -6.5e-05,
+     "speed": 0.977841,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 64.15449,
+     "latitude": -5.207445,
+     "speed": 14.441456,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 164.862601,
+     "latitude": -0.73958,
+     "speed": -0.114509,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 207.454351,
+     "latitude": 0.242169,
+     "speed": 1.220274,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 266.257105,
+     "latitude": -2.522932,
+     "speed": 0.635926,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 182.589741,
+     "latitude": 1.091775,
+     "speed": 0.215914,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 250.987593,
+     "latitude": 1.469538,
+     "speed": 0.060136,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 23.442463,
+     "latitude": -0.636303,
+     "speed": -0.035853,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 340.120463,
+     "latitude": -0.879376,
+     "speed": -0.025639,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 284.933546,
+     "latitude": 1.218717,
+     "speed": -0.002519,
+     "retrograde": true
+    }
+   },
+   "ascendant": 320.486458,
+   "midheaven": 245.62046,
+   "placidusCusps": [
+    320.486458,
+    5.104339,
+    39.745543,
+    65.62046,
+    87.863895,
+    110.879706,
+    140.486458,
+    185.104339,
+    219.745543,
+    245.62046,
+    267.863895,
+    290.879706
+   ],
+   "armc": 243.713736,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "lagos-2019",
+   "date": "2019-05-19",
+   "time": null,
+   "latitude": 6.5244,
+   "longitude": 3.3792,
+   "zoneId": "Africa/Lagos",
+   "placeName": "Lagos, Nigeria",
+   "note": "unknown time",
+   "utc": "2019-05-19T11:00:00Z",
+   "jdUt": 2458622.95833333,
+   "deltaTSeconds": 69.289,
+   "bodies": {
+    "sun": {
+     "longitude": 58.196422,
+     "latitude": 7.3e-05,
+     "speed": 0.962554,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 245.42998,
+     "latitude": 3.506325,
+     "speed": 13.440198,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 55.649385,
+     "latitude": -0.032446,
+     "speed": 2.170335,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 34.92161,
+     "latitude": -1.553938,
+     "speed": 1.215089,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 92.148003,
+     "latitude": 1.131284,
+     "speed": 0.645149,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 262.144074,
+     "latitude": 0.618142,
+     "speed": -0.105659,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 290.216874,
+     "latitude": 0.376806,
+     "speed": -0.030499,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 34.015711,
+     "latitude": -0.486756,
+     "speed": 0.053565,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 348.428246,
+     "latitude": -0.993859,
+     "speed": 0.0176,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 293.006873,
+     "latitude": -0.327721,
+     "speed": -0.011381,
+     "retrograde": true
+    }
+   },
+   "ascendant": null,
+   "midheaven": null,
+   "placidusCusps": null
+  },
+  {
+   "id": "london-2020-overlap",
+   "date": "2020-10-25",
+   "time": "01:30",
+   "latitude": 51.5074,
+   "longitude": -0.1278,
+   "zoneId": "Europe/London",
+   "placeName": "London, UK",
+   "note": "ambiguous -> earlier (BST)",
+   "utc": "2020-10-25T00:30:00Z",
+   "jdUt": 2459147.52083333,
+   "deltaTSeconds": 69.367,
+   "bodies": {
+    "sun": {
+     "longitude": 212.054807,
+     "latitude": -0.00022,
+     "speed": 0.996586,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 319.236865,
+     "latitude": -4.352083,
+     "speed": 12.522101,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 213.743093,
+     "latitude": -1.174741,
+     "speed": -1.266903,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 176.314427,
+     "latitude": 1.414173,
+     "speed": 1.206492,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 17.850196,
+     "latitude": -2.238361,
+     "speed": -0.250555,
+     "retrograde": true
+    },
+    "jupiter": {
+     "longitude": 290.120561,
+     "latitude": -0.444333,
+     "speed": 0.123722,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 295.88631,
+     "latitude": -0.33284,
+     "speed": 0.042163,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 38.956524,
+     "latitude": -0.472077,
+     "speed": -0.040799,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 348.49504,
+     "latitude": -1.111143,
+     "speed": -0.018055,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 292.590255,
+     "latitude": -1.120954,
+     "speed": 0.010093,
+     "retrograde": false
+    }
+   },
+   "ascendant": 145.759379,
+   "midheaven": 43.689141,
+   "placidusCusps": [
+    145.759379,
+    165.023805,
+    190.347754,
+    223.689141,
+    262.76969,
+    297.921563,
+    325.759379,
+    345.023805,
+    10.347754,
+    43.689141,
+    82.76969,
+    117.921563
+   ],
+   "armc": 41.232864,
+   "wholeSignCusps": [
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0
+   ]
+  },
+  {
+   "id": "shanghai-2023",
+   "date": "2023-01-21",
+   "time": "23:45",
+   "latitude": 31.2304,
+   "longitude": 121.4737,
+   "zoneId": "Asia/Shanghai",
+   "placeName": "Shanghai, China",
+   "note": "eve of CNY 2023, late zi hour",
+   "utc": "2023-01-21T15:45:00Z",
+   "jdUt": 2459966.15625,
+   "deltaTSeconds": 69.178,
+   "bodies": {
+    "sun": {
+     "longitude": 301.326067,
+     "latitude": -0.000196,
+     "speed": 1.018069,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 298.251518,
+     "latitude": -4.904784,
+     "speed": 15.376583,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 278.757427,
+     "latitude": 2.455256,
+     "speed": 0.383714,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 323.207148,
+     "latitude": -1.591111,
+     "speed": 1.247534,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 68.606614,
+     "latitude": 2.79633,
+     "speed": 0.1066,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 4.205784,
+     "latitude": -1.209687,
+     "speed": 0.168946,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 324.644623,
+     "latitude": -1.243205,
+     "speed": 0.114451,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 44.941154,
+     "latitude": -0.348125,
+     "speed": -0.001122,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 353.307529,
+     "latitude": -1.177244,
+     "speed": 0.026045,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 298.328112,
+     "latitude": -2.278474,
+     "speed": 0.032811,
+     "retrograde": false
+    }
+   },
+   "ascendant": 204.4671,
+   "midheaven": 116.454272,
+   "placidusCusps": [
+    204.4671,
+    233.04912,
+    263.964727,
+    296.454272,
+    328.777142,
+    358.58338,
+    24.4671,
+    53.04912,
+    83.964727,
+    116.454272,
+    148.777142,
+    178.58338
+   ],
+   "armc": 118.472461,
+   "wholeSignCusps": [
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0
+   ]
+  },
+  {
+   "id": "stpetersburg-2024",
+   "date": "2024-06-20",
+   "time": "23:51",
+   "latitude": 59.9311,
+   "longitude": 30.3609,
+   "zoneId": "Europe/Moscow",
+   "placeName": "Saint Petersburg, Russia",
+   "note": "~60N solstice white night",
+   "utc": "2024-06-20T20:51:00Z",
+   "jdUt": 2460482.36875,
+   "deltaTSeconds": 69.055,
+   "bodies": {
+    "sun": {
+     "longitude": 90.000001,
+     "latitude": -0.000165,
+     "speed": 0.953968,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 255.345273,
+     "latitude": -4.472271,
+     "speed": 13.201076,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 97.495466,
+     "latitude": 1.664097,
+     "speed": 2.110709,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 94.428359,
+     "latitude": 0.570615,
+     "speed": 1.228478,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 38.609772,
+     "latitude": -1.039767,
+     "speed": 0.731204,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 65.980797,
+     "latitude": -0.700913,
+     "speed": 0.224405,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 349.361491,
+     "latitude": -1.939923,
+     "speed": 0.01487,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 55.235683,
+     "latitude": -0.260821,
+     "speed": 0.05008,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 359.895593,
+     "latitude": -1.270267,
+     "speed": 0.006303,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 301.588145,
+     "latitude": -3.164079,
+     "speed": -0.01923,
+     "retrograde": true
+    }
+   },
+   "ascendant": 302.356489,
+   "midheaven": 254.018919,
+   "placidusCusps": [
+    302.356489,
+    26.869363,
+    57.608495,
+    74.018919,
+    86.825814,
+    100.243898,
+    122.356489,
+    206.869363,
+    237.608495,
+    254.018919,
+    266.825814,
+    280.243898
+   ],
+   "armc": 252.664582,
+   "wholeSignCusps": [
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0
+   ]
+  },
+  {
+   "id": "honolulu-2026",
+   "date": "2026-11-03",
+   "time": "08:00",
+   "latitude": 21.3069,
+   "longitude": -157.8583,
+   "zoneId": "Pacific/Honolulu",
+   "placeName": "Honolulu, USA",
+   "note": "",
+   "utc": "2026-11-03T18:00:00Z",
+   "jdUt": 2461348.25,
+   "deltaTSeconds": 68.811,
+   "bodies": {
+    "sun": {
+     "longitude": 221.329123,
+     "latitude": 2.3e-05,
+     "speed": 1.001615,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 155.360305,
+     "latitude": -0.741896,
+     "speed": 13.443475,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 223.292356,
+     "latitude": -0.665564,
+     "speed": -1.302482,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 204.999641,
+     "latitude": -4.190376,
+     "speed": -0.407996,
+     "retrograde": true
+    },
+    "mars": {
+     "longitude": 139.994238,
+     "latitude": 1.658507,
+     "speed": 0.49445,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 144.64857,
+     "latitude": 0.699509,
+     "speed": 0.115022,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 9.117559,
+     "latitude": -2.678214,
+     "speed": -0.059839,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 64.574447,
+     "latitude": -0.151014,
+     "speed": -0.03753,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 2.02776,
+     "latitude": -1.413389,
+     "speed": -0.019948,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 303.151054,
+     "latitude": -4.270701,
+     "speed": 0.008819,
+     "retrograde": false
+    }
+   },
+   "ascendant": 239.212069,
+   "midheaven": 153.218708,
+   "placidusCusps": [
+    239.212069,
+    268.774225,
+    300.226363,
+    333.218708,
+    5.313614,
+    33.997371,
+    59.212069,
+    88.774225,
+    120.226363,
+    153.218708,
+    185.313614,
+    213.997371
+   ],
+   "armc": 155.15198,
+   "wholeSignCusps": [
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0
+   ]
+  },
+  {
+   "id": "kathmandu-2033",
+   "date": "2033-12-22",
+   "time": "06:00",
+   "latitude": 27.7172,
+   "longitude": 85.324,
+   "zoneId": "Asia/Kathmandu",
+   "placeName": "Kathmandu, Nepal",
+   "note": "UTC+5:45",
+   "utc": "2033-12-22T00:15:00Z",
+   "jdUt": 2463953.51041667,
+   "deltaTSeconds": 70.25,
+   "bodies": {
+    "sun": {
+     "longitude": 270.444988,
+     "latitude": 0.000157,
+     "speed": 1.018747,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 273.136617,
+     "latitude": 4.98242,
+     "speed": 12.843813,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 269.528551,
+     "latitude": -1.414702,
+     "speed": 1.581597,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 267.311239,
+     "latitude": -0.153299,
+     "speed": 1.25887,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 344.543187,
+     "latitude": -0.791732,
+     "speed": 0.713707,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 332.95052,
+     "latitude": -1.071322,
+     "speed": 0.169224,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 109.222106,
+     "latitude": -0.326453,
+     "speed": -0.07579,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 94.215819,
+     "latitude": 0.276536,
+     "speed": -0.042911,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 17.322841,
+     "latitude": -1.642897,
+     "speed": -0.003608,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 315.08229,
+     "latitude": -7.393766,
+     "speed": 0.02302,
+     "retrograde": false
+    }
+   },
+   "ascendant": 258.155776,
+   "midheaven": 179.946453,
+   "placidusCusps": [
+    258.155776,
+    290.166054,
+    325.346319,
+    359.946453,
+    29.999392,
+    55.309013,
+    78.155776,
+    110.166054,
+    145.346319,
+    179.946453,
+    209.999392,
+    235.309013
+   ],
+   "armc": 179.950869,
+   "wholeSignCusps": [
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0
+   ]
+  },
+  {
+   "id": "santiago-2041",
+   "date": "2041-04-07",
+   "time": "00:05",
+   "latitude": -33.4489,
+   "longitude": -70.6693,
+   "zoneId": "America/Santiago",
+   "placeName": "Santiago, Chile",
+   "note": "",
+   "utc": "2041-04-07T04:05:00Z",
+   "jdUt": 2466616.67013889,
+   "deltaTSeconds": 72.137,
+   "bodies": {
+    "sun": {
+     "longitude": 17.716381,
+     "latitude": -1.1e-05,
+     "speed": 0.983817,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 93.915841,
+     "latitude": 3.907649,
+     "speed": 12.33576,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 9.817398,
+     "latitude": -1.701246,
+     "speed": 1.945245,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 350.064992,
+     "latitude": 5.340114,
+     "speed": -0.041518,
+     "retrograde": true
+    },
+    "mars": {
+     "longitude": 351.879553,
+     "latitude": -1.122949,
+     "speed": 0.780921,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 208.066126,
+     "latitude": 1.534575,
+     "speed": -0.124038,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 201.386687,
+     "latitude": 2.765873,
+     "speed": -0.076855,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 123.952676,
+     "latitude": 0.625743,
+     "speed": -0.003233,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 34.857275,
+     "latitude": -1.699463,
+     "speed": 0.036361,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 327.987219,
+     "latitude": -10.112397,
+     "speed": 0.020376,
+     "retrograde": false
+    }
+   },
+   "ascendant": 290.159786,
+   "midheaven": 186.959174,
+   "placidusCusps": [
+    290.159786,
+    311.817344,
+    336.665455,
+    6.959174,
+    42.363007,
+    78.225208,
+    110.159786,
+    131.817344,
+    156.665455,
+    186.959174,
+    222.363007,
+    258.225208
+   ],
+   "armc": 186.390047,
+   "wholeSignCusps": [
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0
+   ]
+  },
+  {
+   "id": "vancouver-2050",
+   "date": "2050-07-04",
+   "time": "12:34",
+   "latitude": 49.2827,
+   "longitude": -123.1207,
+   "zoneId": "America/Vancouver",
+   "placeName": "Vancouver, Canada",
+   "note": "",
+   "utc": "2050-07-04T19:34:00Z",
+   "jdUt": 2469992.31527778,
+   "deltaTSeconds": 74.729,
+   "bodies": {
+    "sun": {
+     "longitude": 103.035505,
+     "latitude": 0.000178,
+     "speed": 0.953131,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 283.440559,
+     "latitude": 4.117392,
+     "speed": 14.504234,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 119.215024,
+     "latitude": 1.851048,
+     "speed": 1.834983,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 145.774765,
+     "latitude": 1.594913,
+     "speed": 1.10776,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 326.009064,
+     "latitude": -4.938718,
+     "speed": 0.13111,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 128.113389,
+     "latitude": 0.585451,
+     "speed": 0.209633,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 307.263725,
+     "latitude": -0.513303,
+     "speed": -0.064041,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 167.354101,
+     "latitude": 0.75155,
+     "speed": 0.035059,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 57.508782,
+     "latitude": -1.675042,
+     "speed": 0.028341,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 340.573655,
+     "latitude": -13.151576,
+     "speed": -0.009338,
+     "retrograde": true
+    }
+   },
+   "ascendant": 182.457704,
+   "midheaven": 93.111642,
+   "placidusCusps": [
+    182.457704,
+    207.100717,
+    237.517284,
+    273.111642,
+    308.431599,
+    338.364352,
+    2.457704,
+    27.100717,
+    57.517284,
+    93.111642,
+    128.431599,
+    158.364352
+   ],
+   "armc": 93.390659,
+   "wholeSignCusps": [
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0
+   ]
+  },
+  {
+   "id": "cairo-2063",
+   "date": "2063-01-01",
+   "time": "00:30",
+   "latitude": 30.0444,
+   "longitude": 31.2357,
+   "zoneId": "Africa/Cairo",
+   "placeName": "Cairo, Egypt",
+   "note": "",
+   "utc": "2062-12-31T22:30:00Z",
+   "jdUt": 2474555.4375,
+   "deltaTSeconds": 78.619,
+   "bodies": {
+    "sun": {
+     "longitude": 280.520241,
+     "latitude": -0.000205,
+     "speed": 1.019528,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 293.991931,
+     "latitude": -3.931883,
+     "speed": 11.89946,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 275.89622,
+     "latitude": 2.868427,
+     "speed": -1.297867,
+     "retrograde": true
+    },
+    "venus": {
+     "longitude": 300.61704,
+     "latitude": -1.491285,
+     "speed": 1.250548,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 206.424199,
+     "latitude": 1.599428,
+     "speed": 0.540857,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 160.157277,
+     "latitude": 1.111276,
+     "speed": -0.020128,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 102.386309,
+     "latitude": -0.579277,
+     "speed": -0.082539,
+     "retrograde": true
+    },
+    "uranus": {
+     "longitude": 230.805468,
+     "latitude": 0.325483,
+     "speed": 0.045689,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 83.475348,
+     "latitude": -1.363644,
+     "speed": -0.02682,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 353.409276,
+     "latitude": -15.335788,
+     "speed": 0.010011,
+     "retrograde": false
+    }
+   },
+   "ascendant": 196.846063,
+   "midheaven": 107.882103,
+   "placidusCusps": [
+    196.846063,
+    225.296086,
+    255.918446,
+    287.882103,
+    319.903473,
+    350.087337,
+    16.846063,
+    45.296086,
+    75.918446,
+    107.882103,
+    139.903473,
+    170.087337
+   ],
+   "armc": 109.374184,
+   "wholeSignCusps": [
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0
+   ]
+  },
+  {
+   "id": "hobart-2077",
+   "date": "2077-09-15",
+   "time": "17:00",
+   "latitude": -42.8821,
+   "longitude": 147.3272,
+   "zoneId": "Australia/Hobart",
+   "placeName": "Hobart, Australia",
+   "note": "~43S",
+   "utc": "2077-09-15T07:00:00Z",
+   "jdUt": 2479926.79166667,
+   "deltaTSeconds": 83.827,
+   "bodies": {
+    "sun": {
+     "longitude": 173.099492,
+     "latitude": 9.6e-05,
+     "speed": 0.974581,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 151.669158,
+     "latitude": 5.027904,
+     "speed": 12.024149,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 165.106802,
+     "latitude": 1.814429,
+     "speed": 1.891906,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 217.850836,
+     "latitude": -1.696562,
+     "speed": 1.102199,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 137.812206,
+     "latitude": 1.180545,
+     "speed": 0.628539,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 222.225926,
+     "latitude": 0.908091,
+     "speed": 0.176738,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 274.678154,
+     "latitude": 0.616724,
+     "speed": 0.012052,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 289.443467,
+     "latitude": -0.484234,
+     "speed": -0.010558,
+     "retrograde": true
+    },
+    "neptune": {
+     "longitude": 118.228513,
+     "latitude": -0.476581,
+     "speed": 0.024034,
+     "retrograde": false
+    },
+    "pluto": {
+     "longitude": 11.404879,
+     "latitude": -17.221118,
+     "speed": -0.018411,
+     "retrograde": true
+    }
+   },
+   "ascendant": 342.328963,
+   "midheaven": 248.929028,
+   "placidusCusps": [
+    342.328963,
+    6.203865,
+    35.290884,
+    68.929028,
+    103.676192,
+    135.237831,
+    162.328963,
+    186.203865,
+    215.290884,
+    248.929028,
+    283.676192,
+    315.237831
+   ],
+   "armc": 247.221949,
+   "wholeSignCusps": [
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0
+   ]
+  },
+  {
+   "id": "anchorage-2088",
+   "date": "2088-02-04",
+   "time": "03:03",
+   "latitude": 61.2181,
+   "longitude": -149.9003,
+   "zoneId": "America/Anchorage",
+   "placeName": "Anchorage, USA",
+   "note": "~61N, near Lichun",
+   "utc": "2088-02-04T12:03:00Z",
+   "jdUt": 2483721.00208333,
+   "deltaTSeconds": 87.954,
+   "bodies": {
+    "sun": {
+     "longitude": 315.63645,
+     "latitude": -0.00022,
+     "speed": 1.014036,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 103.564563,
+     "latitude": -4.448753,
+     "speed": 14.529125,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 292.002898,
+     "latitude": 2.075516,
+     "speed": 0.412358,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 290.001607,
+     "latitude": 0.100536,
+     "speed": 1.242267,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 300.72011,
+     "latitude": -0.970009,
+     "speed": 0.773397,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 198.893401,
+     "latitude": 1.433851,
+     "speed": -0.007166,
+     "retrograde": true
+    },
+    "saturn": {
+     "longitude": 37.442654,
+     "latitude": -2.325485,
+     "speed": 0.049782,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 332.915951,
+     "latitude": -0.726058,
+     "speed": 0.055657,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 139.675059,
+     "latitude": 0.21487,
+     "speed": -0.027979,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 20.64294,
+     "latitude": -16.995346,
+     "speed": 0.01164,
+     "retrograde": false
+    }
+   },
+   "ascendant": 225.44135,
+   "midheaven": 164.265058,
+   "placidusCusps": [
+    225.44135,
+    254.227934,
+    299.252834,
+    344.265058,
+    13.350378,
+    32.193377,
+    45.44135,
+    74.227934,
+    119.252834,
+    164.265058,
+    193.350378,
+    212.193377
+   ],
+   "armc": 165.505098,
+   "wholeSignCusps": [
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0
+   ]
+  },
+  {
+   "id": "tokyo-2099",
+   "date": "2099-12-31",
+   "time": "21:00",
+   "latitude": 35.6895,
+   "longitude": 139.6917,
+   "zoneId": "Asia/Tokyo",
+   "placeName": "Tokyo, Japan",
+   "note": "end of range",
+   "utc": "2099-12-31T12:00:00Z",
+   "jdUt": 2488069.0,
+   "deltaTSeconds": 93.181,
+   "bodies": {
+    "sun": {
+     "longitude": 280.094993,
+     "latitude": 9.8e-05,
+     "speed": 1.018842,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 150.41677,
+     "latitude": 1.686572,
+     "speed": 13.981545,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 287.195182,
+     "latitude": -2.100287,
+     "speed": 1.621088,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 319.46925,
+     "latitude": -1.863278,
+     "speed": 1.203343,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 29.32277,
+     "latitude": 0.941993,
+     "speed": 0.403964,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 201.15284,
+     "latitude": 1.274777,
+     "speed": 0.107556,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 205.602449,
+     "latitude": 2.420168,
+     "speed": 0.058757,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 17.739011,
+     "latitude": -0.629783,
+     "speed": 0.00412,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 167.294024,
+     "latitude": 0.963555,
+     "speed": -0.00691,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 32.405736,
+     "latitude": -16.924057,
+     "speed": -0.005589,
+     "retrograde": true
+    }
+   },
+   "ascendant": 155.110692,
+   "midheaven": 62.027714,
+   "placidusCusps": [
+    155.110692,
+    179.943481,
+    209.26393,
+    242.027714,
+    275.461429,
+    306.845812,
+    335.110692,
+    359.943481,
+    29.26393,
+    62.027714,
+    95.461429,
+    126.845812
+   ],
+   "armc": 59.93738,
+   "wholeSignCusps": [
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+   ]
+  },
+  {
+   "id": "utc-2100",
+   "date": "2100-12-31",
+   "time": "12:00",
+   "latitude": 0.0,
+   "longitude": 0.0,
+   "zoneId": "UTC",
+   "placeName": "Null Island",
+   "note": "range end, equator/prime meridian",
+   "utc": "2100-12-31T12:00:00Z",
+   "jdUt": 2488434.0,
+   "deltaTSeconds": 93.646,
+   "bodies": {
+    "sun": {
+     "longitude": 279.854319,
+     "latitude": -1.9e-05,
+     "speed": 1.019515,
+     "retrograde": false
+    },
+    "moon": {
+     "longitude": 286.695559,
+     "latitude": -3.509955,
+     "speed": 14.592345,
+     "retrograde": false
+    },
+    "mercury": {
+     "longitude": 297.589453,
+     "latitude": -1.868755,
+     "speed": 1.418683,
+     "retrograde": false
+    },
+    "venus": {
+     "longitude": 265.189608,
+     "latitude": 0.326275,
+     "speed": 1.25628,
+     "retrograde": false
+    },
+    "mars": {
+     "longitude": 253.651244,
+     "latitude": -0.145061,
+     "speed": 0.710934,
+     "retrograde": false
+    },
+    "jupiter": {
+     "longitude": 226.922526,
+     "latitude": 1.052575,
+     "speed": 0.170027,
+     "retrograde": false
+    },
+    "saturn": {
+     "longitude": 216.917819,
+     "latitude": 2.363454,
+     "speed": 0.075327,
+     "retrograde": false
+    },
+    "uranus": {
+     "longitude": 21.731219,
+     "latitude": -0.598762,
+     "speed": 0.000524,
+     "retrograde": false
+    },
+    "neptune": {
+     "longitude": 169.505789,
+     "latitude": 1.018267,
+     "speed": -0.005534,
+     "retrograde": true
+    },
+    "pluto": {
+     "longitude": 33.381599,
+     "latitude": -16.872596,
+     "speed": -0.005957,
+     "retrograde": true
+    }
+   },
+   "ascendant": 10.886946,
+   "midheaven": 279.197969,
+   "placidusCusps": [
+    10.886946,
+    42.451084,
+    71.540331,
+    99.197969,
+    127.601714,
+    158.372048,
+    190.886946,
+    222.451084,
+    251.540331,
+    279.197969,
+    307.601714,
+    338.372048
+   ],
+   "armc": 280.008348,
+   "wholeSignCusps": [
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0
+   ]
+  }
+ ]
+}

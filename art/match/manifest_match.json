@@ -1,0 +1,67 @@
+{
+  "art_direction": "Celestial Art Nouveau",
+  "style_prefix": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.",
+  "generator": "art/tools/generate_match_art.py",
+  "images": [
+    {
+      "file": "match/medallion_frame.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: An ornate circular gold-leaf Art Nouveau medallion frame ring, perfectly centred, outer diameter about 92% of the canvas, ring band about 14% of the radius thick, decorated with filigree, tiny star studs, small lilies at the four cardinal points and fine constellation line accents. The large circle inside the ring is completely empty and fully transparent (it will hold a profile photo). Fully transparent background everywhere outside the drawn elements: no sky, no backdrop, no vignette, no solid fill.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1024",
+      "mode": "RGBA",
+      "quality": "high",
+      "background": "transparent",
+      "recorded_at": "2026-11-03T22:56:39Z"
+    },
+    {
+      "file": "match/merge_burst.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: A radial light-burst flare overlay: a bright champagne-gold core with long thin tapering gold rays of varying length radiating in all directions, scattered small four-point sparkles and gold dust, centred, rays fading out before the canvas edges. Light only, no objects. Fully transparent background everywhere outside the drawn elements: no sky, no backdrop, no vignette, no solid fill.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1024",
+      "mode": "RGBA",
+      "quality": "high",
+      "background": "transparent",
+      "recorded_at": "2026-11-03T22:56:39Z"
+    },
+    {
+      "file": "match/merge_emblem.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: A combined conjunction emblem: two celestial rings of equal size genuinely interlocked like two links of a chain (each passes over the other at one crossing and under it at the other); the left ring an indigo enamel band traced with tiny gold constellation stars, the right ring rose-copper with gold filigree. At their overlap a brilliant gold eight-point starburst with a pearl at its heart fuses them. Bold clear silhouette. The whole emblem fits inside the central 78% of the canvas, with an empty margin of at least 11% on every side; nothing touches the edges. Fully transparent background everywhere outside the drawn elements: no sky, no backdrop, no vignette, no solid fill.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1024",
+      "mode": "RGBA",
+      "quality": "high",
+      "background": "transparent",
+      "recorded_at": "2026-11-03T22:57:13Z"
+    },
+    {
+      "file": "match/swipe_card_frame.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: An ornate portrait card frame border for a swipeable profile card: a gold-leaf Art Nouveau border with gently rounded corners, small filigree corner flourishes, a tiny star at the top centre and a small conjunction of two orbs at the bottom centre, thin constellation line accents. The border occupies only the outer 8% of the canvas on each side. The entire inner area inside the frame is completely empty and fully transparent. Fully transparent background everywhere outside the drawn elements: no sky, no backdrop, no vignette, no solid fill.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1536",
+      "mode": "RGBA",
+      "quality": "medium",
+      "background": "transparent",
+      "recorded_at": "2026-11-03T22:56:39Z"
+    },
+    {
+      "file": "match/twin_burst.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: An extra-lavish twin starburst for a celebration: two mirrored radiant gold starbursts side by side whose rays interweave, surrounded by a ring of rose-copper and pearl star confetti, tiny crescent moons and Mucha-style filigree curls, symmetrical, centred, more opulent and festive than a single burst, fading out before the canvas edges. Fully transparent background everywhere outside the drawn elements: no sky, no backdrop, no vignette, no solid fill.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1024",
+      "mode": "RGBA",
+      "quality": "high",
+      "background": "transparent",
+      "recorded_at": "2026-11-03T22:56:39Z"
+    },
+    {
+      "file": "popups/its_a_conjunction.png",
+      "prompt": "Celestial Art Nouveau illustration, one image from a single cohesive premium series for a luxury astrology app. Palette strictly limited to: deep midnight indigo (#0B0A2A) and ink-violet grounds; burnished gold leaf with warm highlights (gradients from #D4AF37 to pale champagne #F5E6A8); rose-copper accents (#C97B63); moonstone pearl lavender-white (#EDE6F7) for the brightest lights. Alphonse Mucha inspired ornament: sinuous whiplash curves, ornate filigree, arched halo roundels, stylised lilies and stars. Fine gold constellation line-work (thin lines joining small bright star points) woven through the design. Painterly rendering with gilded metallic sheen, delicate engraving-like linework, soft inner glow, subtle film grain, rich but restrained detail. Elegant, mystical, calm, adult and refined - not cartoonish, not cute, not neon, no photorealism. Absolutely no text, no letters, no numbers, no words, no runes, no captions, no signature, no logo, no watermark, no border text anywhere in the image.\n\nSubject: Celebratory mutual-match popup art, portrait. Two elegant Art Nouveau figures on either side reaching toward each other, between their hands two glowing orbs (one gold, one moonstone pearl) merging into a brilliant starburst, gold constellation lines spiralling outward, a shower of star confetti and rose-copper sparkles, ornate Mucha-style arched frame with lilies. Joyful, romantic, tasteful. Keep the lower 30% darker and simpler for overlaid interface text.",
+      "model": "gpt-image-2.5-sunburst",
+      "size": "1024x1536",
+      "mode": "RGB",
+      "quality": "high",
+      "background": "opaque",
+      "recorded_at": "2026-11-03T22:56:39Z"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# Firebase local state and secrets (never commit)
+.secret.local
+functions/.secret.local
+functions/.env.conjunction-*
+.runtimeconfig.json
+firebase-debug*.log
+firestore-debug*.log
+ui-debug*.log
+database-debug*.log
+pubsub-debug*.log
+functions/lib/
+functions/node_modules/
+functions/coverage/

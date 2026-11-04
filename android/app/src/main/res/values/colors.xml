@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- "Celestial Art Nouveau" palette (SPEC). Compose uses ui/theme/Palette.kt; these are for
+         XML-only surfaces (splash screen, launcher icon, notifications). -->
+    <color name="midnight">#FF0B0A2A</color>
+    <color name="ink_violet">#FF1C1442</color>
+    <color name="gold">#FFD4AF37</color>
+    <color name="gold_pale">#FFF5E6A8</color>
+    <color name="rose_copper">#FFC97B63</color>
+    <color name="moonstone">#FFEDE6F7</color>
+    <color name="ic_launcher_background">#FF0B0A2A</color>
+</resources>

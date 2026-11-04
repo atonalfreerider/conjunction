@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer (Android 13+): the eclipse mark as two overlapping orbs and a four-point
+     star, drawn in the 108 dp adaptive canvas inside the 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M46,38a16,16 0,1 1,0 32a16,16 0,1 1,0 -32zM46,41a13,13 0,1 0,0 26a13,13 0,1 0,0 -26z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M66,40a14,14 0,1 1,0 28a14,14 0,1 1,0 -28z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M56,44L57.6,52.4L66,54L57.6,55.6L56,64L54.4,55.6L46,54L54.4,52.4Z" />
+</vector>

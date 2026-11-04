@@ -1,0 +1,326 @@
+{
+ "about": "Bundled reading fragments for Conjunction's deterministic fallback readings (used when the on-device model is unavailable). Shared byte-for-byte by Android (:core resources) and iOS (ConjunctionCore resources). Entertainment only: no certainty, no health, financial or legal advice.",
+ "signs": {
+  "aries": {
+   "keywords": ["bold", "pioneering", "quick to spark"],
+   "gift": "a first-light courage that starts what others only imagine",
+   "shadow": "an impatience that can sprint past the people meant to run beside you",
+   "image": "a ram's horn gilded at dawn",
+   "love": "you love like a struck match - direct, warm and unmistakable",
+   "work": "you shine wherever a fresh start needs a fearless first move",
+   "daily": "Aries energy quickens the air, so small brave beginnings come easily"
+  },
+  "taurus": {
+   "keywords": ["steady", "sensual", "loyal"],
+   "gift": "a patient devotion that turns seeds into orchards",
+   "shadow": "a stubborn streak that can mistake stillness for safety",
+   "image": "a garden of gold leaf in late afternoon",
+   "love": "you love through presence, comfort and promises kept",
+   "work": "you build things that last, one well-laid stone at a time",
+   "daily": "Taurus calm slows the clock, rewarding comfort, craft and simple pleasures"
+  },
+  "gemini": {
+   "keywords": ["curious", "witty", "quicksilver"],
+   "gift": "a bright, restless mind that links ideas and people",
+   "shadow": "a scattered attention that leaves half-read chapters behind",
+   "image": "twin stars trading whispers across a silver sky",
+   "love": "you fall for conversation first and keep love alive with play",
+   "work": "you thrive where messages, questions and connections fly fast",
+   "daily": "Gemini breezes stir conversation, so a stray question can open a door"
+  },
+  "cancer": {
+   "keywords": ["tender", "protective", "intuitive"],
+   "gift": "a moonlit care that makes any room feel like home",
+   "shadow": "a shell that closes before anyone can knock",
+   "image": "a pearl held inside a crescent moon",
+   "love": "you love by nurturing, remembering and keeping a light on",
+   "work": "you excel where people need looking after and memory matters",
+   "daily": "Cancer tides turn inward, favoring home, family and quiet kindness"
+  },
+  "leo": {
+   "keywords": ["radiant", "generous", "dramatic"],
+   "gift": "a warm-hearted radiance that lets others shine too",
+   "shadow": "a hunger for applause that can drown out quieter voices",
+   "image": "a lion's mane traced in burnished gold",
+   "love": "you love with grand gestures and a loyal, sunny heart",
+   "work": "you lead best on a stage where creativity is welcome",
+   "daily": "Leo sunlight warms the stage, so a little self-expression goes a long way"
+  },
+  "virgo": {
+   "keywords": ["precise", "helpful", "discerning"],
+   "gift": "a careful eye that makes the ordinary beautifully useful",
+   "shadow": "a perfectionism that grades yourself harder than anyone else would",
+   "image": "a sheaf of wheat bound with a single gold thread",
+   "love": "you love in practical devotions - the remembered detail, the quiet fix",
+   "work": "you excel where skill, care and refinement are noticed",
+   "daily": "Virgo clarity sharpens the details, making it a fine day to tidy and refine"
+  },
+  "libra": {
+   "keywords": ["graceful", "fair-minded", "harmonious"],
+   "gift": "an instinct for balance that brings people back into tune",
+   "shadow": "a wish to please that can postpone your own decisions",
+   "image": "gold scales resting on a cloud of rose",
+   "love": "you love through partnership, beauty and thoughtful compromise",
+   "work": "you thrive where diplomacy, design or fairness are needed",
+   "daily": "Libra grace softens the edges, inviting beauty, balance and good company"
+  },
+  "scorpio": {
+   "keywords": ["intense", "perceptive", "magnetic"],
+   "gift": "a deep-water perception that sees what lies beneath",
+   "shadow": "a guardedness that tests trust a little too long",
+   "image": "an obsidian mirror ringed in copper flame",
+   "love": "you love completely, asking for honesty in return",
+   "work": "you excel where research, strategy or transformation is required",
+   "daily": "Scorpio depth draws the eye beneath the surface, rewarding honest focus"
+  },
+  "sagittarius": {
+   "keywords": ["adventurous", "optimistic", "candid"],
+   "gift": "a far-seeing optimism that aims its arrow at the horizon",
+   "shadow": "a restlessness that can treat commitments like a tether",
+   "image": "an archer's arrow trailing stardust",
+   "love": "you love through shared adventures and big, generous laughter",
+   "work": "you thrive where learning, travel or teaching widen the map",
+   "daily": "Sagittarius fire lifts the gaze, so plans and ideas want room to roam"
+  },
+  "capricorn": {
+   "keywords": ["ambitious", "disciplined", "wry"],
+   "gift": "a mountain-goat persistence that reaches the summit",
+   "shadow": "a seriousness that forgets to celebrate the climb",
+   "image": "a gold-horned goat on a moonlit ridge",
+   "love": "you love through reliability, building a future step by step",
+   "work": "you excel where structure, responsibility and long goals meet",
+   "daily": "Capricorn structure steadies the hours, favoring plans with a long view"
+  },
+  "aquarius": {
+   "keywords": ["inventive", "independent", "humanitarian"],
+   "gift": "a future-facing mind that imagines kinder systems",
+   "shadow": "a cool detachment that can keep closeness at arm's length",
+   "image": "a water-bearer pouring constellations",
+   "love": "you love as a friend first, honoring freedom on both sides",
+   "work": "you thrive where innovation, community or technology are welcome",
+   "daily": "Aquarius air sparks originality, so an unusual idea may be the right one"
+  },
+  "pisces": {
+   "keywords": ["dreamy", "compassionate", "artistic"],
+   "gift": "an ocean-wide empathy that feels the music under everything",
+   "shadow": "a soft boundary that can absorb other people's storms",
+   "image": "two fish circling in a sea of violet light",
+   "love": "you love romantically, imaginatively and with your whole heart",
+   "work": "you shine where art, healing or imagination are valued",
+   "daily": "Pisces mist blurs the lines, making room for daydreams and gentle mercy"
+  }
+ },
+ "planets": {
+  "sun": {"section": "Core self", "lead": "Your Sun in {sign} is the gold thread of your identity.", "focus": "It describes how you shine and what makes you feel most alive."},
+  "moon": {"section": "Emotions", "lead": "Your Moon in {sign} is the silver tide of your inner life.", "focus": "It colors what comforts you and how you process feeling."},
+  "mercury": {"section": "Mind", "lead": "Your Mercury in {sign} is the quill you think and speak with.", "focus": "It shapes how you learn, decide and tell your story."},
+  "venus": {"section": "Love", "lead": "Your Venus in {sign} is the rose-copper key to your heart.", "focus": "It reveals what you find beautiful and how you give and receive affection."},
+  "mars": {"section": "Drive", "lead": "Your Mars in {sign} is the ember that sets you in motion.", "focus": "It shows how you pursue goals and handle friction."},
+  "jupiter": {"section": "Growth", "lead": "Your Jupiter in {sign} is the wide gold horizon of your luck and faith.", "focus": "It points to where generosity and optimism come naturally."},
+  "saturn": {"section": "Discipline", "lead": "Your Saturn in {sign} is the patient architect of your life.", "focus": "It marks the lessons that ripen slowly into mastery."},
+  "uranus": {"section": "Change", "lead": "Your Uranus in {sign} is a lightning seam shared with your generation.", "focus": "It hints at where you crave freedom and surprise."},
+  "neptune": {"section": "Dreams", "lead": "Your Neptune in {sign} is a generational sea of dreams.", "focus": "It colors your ideals, art and longing for the infinite."},
+  "pluto": {"section": "Transformation", "lead": "Your Pluto in {sign} is a deep, slow current shared with your generation.", "focus": "It speaks of renewal and the power found in letting go."},
+  "rising": {"section": "Rising sign", "lead": "Your {sign} Ascendant is the gilded doorway others see first.", "focus": "It describes your first impression and the way you greet new chapters."}
+ },
+ "houses": [
+  "It sits in the 1st house, close to the surface of your personality.",
+  "It sits in the 2nd house, linked with comfort, values and what you cherish.",
+  "It sits in the 3rd house, busy with words, siblings, neighbors and short journeys.",
+  "It sits in the 4th house, rooted in home, family and private memory.",
+  "It sits in the 5th house, where play, romance and creativity take the stage.",
+  "It sits in the 6th house, woven into routines, craft and daily service.",
+  "It sits in the 7th house, mirrored in partners and close one-to-one bonds.",
+  "It sits in the 8th house, drawn to depth, trust and shared resources.",
+  "It sits in the 9th house, reaching for travel, study and big ideas.",
+  "It sits in the 10th house, visible in vocation and public reputation.",
+  "It sits in the 11th house, alive in friendships, groups and future hopes.",
+  "It sits in the 12th house, working quietly through dreams and solitude."
+ ],
+ "aspects": {
+  "conjunction": "fuses with",
+  "sextile": "opens a friendly door to",
+  "square": "creates a creative tension with",
+  "trine": "flows easily with",
+  "opposition": "seeks balance with"
+ },
+ "daily": {
+  "openings": [
+   "The Moon moves through {moonSign} today. {moonDaily}.",
+   "Today's Moon travels through {moonSign}: {moonDaily}.",
+   "The sky leans toward {moonSign} today. {moonDaily}."
+  ],
+  "sunLines": [
+   "For your {sunSign} heart, that means leaning on {sunGift}.",
+   "As a {sunSign}, you can meet the day with {sunGift}.",
+   "Your {sunSign} nature brings {sunGift} to whatever the hours hold."
+  ],
+  "transit": {
+   "conjunction": "Transiting {transit} meets your natal {natal}, a moment to begin something with intention.",
+   "sextile": "Transiting {transit} sextiles your natal {natal}, so a small, friendly opportunity may appear if you reach for it.",
+   "square": "Transiting {transit} squares your natal {natal}; treat any friction as a nudge to adjust rather than a wall.",
+   "trine": "Transiting {transit} trines your natal {natal}, an easy current that rewards going with the flow.",
+   "opposition": "Transiting {transit} opposes your natal {natal}, inviting you to weigh both sides before you choose."
+  },
+  "quietSky": "No tight transits press on your chart today, which leaves room to set your own rhythm.",
+  "closings": [
+   "Let the evening be gentle and keep one small promise to yourself.",
+   "A thoughtful pause before you answer could be the day's quiet gift.",
+   "Notice what makes you laugh; it is pointing somewhere worth going.",
+   "Trust your pace - gold leaf is applied one careful sheet at a time.",
+   "Share a kind word; it may travel further than you expect.",
+   "Tidy one corner of your world and watch the rest feel lighter.",
+   "Look up tonight; the same stars are keeping you company.",
+   "Choose the brave, kind option and let the rest unfold."
+  ]
+ },
+ "risingUnknown": "Your rising sign depends on the exact minute you were born. Add your birth time in your profile whenever you learn it, and this doorway of your chart will open.",
+ "natalClosing": "Treat this as a mirror for reflection rather than a map of fate: the stars describe a mood, and you choose the steps.",
+ "chinese": {
+  "animals": {
+   "rat": {"traits": "quick-witted, resourceful and charming", "gift": "spotting opportunity where others see clutter", "shadow": "worrying over resources"},
+   "ox": {"traits": "dependable, patient and strong", "gift": "finishing what you start", "shadow": "holding on to a plan after it has stopped serving you"},
+   "tiger": {"traits": "brave, magnetic and passionate", "gift": "championing the people and causes you love", "shadow": "acting before you have looked"},
+   "rabbit": {"traits": "gentle, elegant and diplomatic", "gift": "making peace and beauty wherever you settle", "shadow": "avoiding necessary confrontation"},
+   "dragon": {"traits": "confident, visionary and lucky", "gift": "inspiring others with bold plans", "shadow": "impatience with slower dreamers"},
+   "snake": {"traits": "wise, intuitive and refined", "gift": "reading situations with uncanny accuracy", "shadow": "keeping secrets that could be shared"},
+   "horse": {"traits": "free-spirited, warm and energetic", "gift": "lifting any room with momentum", "shadow": "galloping off before the ending"},
+   "goat": {"traits": "creative, kind and serene", "gift": "turning feeling into art and comfort", "shadow": "waiting for permission"},
+   "monkey": {"traits": "clever, playful and inventive", "gift": "solving puzzles with style", "shadow": "getting bored with what already works"},
+   "rooster": {"traits": "observant, honest and hardworking", "gift": "bringing order and polish", "shadow": "a critical edge that can sting"},
+   "dog": {"traits": "loyal, principled and protective", "gift": "standing up for what is fair", "shadow": "expecting the worst before it arrives"},
+   "pig": {"traits": "generous, sincere and pleasure-loving", "gift": "making others feel welcome and abundant", "shadow": "trusting too readily"}
+  },
+  "elements": {
+   "wood": "Wood brings growth, kindness and a love of learning.",
+   "fire": "Fire brings warmth, passion and a flair for leadership.",
+   "earth": "Earth brings steadiness, patience and practical care.",
+   "metal": "Metal brings resolve, clarity and a sense of justice.",
+   "water": "Water brings insight, adaptability and quiet persuasion."
+  },
+  "dayMasters": {
+   "jia": "a tall tree reaching for the light - upright, principled and protective",
+   "yi": "a flowering vine - graceful, adaptable and quietly resilient",
+   "bing": "the noon sun - generous, open and impossible to ignore",
+   "ding": "a candle flame - warm, attentive and illuminating in the dark",
+   "wu": "a mountain - stable, trustworthy and calm under pressure",
+   "ji": "garden soil - nurturing, versatile and good at helping things grow",
+   "geng": "raw ore or a blade - decisive, frank and brave",
+   "xin": "a polished jewel - refined, perceptive and quietly proud",
+   "ren": "the open ocean - expansive, clever and full of currents",
+   "gui": "soft rain - sensitive, imaginative and gently persistent"
+  },
+  "yearVsLunar": "Because you were born between the lunar new year and Lichun (or the other way round), the popular lunar calendar calls you a {lunarAnimal} while the solar BaZi year is the {yearAnimal}; many readers enjoy both."
+ },
+ "blood": {
+  "a": {
+   "title": "Type A - The Careful Gardener",
+   "keywords": ["conscientious", "considerate", "earnest"],
+   "strengths": "Popular ketsueki-gata lore paints Type A as thoughtful planners who notice what others need and keep their word.",
+   "growth": "The lore suggests letting go of perfect timing and allowing yourself to rest before everything is finished.",
+   "love": "In love, Type A is said to show devotion through steady, attentive care.",
+   "work": "At work, the lore casts Type A as the reliable organizer whose details make plans succeed.",
+   "summary": "careful, kind and quietly dependable"
+  },
+  "b": {
+   "title": "Type B - The Free Spirit",
+   "keywords": ["passionate", "creative", "individual"],
+   "strengths": "Popular lore sees Type B as curious, enthusiastic and refreshingly true to their own interests.",
+   "growth": "The lore suggests finishing one passion before chasing the next shiny horizon.",
+   "love": "In love, Type B is said to be playful, spontaneous and wholehearted.",
+   "work": "At work, the lore casts Type B as the original thinker who dives deep into what fascinates them.",
+   "summary": "spirited, original and enthusiastic"
+  },
+  "ab": {
+   "title": "Type AB - The Moonlit Enigma",
+   "keywords": ["rational", "artistic", "adaptable"],
+   "strengths": "Popular lore describes Type AB as a blend of A's calm and B's flair: cool-headed, artistic and hard to pin down.",
+   "growth": "The lore suggests letting people see your warmth as well as your poise.",
+   "love": "In love, Type AB is said to be considerate, witty and to value personal space.",
+   "work": "At work, the lore casts Type AB as the level-headed mediator with a creative streak.",
+   "summary": "poised, imaginative and intriguingly complex"
+  },
+  "o": {
+   "title": "Type O - The Warm Captain",
+   "keywords": ["confident", "generous", "goal-driven"],
+   "strengths": "Popular lore sees Type O as sociable, resilient and naturally encouraging leaders.",
+   "growth": "The lore suggests slowing down to hear the quieter voices in the crew.",
+   "love": "In love, Type O is said to be affectionate, protective and openly expressive.",
+   "work": "At work, the lore casts Type O as the motivator who rallies people toward a shared goal.",
+   "summary": "warm, bold and big-hearted"
+  }
+ },
+ "bloodIntro": "Blood-type personality (ketsueki-gata) is a popular East Asian folk tradition with no scientific basis; enjoy it as a playful lens.",
+ "palm": {
+  "shapes": {
+   "earth": "Your square palm and shorter fingers suggest an Earth hand in palmistry folklore: practical, grounded and happiest making real things.",
+   "air": "Your square palm and longer fingers suggest an Air hand in palmistry folklore: curious, communicative and quick to connect ideas.",
+   "fire": "Your longer palm and shorter fingers suggest a Fire hand in palmistry folklore: energetic, spontaneous and driven by enthusiasm.",
+   "water": "Your longer palm and longer fingers suggest a Water hand in palmistry folklore: sensitive, imaginative and deeply intuitive."
+  },
+  "lines": {
+   "heart": {
+    "long": "A long heart line is read as an open, expressive heart.",
+    "medium": "A balanced heart line is read as warmth tempered by good judgment.",
+    "short": "A shorter heart line is read as someone who shows love through actions more than words.",
+    "curved": "Its upward curve is said to belong to a romantic who follows feeling.",
+    "straight": "Its straight path is said to belong to a calm, steady lover.",
+    "absent": "The heart line was hard to make out in this photo."
+   },
+   "head": {
+    "long": "A long head line is read as a thorough thinker who enjoys exploring every angle.",
+    "medium": "A balanced head line is read as clear, practical thinking.",
+    "short": "A shorter head line is read as a decisive mind that prefers action to theory.",
+    "curved": "Its gentle slope is said to point toward imagination and creative thought.",
+    "straight": "Its straight run is said to point toward logic and focus.",
+    "absent": "The head line was hard to make out in this photo."
+   },
+   "life": {
+    "long": "A long, sweeping life line is read as abundant enthusiasm for experience - palmists say its length describes vitality of spirit, not length of life.",
+    "medium": "A balanced life line is read as steady, sustainable energy.",
+    "short": "A shorter life line is read as independence and self-direction - palmists say it says nothing about how long anyone lives.",
+    "curved": "Its wide arc is said to show warmth and a love of company.",
+    "straight": "Its close, straight path is said to show a reserved, self-contained nature.",
+    "absent": "The life line was hard to make out in this photo."
+   },
+   "fate": {
+    "long": "A clear fate line is read as a strong sense of purpose and direction.",
+    "medium": "A partial fate line is read as a path that becomes clearer with time.",
+    "short": "A short fate line is read as a life shaped more by choice than by script.",
+    "curved": "Its wandering course is said to reflect a varied, self-made path.",
+    "straight": "Its straight course is said to reflect steady dedication.",
+    "absent": "No fate line stood out, which palmists read as freedom to write your own story."
+   }
+  },
+  "depth": {
+   "deep": "The {line} line looks deep and well defined.",
+   "faint": "The {line} line looks fine and delicate."
+  },
+  "fingers": {
+   "indexLonger": "Your index finger is longer than your ring finger, which palmists link to confidence and a taste for leadership.",
+   "ringLonger": "Your ring finger is longer than your index finger, which palmists link to creativity and a love of risk.",
+   "even": "Your index and ring fingers are nearly even, which palmists link to a balanced temperament."
+  },
+  "intro": "Palmistry is a centuries-old folk art, offered here purely for fun.",
+  "closing": "Your hands keep changing as you live, and so does your story."
+ },
+ "compat": {
+  "bands": [
+   {"min": 90, "dating": "A rare alignment - your charts light each other up.", "friends": "A rare alignment - the kind of friend you recognize instantly."},
+   {"min": 75, "dating": "Strong chemistry with plenty of common ground.", "friends": "An easy, warm friendship waiting to happen."},
+   {"min": 60, "dating": "A promising spark with interesting differences.", "friends": "A good-natured match with things to teach each other."},
+   {"min": 45, "dating": "Opposites in orbit - curiosity could bridge the gap.", "friends": "Different rhythms that could make a lively friendship."},
+   {"min": 0, "dating": "An unlikely pairing on paper, and paper is not everything.", "friends": "An unexpected pairing - surprises make the best stories."}
+  ],
+  "twins": "Born on the same day - the stars stamped you with the same date.",
+  "exactTwins": "Same day, same hour - a true celestial twin.",
+  "chineseRelations": {
+   "same": "Two {animal}s - you share an instinctive rhythm.",
+   "trine": "{animalA} and {animalB} form a San He trine, a classic alliance.",
+   "harmony": "{animalA} and {animalB} are Liu He secret friends.",
+   "clash": "{animalA} and {animalB} sit opposite on the wheel - sparks, in every sense.",
+   "harm": "{animalA} and {animalB} need patience to understand each other.",
+   "neutral": "{animalA} and {animalB} meet on friendly, neutral ground."
+  }
+ }
+}
