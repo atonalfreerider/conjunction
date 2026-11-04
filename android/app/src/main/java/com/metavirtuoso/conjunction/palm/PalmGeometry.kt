@@ -63,6 +63,8 @@ data class PalmDetection(
     val mounts: Map<Mount, Double>,
     /** 0..1: how much usable crease contrast the photo had and how many lines were found. */
     val quality: Double,
+    /** The rectified palm after contrast enhancement (0..1, creases dark): what the line finder saw. */
+    val enhanced: GrayImage? = null,
 )
 
 /**
@@ -72,11 +74,14 @@ data class PalmDetection(
  *    span) is resampled with bilinear interpolation into a [W] x [H] grid: u runs from the pinky
  *    edge (0) to the thumb/index edge (1), v from the knuckle line (0) to the wrist (1). This
  *    removes rotation, scale and perspective tilt, so each line can be looked for in a fixed band.
- * 2. **Flatten lighting.** Subtract a wide Gaussian blur (high-pass) and normalise by the local
- *    standard deviation, so shadows and skin tone don't matter, only local darkness.
- * 3. **Ridge filter.** Creases are thin dark valleys. On a lightly smoothed image the Hessian's
- *    larger eigenvalue is strongly positive across a dark valley; its eigenvector gives the
- *    valley's direction. Ridge strength = max(lambda1, 0).
+ * 2. **Heavy contrast.** CLAHE (contrast-limited adaptive histogram equalisation, 8 x 8 tiles,
+ *    clip 4x) stretches the faint creases in every part of the palm, then a wide Gaussian
+ *    high-pass divided by the local standard deviation removes shadows and skin tone, so only
+ *    local darkness remains. Fine creases such as the fate line survive this; flat skin doesn't.
+ * 3. **Ridge filter, multi-scale.** Creases are thin dark valleys. On a smoothed image the
+ *    Hessian's larger eigenvalue is strongly positive across a dark valley; its eigenvector gives
+ *    the valley's direction. Computed at three widths (sigma 1.4 / 2.4 / 3.8 grid px) with scale
+ *    normalisation; each pixel keeps its strongest response.
  * 4. **Per line.** Within the line's band keep pixels whose ridge strength is above the palm's
  *    80th percentile and whose direction matches the line (heart/head ~horizontal, life/fate
  *    ~vertical). Along the main axis, take the longest run of columns (or rows) containing such a
@@ -91,14 +96,18 @@ data class PalmDetection(
  * palmistry has predictive power.
  */
 object PalmGeometry {
-    const val W = 120
-    const val H = 150
+    // 240 x 300 over an ~8 cm palm is ~0.3 mm per cell: fine enough for thin creases.
+    const val W = 240
+    const val H = 300
+
+    /** Grid steps in the old 120-wide units -> this grid (keeps the run rules resolution-independent). */
+    private const val S = W / 120
 
     data class Band(val line: PalmLine, val u0: Float, val u1: Float, val v0: Float, val v1: Float, val horizontal: Boolean, val maxAngleDeg: Float)
 
     /** Search bands on the rectified palm (u: pinky 0 → thumb 1, v: knuckles 0 → wrist 1). */
     val BANDS = listOf(
-        Band(PalmLine.HEART, 0.0f, 0.85f, 0.06f, 0.32f, horizontal = true, maxAngleDeg = 35f),
+        Band(PalmLine.HEART, 0.0f, 0.85f, 0.06f, 0.27f, horizontal = true, maxAngleDeg = 35f),
         Band(PalmLine.HEAD, 0.15f, 1.0f, 0.28f, 0.55f, horizontal = true, maxAngleDeg = 35f),
         Band(PalmLine.LIFE, 0.55f, 1.0f, 0.25f, 1.0f, horizontal = false, maxAngleDeg = 60f),
         Band(PalmLine.FATE, 0.32f, 0.68f, 0.35f, 1.0f, horizontal = false, maxAngleDeg = 30f),
@@ -154,15 +163,73 @@ object PalmGeometry {
         return out
     }
 
-    /** High-pass and contrast-normalise (step 2). */
+    /**
+     * Contrast-limited adaptive histogram equalisation on a 0..1 image: per-tile histograms
+     * (256 bins) clipped at [clip] x the mean bin count, redistributed, and blended bilinearly
+     * between tile centres.
+     */
+    fun clahe(img: GrayImage, tilesX: Int = 8, tilesY: Int = 8, clip: Float = 4f): GrayImage {
+        val bins = 256
+        val tw = img.width.toFloat() / tilesX
+        val th = img.height.toFloat() / tilesY
+        val maps = Array(tilesY) { ty ->
+            Array(tilesX) { tx ->
+                val hist = FloatArray(bins)
+                val xa = (tx * tw).toInt(); val xb = ((tx + 1) * tw).toInt().coerceAtMost(img.width)
+                val ya = (ty * th).toInt(); val yb = ((ty + 1) * th).toInt().coerceAtMost(img.height)
+                var n = 0
+                for (y in ya until yb) for (x in xa until xb) {
+                    hist[(img[x, y].coerceIn(0f, 1f) * (bins - 1)).roundToInt()] += 1f; n++
+                }
+                val limit = max(1f, clip * n / bins)
+                var excess = 0f
+                for (b in 0 until bins) if (hist[b] > limit) { excess += hist[b] - limit; hist[b] = limit }
+                val add = excess / bins
+                val cdf = FloatArray(bins)
+                var acc = 0f
+                for (b in 0 until bins) { acc += hist[b] + add; cdf[b] = acc / max(1, n) }
+                cdf
+            }
+        }
+        val out = GrayImage(img.width, img.height)
+        for (y in 0 until img.height) for (x in 0 until img.width) {
+            val b = (img[x, y].coerceIn(0f, 1f) * (bins - 1)).roundToInt()
+            val fx = ((x + 0.5f) / tw - 0.5f).coerceIn(0f, tilesX - 1f)
+            val fy = ((y + 0.5f) / th - 0.5f).coerceIn(0f, tilesY - 1f)
+            val x0 = fx.toInt(); val y0 = fy.toInt()
+            val x1 = (x0 + 1).coerceAtMost(tilesX - 1); val y1 = (y0 + 1).coerceAtMost(tilesY - 1)
+            val ax = fx - x0; val ay = fy - y0
+            val top = maps[y0][x0][b] * (1 - ax) + maps[y0][x1][b] * ax
+            val bottom = maps[y1][x0][b] * (1 - ax) + maps[y1][x1][b] * ax
+            out[x, y] = top * (1 - ay) + bottom * ay
+        }
+        return out
+    }
+
+    /** High-pass and contrast-normalise (step 2, after [clahe]). */
     fun flatten(img: GrayImage): GrayImage {
-        val low = gaussianBlur(img, 10f)
+        val low = gaussianBlur(img, 10f * S)
         val diff = GrayImage(img.width, img.height, FloatArray(img.pixels.size) { img.pixels[it] - low.pixels[it] })
-        val variance = gaussianBlur(GrayImage(img.width, img.height, FloatArray(diff.pixels.size) { diff.pixels[it] * diff.pixels[it] }), 10f)
+        val variance = gaussianBlur(GrayImage(img.width, img.height, FloatArray(diff.pixels.size) { diff.pixels[it] * diff.pixels[it] }), 10f * S)
         return GrayImage(img.width, img.height, FloatArray(diff.pixels.size) { diff.pixels[it] / sqrt(variance.pixels[it] + 1e-4f) })
     }
 
-    /** Ridge strength and line direction (degrees from horizontal, -90..90) per pixel (step 3). */
+    /** Step 3 over several crease widths: per pixel the strongest scale-normalised response. */
+    fun multiScaleRidges(img: GrayImage, sigmas: FloatArray = floatArrayOf(1.4f, 2.4f, 3.8f)): Pair<FloatArray, FloatArray> {
+        val strength = FloatArray(img.pixels.size)
+        val angle = FloatArray(img.pixels.size)
+        for (sigma in sigmas) {
+            val (st, an) = ridges(img, sigma)
+            val norm = sigma * sigma
+            for (i in st.indices) {
+                val v = st[i] * norm
+                if (v > strength[i]) { strength[i] = v; angle[i] = an[i] }
+            }
+        }
+        return strength to angle
+    }
+
+    /** Ridge strength and line direction (degrees from horizontal, -90..90) per pixel at one scale. */
     fun ridges(img: GrayImage, sigma: Float = 1.6f): Pair<FloatArray, FloatArray> {
         val s = gaussianBlur(img, sigma)
         val strength = FloatArray(s.pixels.size)
@@ -220,21 +287,21 @@ object PalmGeometry {
         var runStart = -1; var bestStart = 0; var bestEnd = -1; var gap = 0; var lastC = -1
         for ((k, pair) in best.withIndex()) {
             val c = pair.first
-            if (c >= 0 && (lastC < 0 || abs(c - lastC) <= 6)) {
+            if (c >= 0 && (lastC < 0 || abs(c - lastC) <= 6 * S)) {
                 if (runStart < 0) runStart = k
                 lastC = c; gap = 0
                 if (k - runStart > bestEnd - bestStart) { bestStart = runStart; bestEnd = k }
             } else {
                 gap++
-                if (gap > 3) { runStart = -1; lastC = -1; gap = 0 }
+                if (gap > 3 * S) { runStart = -1; lastC = -1; gap = 0 }
             }
         }
         val runLength = if (bestEnd >= bestStart) bestEnd - bestStart + 1 else 0
-        if (runLength < mainRange.count() / 4 || runLength < 4) return null
+        if (runLength < mainRange.count() / 4 || runLength < 4 * S) return null
         val steps = (bestStart..bestEnd)
         val hits = steps.filter { best[it].first >= 0 }
         var breaks = 0
-        hits.zipWithNext { a, b -> if (b - a > 1) breaks++ }
+        hits.zipWithNext { a, b -> if (b - a > S) breaks++ }
         val pts = hits.map { k ->
             val m = mainRange.first + k
             val c = best[k].first
@@ -287,18 +354,23 @@ object PalmGeometry {
     fun detect(image: GrayImage, hand: HandLandmarks, handConfidence: Float = 1f): PalmDetection {
         val quad = palmQuad(hand)
         val rectified = rectify(image, hand)
-        val flat = flatten(rectified)
-        val (strength, angle) = ridges(flat)
+        val enhanced = clahe(rectified)
+        val flat = flatten(enhanced)
+        val (strength, angle) = multiScaleRidges(flat)
         val threshold = max(percentile(strength, 0.80f), 1e-4f)
+        // The fate line is usually the faintest major crease: search it with a lower bar (its
+        // narrow vertical band and direction limit keep texture from passing as a line).
+        val fateThreshold = max(percentile(strength, 0.70f), 1e-4f)
         val strongest = max(percentile(strength, 0.99f), threshold)
         val lines = BANDS.mapNotNull { band ->
-            measureLine(strength, angle, band, threshold, strongest)?.let { run ->
+            val bar = if (band.line == PalmLine.FATE) fateThreshold else threshold
+            measureLine(strength, angle, band, bar, strongest)?.let { run ->
                 band.line to DetectedLine(run.points.map { (x, y) -> toImage(quad, x, y) }, run.depth, run.breaks)
             }
         }.toMap()
         // Contrast: a blurry or flat photo has little difference between the 99th and 50th percentile ridge.
         val contrast = ((strongest - percentile(strength, 0.5f)) / max(strongest, 1e-6f)).toDouble().coerceIn(0.0, 1.0)
         val quality = (0.4 * handConfidence + 0.3 * contrast + 0.3 * lines.size / 4.0).coerceIn(0.0, 1.0)
-        return PalmDetection(lines, measureMounts(rectified), quality)
+        return PalmDetection(lines, measureMounts(rectified), quality, enhanced)
     }
 }

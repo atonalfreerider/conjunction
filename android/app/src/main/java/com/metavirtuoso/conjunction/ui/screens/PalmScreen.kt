@@ -181,6 +181,7 @@ fun PalmScreen(container: AppContainer) {
                 }
                 is PalmStage.Result -> {
                     PalmOverlayImage(s.scan)
+                    PalmScannerView(s.scan)
                     PalmSummary(s.scan)
                     ReadingCard("Your palm", reading)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -240,6 +241,38 @@ private fun PalmOverlayImage(scan: PalmScan) {
     }
 }
 
+/**
+ * "Scanner view": the straightened palm after the heavy contrast pass, creases glowing gold on
+ * midnight, so the user can see what the line finder worked from (and retake a flat photo).
+ */
+@Composable
+private fun PalmScannerView(scan: PalmScan) {
+    val enhanced = scan.detection.enhanced ?: return
+    val bitmap = remember(enhanced) {
+        val dark = Palette.Midnight; val gold = Palette.GoldPale
+        val px = IntArray(enhanced.width * enhanced.height) { i ->
+            // CLAHE output is 0..1 with creases dark; a steep curve makes them pop as gold strokes.
+            val t = ((0.55f - enhanced.pixels[i]) / 0.45f).coerceIn(0f, 1f).let { it * it * (3 - 2 * it) }
+            android.graphics.Color.rgb(
+                ((dark.red + (gold.red - dark.red) * t) * 255).toInt(),
+                ((dark.green + (gold.green - dark.green) * t) * 255).toInt(),
+                ((dark.blue + (gold.blue - dark.blue) * t) * 255).toInt(),
+            )
+        }
+        Bitmap.createBitmap(px, enhanced.width, enhanced.height, Bitmap.Config.ARGB_8888)
+    }
+    OrnatePanel(Modifier.fillMaxWidth(), contentPadding = 14.dp) {
+        Text("SCANNER VIEW", style = MaterialTheme.typography.labelMedium, color = Palette.Gold)
+        Image(
+            bitmap.asImageBitmap(),
+            contentDescription = "Your palm straightened and contrast-enhanced, creases shown in gold",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxWidth().aspectRatio(enhanced.width.toFloat() / enhanced.height),
+        )
+        FinePrint("Fingers at the top, wrist at the bottom. Faint lines show best in soft, even light with the palm flat.")
+    }
+}
+
 @Composable
 private fun PalmSummary(scan: PalmScan) {
     val f = scan.features
@@ -261,7 +294,10 @@ private fun PalmSummary(scan: PalmScan) {
     }
 }
 
-/** Full-screen CameraX capture with the gold hand-outline guide (mirrored for a left hand). */
+/**
+ * Full-screen CameraX capture with the gold hand-outline guide. The artwork shows a LEFT palm as
+ * the rear camera sees it (thumb on the left), so it is mirrored for a right hand.
+ */
 @Composable
 private fun PalmCamera(hand: Hand, onCaptured: (Bitmap) -> Unit, onCancel: () -> Unit, onError: (String) -> Unit) {
     val context = LocalContext.current
@@ -289,7 +325,7 @@ private fun PalmCamera(hand: Hand, onCaptured: (Bitmap) -> Unit, onCancel: () ->
             painterResource(R.drawable.palm_guide_overlay),
             contentDescription = "Hand outline guide",
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxSize().padding(24.dp).graphicsLayer { scaleX = if (hand == Hand.LEFT) -1f else 1f },
+            modifier = Modifier.fillMaxSize().padding(24.dp).graphicsLayer { scaleX = if (hand == Hand.RIGHT) -1f else 1f },
         )
         Column(Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text("Fit your ${if (hand == Hand.LEFT) "left" else "right"} palm inside the outline", style = MaterialTheme.typography.titleMedium, color = Palette.GoldPale, textAlign = TextAlign.Center)

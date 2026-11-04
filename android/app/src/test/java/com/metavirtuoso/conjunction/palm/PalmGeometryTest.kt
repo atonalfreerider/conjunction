@@ -66,6 +66,34 @@ class PalmGeometryTest {
         assertEquals(408.0, headY, 25.0)
     }
 
+    /** Like [drawLine] but only slightly darker than the skin: a faint fate line. */
+    private fun drawFaintLine(img: GrayImage, x0: Float, y0: Float, x1: Float, y1: Float, darken: Float) {
+        val steps = (hypot(x1 - x0, y1 - y0) * 2).toInt()
+        for (s in 0..steps) {
+            val t = s.toFloat() / steps
+            val x = x0 + (x1 - x0) * t
+            val y = y0 + (y1 - y0) * t
+            for (dx in -1..1) {
+                val px = (x + dx).toInt(); val py = y.toInt()
+                if (px in 0 until w && py in 0 until h) img[px, py] = img[px, py] * darken
+            }
+        }
+    }
+
+    @Test
+    fun findsAFaintFateLineAfterContrastEnhancement() {
+        val img = skin()
+        drawLine(img, 185f, 345f, 370f, 335f, sag = -12f) // strong heart line
+        drawLine(img, 230f, 410f, 400f, 405f)            // strong head line
+        // Fate line: 3 px wide, only 8 % darker than the skin, from the wrist up the middle.
+        drawFaintLine(img, 300f, 630f, 305f, 360f, darken = 0.92f)
+        val detection = PalmGeometry.detect(img, hand())
+        assertTrue("fate found: ${detection.lines.keys}", PalmLine.FATE in detection.lines)
+        val fateX = detection.lines.getValue(PalmLine.FATE).polyline.map { it.x }.average()
+        assertEquals(302.0, fateX, 20.0)
+        assertTrue("enhanced image returned", detection.enhanced != null)
+    }
+
     @Test
     fun blankPalmHasNoLongLines() {
         val detection = PalmGeometry.detect(skin(), hand())
